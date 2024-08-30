@@ -1,4 +1,3 @@
-// src/components/SalesBarChart.js
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -11,8 +10,22 @@ const SalesBarChart = ({ data }) => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="sales" fill="#2fd667" />
-                <Bar dataKey="profit" fill="#e6962e" />
+                <Bar
+                    dataKey="sales"
+                    fill="#2fd667"
+                    animationBegin={0}
+                    animationDuration={1500}
+                    animationEasing="ease-in-out"
+                    isAnimationActive={true}
+                />
+                <Bar
+                    dataKey="profit"
+                    fill="#e6962e"
+                    animationBegin={0}
+                    animationDuration={1500}
+                    animationEasing="ease-in-out"
+                    isAnimationActive={true}
+                />
             </BarChart>
         </ResponsiveContainer>
     );

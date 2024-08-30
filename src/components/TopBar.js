@@ -37,7 +37,7 @@ const TopBar = ({ currentPage }) => {
 
     return (
         <div className="bg-white shadow p-4 flex items-center">
-            <FontAwesomeIcon icon={icon} className={`text-2xl mr-3 h-10 ${iconColor}`} />
+            <FontAwesomeIcon icon={icon} className={`text-2xl mr-2 ${iconColor}`} />
             <h1 className="text-2xl font-bold">{title}</h1>
         </div>
     );

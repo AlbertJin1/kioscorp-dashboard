@@ -18,8 +18,8 @@ const Sidebar = ({ setCurrentPage, currentPage }) => {
     return (
         <div className="w-64 min-h-screen bg-gray-800 text-white flex flex-col">
             <div className="flex items-center p-4">
-                <img src={logo} alt="Kioscorp Logo" className="h-10 mr-2" /> {/* Logo image */}
-                <h1 className="text-2xl font-bold">Kioscorp</h1>
+                <img src={logo} alt="Kioscorp Logo" className="h-8 mr-2" /> {/* Logo image */}
+                <h1 className="text-2xl font-bold">KiosCorp</h1>
             </div>
             <hr className="border-gray-600" /> {/* Separator line */}
             <ul className="flex-grow">

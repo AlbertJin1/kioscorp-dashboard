@@ -20,6 +20,9 @@ const SalesStatistics = () => {
         { name: '2024-05-01', sales: 1890, profit: 4800 },
         { name: '2024-06-01', sales: 2390, profit: 3800 },
         { name: '2024-07-01', sales: 3490, profit: 4300 },
+        { name: '2024-07-02', sales: 3490, profit: 4300 },
+        { name: '2024-07-03', sales: 3490, profit: 4300 },
+        { name: '2024-07-04', sales: 3490, profit: 4300 },
     ], []); // Memoized data
 
     // Function to apply the date filter
