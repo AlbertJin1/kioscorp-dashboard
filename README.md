@@ -79,3 +79,4 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 - npm install react-datepicker
 - npm install @fortawesome/react-fontawesome @fortawesome/free-solid-svg-icons
 - npm install react-transition-group
+- npm install sweetalert2
