@@ -1,7 +1,7 @@
 // src/components/TopBar.js
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTachometerAlt, faBox, faShoppingCart, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { faTachometerAlt, faBox, faShoppingCart, faUsers, faClipboardList } from '@fortawesome/free-solid-svg-icons';
 
 const TopBar = ({ currentPage }) => {
     let title = '';
@@ -10,7 +10,7 @@ const TopBar = ({ currentPage }) => {
 
     switch (currentPage) {
         case 'dashboard':
-            title = 'Admin Dashboard';
+            title = 'Dashboard';
             icon = faTachometerAlt; // Dashboard icon
             iconColor = 'text-blue-500'; // Color for Dashboard
             break;
@@ -18,6 +18,11 @@ const TopBar = ({ currentPage }) => {
             title = 'Products';
             icon = faBox; // Products icon
             iconColor = 'text-green-500'; // Color for Products
+            break;
+        case 'sales-management':
+            title = 'Sales Management';
+            icon = faClipboardList; // Orders icon
+            iconColor = 'text-red-500'; // Color for Orders
             break;
         case 'orders':
             title = 'Orders';
@@ -30,7 +35,7 @@ const TopBar = ({ currentPage }) => {
             iconColor = 'text-purple-500'; // Color for Users
             break;
         default:
-            title = 'Admin Dashboard';
+            title = 'Dashboard';
             icon = faTachometerAlt;
             iconColor = 'text-blue-500'; // Default color
     }

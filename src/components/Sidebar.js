@@ -13,7 +13,7 @@ const Sidebar = ({ setCurrentPage, currentPage }) => {
 
     return (
         <div
-            className={`min-h-screen flex flex-col bg-[#033372] text-white transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-56'}`}
+            className={`min-h-screen flex flex-col bg-[#033372] text-white transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}
         >
             <div className="flex items-center justify-between p-4">
                 {!isCollapsed && <img src={logo} alt="Kioscorp Logo" className="h-12" />}
@@ -23,7 +23,7 @@ const Sidebar = ({ setCurrentPage, currentPage }) => {
                 >
                     <FontAwesomeIcon
                         icon={faChevronLeft}
-                        className={`text-white text-xl transition-transform duration-300 ${isCollapsed ? 'transform rotate-180' : ''}`}
+                        className={`text-white text-2xl transition-transform duration-300 ${isCollapsed ? 'transform rotate-180' : ''}`}
                     />
                 </button>
             </div>
@@ -41,9 +41,9 @@ const Sidebar = ({ setCurrentPage, currentPage }) => {
                         onClick={item.onClick ? item.onClick : () => setCurrentPage(item.page)} // Use item.onClick if provided
                     >
                         <div className="flex justify-center items-center" style={{ minWidth: '2.5rem' }}>
-                            <FontAwesomeIcon icon={item.icon} className="text-xl" style={{ color: item.color }} />
+                            <FontAwesomeIcon icon={item.icon} className="text-2xl" style={{ color: item.color }} />
                         </div>
-                        {!isCollapsed && <span className="ml-3 text-lg">{item.label}</span>}
+                        {!isCollapsed && <span className="ml-3 text-xl">{item.label}</span>}
                         {currentPage === item.page && (
                             <div className="absolute right-0 top-0 h-full w-2 bg-white transition-all duration-300 transform scale-y-100" />
                         )}
