@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartBar, faBoxOpen, faClipboardList, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import logo from '../img/logo/KIOSCORP LOGO.png'; // Adjust the path as needed
 
 const Sidebar = ({ setCurrentPage, currentPage }) => {
     const [currentTime, setCurrentTime] = useState(new Date());
+    const navigate = useNavigate(); // Initialize useNavigate
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -15,9 +17,13 @@ const Sidebar = ({ setCurrentPage, currentPage }) => {
         return () => clearInterval(interval); // Cleanup interval on component unmount
     }, []);
 
+    const handleLogoClick = () => {
+        navigate('/sales-management'); // Navigate to SalesManagement screen
+    };
+
     return (
         <div className="w-64 min-h-screen bg-gray-800 text-white flex flex-col">
-            <div className="flex items-center p-4">
+            <div className="flex items-center p-4 cursor-pointer" onClick={handleLogoClick}>
                 <img src={logo} alt="Kioscorp Logo" className="h-8 mr-2" /> {/* Logo image */}
                 <h1 className="text-2xl font-bold">KiosCorp</h1>
             </div>
@@ -38,11 +44,11 @@ const Sidebar = ({ setCurrentPage, currentPage }) => {
                     Products
                 </li>
                 <li
-                    className={`flex items-center p-4 cursor-pointer ${currentPage === 'orders' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}
-                    onClick={() => setCurrentPage('orders')}
+                    className={`flex items-center p-4 cursor-pointer ${currentPage === 'sales-management' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}
+                    onClick={() => setCurrentPage('sales-management')}
                 >
                     <FontAwesomeIcon icon={faClipboardList} className="text-orange-400 mr-3" />
-                    Orders
+                    Sales Management
                 </li>
                 <li
                     className={`flex items-center p-4 cursor-pointer ${currentPage === 'users' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}
