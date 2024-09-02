@@ -6,6 +6,7 @@ import InventoryOverview from './InventoryOverview';
 import SalesStatistics from './SalesStatistics';
 import TopSellingItems from './TopSellingItems';
 
+
 const Dashboard = () => {
     return (
         <div className="flex flex-col h-full">

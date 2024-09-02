@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import Dashboard from './Dashboard';
 import Products from './Products';
+import SalesManagement from './SalesManagement'; 
 // import Auth from './Auth'; // Comment out Auth component import
 
 const MainComponent = () => {
@@ -21,6 +22,8 @@ const MainComponent = () => {
                 return <Dashboard />;
             case 'products':
                 return <Products />;
+            case 'sales-management':
+                return <SalesManagement />; // Render SalesManagement component
             // Uncomment these lines when you implement the respective components
             // case 'orders':
             //     return <Orders />;
