@@ -8,7 +8,10 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "assert": "^2.1.0",
     "axios": "^1.7.7",
+    "browserify-zlib": "^0.2.0",
+    "https-browserify": "^1.0.0",
     "react": "^18.3.1",
     "react-datepicker": "^7.3.0",
     "react-dom": "^18.3.1",
@@ -17,7 +20,11 @@
     "react-scripts": "5.0.1",
     "react-transition-group": "^4.4.5",
     "recharts": "^2.12.7",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
     "sweetalert2": "^11.12.4",
+    "url": "^0.11.4",
+    "util": "^0.12.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -45,6 +52,7 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.42",
     "tailwindcss": "^3.4.10"
