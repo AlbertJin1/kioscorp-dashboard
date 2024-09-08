@@ -83,3 +83,4 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 - npm install react-icons
 - npm install --save-dev @babel/plugin-proposal-private-property-in-object
 - npm install stream-http https-browserify stream-browserify util browserify-zlib assert url
+- npm i -S react-web-vector-icons

@@ -1,8 +1,11 @@
 // src/components/Sidebar.js
+import logo from '../img/logo/KIOSCORP LOGO.png';
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartBar, faBoxOpen, faClipboardList, faUsers, faChevronLeft } from '@fortawesome/free-solid-svg-icons';
-import logo from '../img/logo/KIOSCORP LOGO.png';
+import { faChevronLeft, faBoxesStacked, faWarehouse } from '@fortawesome/free-solid-svg-icons'; // Import specific FontAwesome icons
+import { MdDashboard, MdManageHistory } from "react-icons/md"; // Import Material Design icons
+import { TiHome } from "react-icons/ti"; // Import new icons
+import { IoBarChart } from "react-icons/io5"; // Import new icons
 
 const Sidebar = ({ setCurrentPage, currentPage }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -29,11 +32,12 @@ const Sidebar = ({ setCurrentPage, currentPage }) => {
             </div>
             <ul className="flex-grow">
                 {[
-                    { icon: faChartBar, label: 'Dashboard', page: 'dashboard', color: '#1DA1F2' },
-                    { icon: faBoxOpen, label: 'Products', page: 'products', color: '#FF9900' },
-                    { icon: faClipboardList, label: 'Sales Management', page: 'sales-management', color: '#E91E63'},
-                    { icon: faClipboardList, label: 'Orders', page: 'orders', color: '#E91E63' },
-                    { icon: faUsers, label: 'Users', page: 'users', color: '#4CAF50' },
+                    { icon: <MdDashboard className="text-white text-3xl" />, label: 'Menu', page: 'menu' }, // Updated Menu icon
+                    { icon: <TiHome className="text-white text-3xl" />, label: 'Dashboard', page: 'dashboard' }, // Updated Dashboard icon
+                    { icon: <FontAwesomeIcon icon={faBoxesStacked} className="text-3xl" style={{ color: 'white' }} />, label: 'Inventory', page: 'inventory' }, // Updated Inventory icon
+                    { icon: <IoBarChart className="text-white text-3xl" />, label: 'Sales', page: 'sales-management' }, // Updated Sales icon
+                    { icon: <MdManageHistory className="text-white text-3xl" />, label: 'Order History', page: 'order-history' }, // Updated Order History icon
+                    { icon: <FontAwesomeIcon icon={faWarehouse} className="text-3xl" style={{ color: 'white' }} />, label: 'Add Stocks', page: 'add-stock' }, // Updated Add Stocks icon
                 ].map((item, index) => (
                     <li
                         key={index}
@@ -41,7 +45,7 @@ const Sidebar = ({ setCurrentPage, currentPage }) => {
                         onClick={item.onClick ? item.onClick : () => setCurrentPage(item.page)} // Use item.onClick if provided
                     >
                         <div className="flex justify-center items-center" style={{ minWidth: '2.5rem' }}>
-                            <FontAwesomeIcon icon={item.icon} className="text-2xl" style={{ color: item.color }} />
+                            {item.icon} {/* Render the icon directly */}
                         </div>
                         {!isCollapsed && <span className="ml-3 text-xl">{item.label}</span>}
                         {currentPage === item.page && (
