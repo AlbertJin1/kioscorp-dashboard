@@ -1,26 +1,31 @@
-// src/components/SalesManagement.js
 import React from 'react';
-import { FaChartLine, FaBox, FaCalendarAlt } from 'react-icons/fa'; // Import icons
+import SalesGraph from './SalesGraph'; 
+import RecentOrders from './RecentOrders';
+import HighDemandItems from './HighDemandItems';
+import LowDemandItems from './LowDemandItems';
 
 const SalesManagement = () => {
     return (
-        <div className="flex flex-col h-full p-4">
-            <h1 className="text-2xl font-bold mb-4">Sales Management</h1>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                <div className="bg-white p-4 shadow rounded">
-                    <h2 className="text-xl font-semibold mb-2">Sales Overview</h2>
-                    <FaChartLine className="text-blue-500" /> {/* Example usage */}
+        <div className="p-4 h-screen flex flex-col gap-4">
+            <div className="flex flex-col lg:flex-row gap-4">
+                {/* Sales Graph taking up full width on small screens and 2/3 on large screens */}
+                <div className="flex-1 lg:flex-[2] p-0 h-full">
+                    <SalesGraph />
                 </div>
-                
-                <div className="bg-white p-4 shadow rounded">
-                    <h2 className="text-xl font-semibold mb-2">Recent Orders</h2>
-                    <FaBox className="text-green-500" /> {/* Example usage */}
+
+                {/* Recent Orders beside the graph */}
+                <div className="flex-1 lg:flex-[1] p-0 h-full">
+                    <RecentOrders />
                 </div>
-                
-                <div className="bg-white p-4 shadow rounded">
-                    <h2 className="text-xl font-semibold mb-2">High Demand Items</h2>
-                    <FaCalendarAlt className="text-orange-500" /> {/* Example usage */}
+            </div>
+
+            {/* High Demand Items and Low Demand Items below the graph and recent orders */}
+            <div className="flex flex-col lg:flex-row gap-4 flex-grow">
+                <div className="flex-1 p-0 h-full">
+                    <HighDemandItems />
+                </div>
+                <div className="flex-1 p-0 h-full">
+                    <LowDemandItems />
                 </div>
             </div>
         </div>
