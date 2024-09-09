@@ -3,32 +3,23 @@ import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import Dashboard from './Dashboard';
-import Products from './Products';
-import SalesManagement from './SalesManagement'; 
-// import Auth from './Auth'; // Comment out Auth component import
+import SalesManagement from './SalesManagement';
+import Menu from './Menu'; // Import the Menu component
+import Inventory from './Inventory';
 
 const MainComponent = () => {
     const [currentPage, setCurrentPage] = useState('dashboard'); // Default to Dashboard
-    // const [isAuthenticated, setIsAuthenticated] = useState(true); // Temporarily set to true
 
     const renderPage = () => {
-        // Temporarily comment out the auth check
-        // if (!isAuthenticated) {
-        //     return <Auth setIsAuthenticated={setIsAuthenticated} />; // Render Auth component if not authenticated
-        // }
-
         switch (currentPage) {
+            case 'menu':
+                return <Menu />;
             case 'dashboard':
                 return <Dashboard />;
-            case 'products':
-                return <Products />;
+            case 'inventory':
+                return <Inventory />;
             case 'sales-management':
-                return <SalesManagement />; // Render SalesManagement component
-            // Uncomment these lines when you implement the respective components
-            // case 'orders':
-            //     return <Orders />;
-            // case 'users':
-            //     return <Users />;
+                return <SalesManagement />;
             default:
                 return <Dashboard />; // Fallback to Dashboard
         }
@@ -36,7 +27,6 @@ const MainComponent = () => {
 
     return (
         <div className="flex">
-            {/* Temporarily disable Sidebar and TopBar rendering based on auth */}
             <Sidebar setCurrentPage={setCurrentPage} currentPage={currentPage} />
             <div className="flex flex-col flex-grow" style={{ backgroundColor: '#d7e1fc' }}>
                 <TopBar currentPage={currentPage} />
