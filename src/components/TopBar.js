@@ -15,14 +15,14 @@ const TopBar = ({ currentPage }) => {
             setCurrentDate(date);
         };
         updateTime();
-        const intervalId = setInterval(updateTime, 60000); // Update every minute (60,000 ms)
+        const intervalId = setInterval(updateTime, 60000); // Update every minute
 
         return () => clearInterval(intervalId);
     }, []);
 
-    // Handle user login logic (placeholder)
     useEffect(() => {
-        const user = null; // Replace with actual user fetching logic
+        // Replace with actual user fetching logic
+        const user = { name: 'John Doe' }; // Example user
         if (user) {
             setLoggedInUser(user);
         } else {
@@ -56,27 +56,25 @@ const TopBar = ({ currentPage }) => {
 
     return (
         <div className="bg-white shadow pt-2 pb-2 pl-4 pr-4 items-center">
-            {/* Top Content */}
             <div className="flex items-start w-full justify-between">
-                {/* Left Side */}
                 <div className="flex items-start">
-                    <img src={logo} alt="Dashboard Icon" className="h-16 mr-4" /> {/* Replace with actual path */}
+                    <img src={logo} alt="Dashboard Icon" className="h-16 mr-4" />
                     <div className="flex flex-col">
-                        <h1 className="text-2xl font-bold">Welcome, {loggedInUser ? loggedInUser.name : 'No logged user'}</h1>
+                        <h1 className="text-2xl font-bold">Welcome, {loggedInUser ? loggedInUser.name : 'Guest'}</h1>
                         <h2 className="text-lg">Inventory Management System</h2>
                     </div>
                 </div>
 
-                {/* Right Side */}
                 <div className="flex flex-col items-end">
                     <h2 className="text-lg text-[#033372] font-bold">Universal Auto Supply <span className='text-[#FFBD59]'>and</span> Bolt Center</h2>
-                    <h3 className="text-2xl font-bold pl-4 pr-4 pt-1 pb-1 rounded-2xl" style={{ backgroundColor: '#033372', color: 'white', }}>{currentDate} | {currentTime}</h3>
+                    <h3 className="text-2xl font-bold pl-4 pr-4 pt-1 pb-1 rounded-2xl" style={{ backgroundColor: '#033372', color: 'white', }}>
+                        {currentDate} | {currentTime}
+                    </h3>
                 </div>
             </div>
 
-            {/* Centered Title Section Below */}
             <div className="flex w-full">
-                <div className="pl-2 pr-2 pt-1 pb-1 rounded-2xl" style={{ backgroundColor: '#033372' }}> {/* Custom background color */}
+                <div className="pl-2 pr-2 pt-1 pb-1 rounded-2xl" style={{ backgroundColor: '#033372' }}>
                     <h1 className="font-bold text-[#FFBD59] text-2xl">{title}</h1>
                 </div>
             </div>

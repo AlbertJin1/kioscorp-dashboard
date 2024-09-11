@@ -1,11 +1,9 @@
-// src/components/Dashboard.js
 import React from 'react';
 import SalesOverview from './SalesOverview';
 import ProfitOverview from './ProfitOverview';
 import InventoryOverview from './InventoryOverview';
 import SalesStatistics from './SalesStatistics';
 import TopSellingItems from './TopSellingItems';
-
 
 const Dashboard = () => {
     return (

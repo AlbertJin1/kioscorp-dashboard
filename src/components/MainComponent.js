@@ -1,11 +1,11 @@
-// src/components/MainComponent.js
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import Dashboard from './Dashboard';
 import SalesManagement from './SalesManagement';
-import Menu from './Menu'; // Import the Menu component
+import Menu from './Menu';
 import Inventory from './Inventory';
+import OrderHistory from './OrderHistory';
 
 const MainComponent = () => {
     const [currentPage, setCurrentPage] = useState('dashboard'); // Default to Dashboard
@@ -20,6 +20,8 @@ const MainComponent = () => {
                 return <Inventory />;
             case 'sales-management':
                 return <SalesManagement />;
+                case 'order-history':
+                return <OrderHistory />;
             default:
                 return <Dashboard />; // Fallback to Dashboard
         }
