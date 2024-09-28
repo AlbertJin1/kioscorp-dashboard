@@ -3,7 +3,7 @@ import logo from '../img/logo/dashboard.png'; // Adjust the path as needed
 
 const TopBar = ({ currentPage }) => {
     const [currentTime, setCurrentTime] = useState('');
-    const [loggedInUser, setLoggedInUser] = useState(null); // Placeholder for logged user logic
+    const [loggedInUser, setLoggedInUser] = useState({ firstName: '', lastName: '' });
     const [currentDate, setCurrentDate] = useState('');
 
     useEffect(() => {
@@ -21,13 +21,10 @@ const TopBar = ({ currentPage }) => {
     }, []);
 
     useEffect(() => {
-        // Replace with actual user fetching logic
-        const user = { name: 'John Doe' }; // Example user
-        if (user) {
-            setLoggedInUser(user);
-        } else {
-            console.error('No logged-in user');
-        }
+        // Fetch user's first and last name from localStorage
+        const firstName = localStorage.getItem('firstName') || 'Guest'; // Default to Guest if not found
+        const lastName = localStorage.getItem('lastName') || ''; // Default to empty string
+        setLoggedInUser({ firstName, lastName }); // Set the logged-in user
     }, []);
 
     let title = '';
@@ -60,7 +57,7 @@ const TopBar = ({ currentPage }) => {
                 <div className="flex items-start">
                     <img src={logo} alt="Dashboard Icon" className="h-16 mr-4" />
                     <div className="flex flex-col">
-                        <h1 className="text-2xl font-bold">Welcome, {loggedInUser ? loggedInUser.name : 'Guest'}</h1>
+                        <h1 className="text-2xl font-bold">Welcome, {loggedInUser.firstName} {loggedInUser.lastName}</h1>
                         <h2 className="text-lg">Inventory Management System</h2>
                     </div>
                 </div>

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Loader from './Loader'; // Import the Loader component
 
 // Sample data for both categories
 const inventoryData = {
@@ -31,7 +32,19 @@ const inventoryData = {
 const Inventory = () => {
     const [selectedCategory, setSelectedCategory] = useState('autoSupply');
     const [currentPage, setCurrentPage] = useState(1);
+    const [loading, setLoading] = useState(true); // State for loading
     const rowsPerPage = 14;
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true); // Set loading to true
+            // Simulate fetching data with a timeout
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            setLoading(false); // Set loading to false after fetching
+        };
+
+        fetchData();
+    }, [selectedCategory]); // Fetch data when the selected category changes
 
     const handleCategoryChange = (category) => {
         setSelectedCategory(category);
@@ -54,6 +67,10 @@ const Inventory = () => {
     };
 
     const visibleData = getVisibleData();
+
+    if (loading) {
+        return <Loader />; // Show loader while loading
+    }
 
     return (
         <div className="p-4">

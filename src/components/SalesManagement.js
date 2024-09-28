@@ -1,10 +1,28 @@
-import React from 'react';
-import SalesGraph from './SalesGraph'; 
+import React, { useState, useEffect } from 'react';
+import Loader from './Loader'; // Import the Loader component
+import SalesGraph from './SalesGraph';
 import RecentOrders from './RecentOrders';
 import HighDemandItems from './HighDemandItems';
 import LowDemandItems from './LowDemandItems';
 
 const SalesManagement = () => {
+    const [loading, setLoading] = useState(true); // State for loading
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true); // Set loading to true
+            // Simulate an API call with a timeout
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulated delay
+            setLoading(false); // Set loading to false after data is "fetched"
+        };
+
+        fetchData();
+    }, []); // Runs only once when the component mounts
+
+    if (loading) {
+        return <Loader />; // Show loader while loading
+    }
+
     return (
         <div className="h-screen flex flex-col gap-4">
             {/* Container for Sales Graph and Recent Orders */}

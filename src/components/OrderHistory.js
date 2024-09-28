@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import Loader from './Loader'; // Import the Loader component
 
 const OrderHistory = () => {
     const [orderData, setOrderData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [filter, setFilter] = useState('thisYear'); // Default filter
+    const [loading, setLoading] = useState(true); // State for loading
     const rowsPerPage = 14;
 
     // Fetch data from the backend based on filter
     useEffect(() => {
         const fetchOrders = async () => {
+            setLoading(true); // Set loading to true before fetching
             try {
                 const response = await fetch(`/api/orders?filter=${filter}`);
                 const data = await response.json();
                 setOrderData(data);
             } catch (error) {
                 console.error('Error fetching order history:', error);
+            } finally {
+                setLoading(false); // Set loading to false after fetching
             }
         };
         fetchOrders();
@@ -41,6 +46,10 @@ const OrderHistory = () => {
     };
 
     const visibleData = getVisibleData();
+
+    if (loading) {
+        return <Loader />; // Show loader while loading
+    }
 
     return (
         <div className="p-4">

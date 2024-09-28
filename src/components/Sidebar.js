@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faBoxesStacked, faWarehouse } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faBoxesStacked, faWarehouse, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { MdDashboard, MdManageHistory } from "react-icons/md";
 import { TiHome } from "react-icons/ti";
 import { IoBarChart } from "react-icons/io5";
 import logo from '../img/logo/KIOSCORP LOGO.png';
 
-const Sidebar = ({ setCurrentPage, currentPage }) => {
+const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => { // Accept handleLogout as a prop
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     const toggleCollapse = () => {
@@ -53,6 +53,13 @@ const Sidebar = ({ setCurrentPage, currentPage }) => {
                     </li>
                 ))}
             </ul>
+            <button
+                onClick={handleLogout} // Call handleLogout when the button is clicked
+                className="mt-auto flex items-center p-4 cursor-pointer bg-red-600 hover:bg-red-500 transition duration-200"
+            >
+                <FontAwesomeIcon icon={faSignOutAlt} className="text-white text-3xl" />
+                {!isCollapsed && <span className="ml-3 text-xl">Logout</span>}
+            </button>
         </div>
     );
 };

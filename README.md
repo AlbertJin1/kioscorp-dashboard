@@ -85,3 +85,4 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 - npm install stream-http https-browserify stream-browserify util browserify-zlib assert url
 - npm i -S react-web-vector-icons
 - npm install react-chartjs-2 chart.js
+- npm install react-loader-spinner

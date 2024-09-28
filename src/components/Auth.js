@@ -1,13 +1,12 @@
-// src/components/Auth.js
 import React, { useState } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import formBackgroundImage from '../img/Background/background.png'; // Import the background image
-import sideImage from '../img/Background/company.png'; // Import the left side image
+import formBackgroundImage from '../img/Background/background.png'; // Import background image
+import sideImage from '../img/Background/company.png'; // Import left side image
 
-const Auth = () => {
+const Auth = ({ setIsAuthenticated }) => {
     const [isLogin, setIsLogin] = useState(true);
     const [formData, setFormData] = useState({
         username: '',
@@ -29,14 +28,28 @@ const Auth = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = isLogin ? 'http://localhost:8000/api/login/' : 'http://localhost:8000/api/register/';
-        const regex = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\W_]).{8-15}$/;
+        const url = isLogin
+            ? 'http://localhost:8000/api/login/'  // Django login API
+            : 'http://localhost:8000/api/register/';  // Django registration API
+
+        if (!formData.username || !formData.password || (!isLogin && (!formData.firstName || !formData.lastName || !formData.gender || !formData.phoneNumber))) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Incomplete Form',
+                text: 'Please fill out all the required fields.',
+                timer: 2000,
+                showConfirmButton: false,
+            });
+            return;
+        }
+
+        const regex = /^.{8,}$/; // Password must be at least 8 characters long
 
         if (!regex.test(formData.password)) {
             Swal.fire({
                 icon: 'error',
                 title: 'Invalid Password',
-                text: 'Password must be 8-15 characters long and include at least one letter, one number, and one special character.',
+                text: 'Password must be at least 8 characters long.',
                 timer: 2000,
                 showConfirmButton: false,
             });
@@ -45,6 +58,23 @@ const Auth = () => {
 
         try {
             const response = await axios.post(url, formData);
+            if (isLogin) {
+                localStorage.setItem('token', response.data.token); // Store token
+                localStorage.setItem('firstName', response.data.firstName); // Store first name
+                localStorage.setItem('lastName', response.data.lastName); // Store last name
+                setIsAuthenticated(true); // Update authentication state
+            } else {
+                // Clear the fields after successful registration
+                setFormData({
+                    username: '',
+                    password: '',
+                    firstName: '',
+                    lastName: '',
+                    gender: '',
+                    phoneNumber: '',
+                });
+                setIsLogin(true); // Switch back to the login view
+            }
             Swal.fire({
                 icon: 'success',
                 title: isLogin ? 'Login Successful' : 'Registration Successful',
@@ -52,17 +82,17 @@ const Auth = () => {
                 timer: 2000,
                 showConfirmButton: false,
             });
-            // Redirect or update state as necessary
         } catch (error) {
             Swal.fire({
                 icon: 'error',
                 title: isLogin ? 'Login Failed' : 'Registration Failed',
-                text: error.response.data.error,
+                text: error.response?.data?.error || 'Something went wrong!',
                 timer: 2000,
                 showConfirmButton: false,
             });
         }
     };
+
 
     return (
         <div
@@ -78,9 +108,7 @@ const Auth = () => {
                 overflow: 'hidden',
             }}
         >
-            {/* Container with enhanced shadow */}
             <div className="flex bg-white rounded-lg shadow-2xl w-[1000px] h-[500px]">
-                {/* Left Side Image */}
                 <div
                     className="hidden md:block md:w-1/2 bg-cover bg-center rounded-l-lg"
                     style={{
@@ -89,8 +117,6 @@ const Auth = () => {
                         height: '500px',
                     }}
                 ></div>
-
-                {/* Login/Register Form */}
                 <div className="p-8 w-full md:w-1/2 flex flex-col justify-center">
                     <h2 className="text-2xl font-bold text-center mb-6">{isLogin ? 'Login' : 'Register'}</h2>
                     <form onSubmit={handleSubmit}>
