@@ -1,22 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import formBackgroundImage from '../img/Background/background.png'; // Import background image
-import sideImage from '../img/Background/company.png'; // Import left side image
+import formBackgroundImage from '../img/Background/background.png';
+import sideImage from '../img/Background/company.png';
 
-const Auth = ({ setIsAuthenticated }) => {
+const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
     const [isLogin, setIsLogin] = useState(true);
+    const [isOwnerRegistration, setIsOwnerRegistration] = useState(false);
     const [formData, setFormData] = useState({
         username: '',
         password: '',
+        confirmPassword: '',
         firstName: '',
         lastName: '',
         gender: '',
         phoneNumber: '',
+        email: '',
+        secretPasskey: '', // For Owner registration
     });
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,24 +31,70 @@ const Auth = ({ setIsAuthenticated }) => {
         setShowPassword(!showPassword);
     };
 
+    const toggleConfirmPasswordVisibility = () => {
+        setShowConfirmPassword(!showConfirmPassword);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = isLogin
-            ? 'http://localhost:8000/api/login/'  // Django login API
-            : 'http://localhost:8000/api/register/';  // Django registration API
 
-        if (!formData.username || !formData.password || (!isLogin && (!formData.firstName || !formData.lastName || !formData.gender || !formData.phoneNumber))) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Incomplete Form',
-                text: 'Please fill out all the required fields.',
-                timer: 2000,
-                showConfirmButton: false,
-            });
-            return;
+        // Define the API endpoint based on the registration type
+        const url = isLogin
+            ? 'http://localhost:8000/api/login/'
+            : isOwnerRegistration
+                ? 'http://localhost:8000/api/register-owner/'  // Owner registration endpoint
+                : 'http://localhost:8000/api/register/';       // Regular registration endpoint
+
+        // Validation
+        if (isLogin) {
+            if (!formData.username || !formData.password) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Incomplete Form',
+                    text: 'Please fill out all the required fields.',
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+                return;
+            }
+        } else {
+            // Check for required fields and matching passwords
+            if (
+                !formData.username ||
+                !formData.password ||
+                !formData.firstName ||
+                !formData.lastName ||
+                !formData.gender ||
+                !formData.phoneNumber ||
+                !formData.email ||
+                (formData.password !== formData.confirmPassword) // Check for confirm password
+            ) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Incomplete Form',
+                    text: formData.password !== formData.confirmPassword
+                        ? 'Passwords do not match.'
+                        : 'Please fill out all the required fields.',
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+                return;
+            }
+
+            // Phone number validation (11 digits)
+            if (formData.phoneNumber.length !== 11) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Phone Number',
+                    text: 'Phone number must be exactly 11 digits long.',
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+                return;
+            }
         }
 
-        const regex = /^.{8,}$/; // Password must be at least 8 characters long
+        const regex = /^.{8,}$/;
 
         if (!regex.test(formData.password)) {
             Swal.fire({
@@ -57,23 +108,45 @@ const Auth = ({ setIsAuthenticated }) => {
         }
 
         try {
-            const response = await axios.post(url, formData);
+            const response = await axios.post(url, {
+                username: formData.username,
+                email: !isLogin ? formData.email : undefined,
+                password: formData.password,
+                firstName: !isLogin ? formData.firstName : undefined,
+                lastName: !isLogin ? formData.lastName : undefined,
+                gender: !isLogin ? formData.gender : undefined,
+                phoneNumber: !isLogin ? formData.phoneNumber : undefined,
+                secretPasskey: isOwnerRegistration ? formData.secretPasskey : undefined, // Include passkey only for owner registration
+            });
+
             if (isLogin) {
-                localStorage.setItem('token', response.data.token); // Store token
-                localStorage.setItem('firstName', response.data.firstName); // Store first name
-                localStorage.setItem('lastName', response.data.lastName); // Store last name
-                setIsAuthenticated(true); // Update authentication state
+                localStorage.setItem('token', response.data.token);
+                localStorage.setItem('firstName', response.data.firstName);
+                localStorage.setItem('lastName', response.data.lastName);
+                localStorage.setItem('email', response.data.email);
+                localStorage.setItem('gender', response.data.gender);
+                localStorage.setItem('phoneNumber', response.data.phoneNumber);
+                localStorage.setItem('role', response.data.role); // Store role in localStorage
+                setIsAuthenticated(true);
+                setLoggedInUser({
+                    firstName: response.data.firstName,
+                    lastName: response.data.lastName,
+                    phoneNumber: response.data.phoneNumber,
+                    role: response.data.role,
+                });
             } else {
-                // Clear the fields after successful registration
                 setFormData({
                     username: '',
                     password: '',
+                    confirmPassword: '',
                     firstName: '',
                     lastName: '',
                     gender: '',
                     phoneNumber: '',
+                    email: '',
+                    secretPasskey: '', // Clear secret passkey after registration
                 });
-                setIsLogin(true); // Switch back to the login view
+                setIsLogin(true);
             }
             Swal.fire({
                 icon: 'success',
@@ -93,6 +166,13 @@ const Auth = ({ setIsAuthenticated }) => {
         }
     };
 
+    // Use effect to check authentication on mount
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setIsAuthenticated(false); // If no token, user is not authenticated
+        }
+    }, [setIsAuthenticated]); // Include setIsAuthenticated in the dependency array
 
     return (
         <div
@@ -108,17 +188,19 @@ const Auth = ({ setIsAuthenticated }) => {
                 overflow: 'hidden',
             }}
         >
-            <div className="flex bg-white rounded-lg shadow-2xl w-[1000px] h-[500px]">
+            <div className="flex bg-white rounded-lg shadow-2xl w-[1080px] h-[620px]">
                 <div
                     className="hidden md:block md:w-1/2 bg-cover bg-center rounded-l-lg"
                     style={{
                         backgroundImage: `url(${sideImage})`,
-                        width: '500px',
-                        height: '500px',
+                        width: '725px',
+                        height: '620px',
                     }}
                 ></div>
                 <div className="p-8 w-full md:w-1/2 flex flex-col justify-center">
-                    <h2 className="text-2xl font-bold text-center mb-6">{isLogin ? 'Login' : 'Register'}</h2>
+                    <h2 className="text-2xl font-bold text-center mb-6">
+                        {isLogin ? 'Login' : isOwnerRegistration ? 'Register as Owner' : 'Register'}
+                    </h2>
                     <form onSubmit={handleSubmit}>
                         {isLogin ? (
                             <>
@@ -159,7 +241,16 @@ const Auth = ({ setIsAuthenticated }) => {
                                     value={formData.username}
                                     onChange={handleChange}
                                     required
-                                    className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
+                                />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
                                 />
                                 <div className="relative mb-4">
                                     <input
@@ -179,6 +270,24 @@ const Auth = ({ setIsAuthenticated }) => {
                                         <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                                     </button>
                                 </div>
+                                <div className="relative mb-4">
+                                    <input
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        name="confirmPassword"
+                                        placeholder="Confirm Password"
+                                        value={formData.confirmPassword}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={toggleConfirmPasswordVisibility}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none"
+                                    >
+                                        <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
+                                    </button>
+                                </div>
                                 <input
                                     type="text"
                                     name="firstName"
@@ -186,7 +295,7 @@ const Auth = ({ setIsAuthenticated }) => {
                                     value={formData.firstName}
                                     onChange={handleChange}
                                     required
-                                    className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                                 <input
                                     type="text"
@@ -195,18 +304,18 @@ const Auth = ({ setIsAuthenticated }) => {
                                     value={formData.lastName}
                                     onChange={handleChange}
                                     required
-                                    className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                                 <select
                                     name="gender"
                                     value={formData.gender}
                                     onChange={handleChange}
                                     required
-                                    className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
+                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
                                 >
-                                    <option value="">Select Gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
+                                    <option value="" disabled>Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
                                 </select>
                                 <input
                                     type="text"
@@ -215,23 +324,61 @@ const Auth = ({ setIsAuthenticated }) => {
                                     value={formData.phoneNumber}
                                     onChange={handleChange}
                                     required
-                                    className="w-full p-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
+                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
                                 />
+                                {isOwnerRegistration && (
+                                    <input
+                                        type="text"
+                                        name="secretPasskey"
+                                        placeholder="Secret Passkey"
+                                        value={formData.secretPasskey}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
+                                    />
+                                )}
                             </div>
                         )}
                         <button
                             type="submit"
-                            className="w-full mt-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200"
+                            className="w-full mt-4 p-2 text-white rounded hover:bg-blue-600 transition duration-200 text-xl font-semibold"
+                            style={{ backgroundColor: '#0f3a87' }} // Set background color to #0f3a87
                         >
-                            {isLogin ? 'Login' : 'Register'}
+                            {isLogin ? 'Login' : isOwnerRegistration ? 'Register as Owner' : 'Register'}
                         </button>
                         <p
                             className="mt-4 text-center cursor-pointer text-blue-500 hover:underline"
-                            onClick={() => setIsLogin(!isLogin)}
+                            style={{ color: '#0f3a87' }}
+                            onClick={() => {
+                                if (isLogin) {
+                                    setIsLogin(false);
+                                    setIsOwnerRegistration(false);
+                                } else if (isOwnerRegistration) {
+                                    setIsOwnerRegistration(false);
+                                } else {
+                                    setIsOwnerRegistration(true);
+                                }
+                            }}
                         >
                             {isLogin
                                 ? "Don't have an account? Register"
-                                : 'Already have an account? Login'}
+                                : isOwnerRegistration
+                                    ? 'Back to Registration'
+                                    : 'Register as Owner'}
+                        </p>
+                        <p
+                            className="mt-4 text-center cursor-pointer text-blue-500 hover:underline"
+                            style={{ color: '#0f3a87' }}
+                            onClick={() => {
+                                if (!isLogin) {
+                                    setIsLogin(true);
+                                    setIsOwnerRegistration(false);
+                                }
+                            }}
+                        >
+                            {!isLogin && !isOwnerRegistration
+                                ? 'Already have an account? Login'
+                                : null}
                         </p>
                     </form>
                 </div>

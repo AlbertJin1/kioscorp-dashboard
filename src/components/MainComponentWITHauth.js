@@ -11,17 +11,27 @@ import Auth from './Auth'; // Import Auth component
 const MainComponent = () => {
     const [currentPage, setCurrentPage] = useState('dashboard'); // Default to Dashboard
     const [isAuthenticated, setIsAuthenticated] = useState(false); // State for authentication
-    const [loggedInUser, setLoggedInUser] = useState({ firstName: '', lastName: '' }); // State for logged-in user
+    const [loggedInUser, setLoggedInUser] = useState({
+        firstName: '',
+        lastName: '',
+        phoneNumber: '',
+        role: '' // Add role to loggedInUser state
+    });
 
     // Check for token in localStorage on component mount
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
             setIsAuthenticated(true); // User is authenticated if token is present
-            // Fetch user info if needed (optional)
+
+            // Retrieve user info from localStorage
             const firstName = localStorage.getItem('firstName') || 'Guest';
             const lastName = localStorage.getItem('lastName') || '';
-            setLoggedInUser({ firstName, lastName }); // Set the logged-in user
+            const phoneNumber = localStorage.getItem('phoneNumber') || '';
+            const role = localStorage.getItem('role') || ''; // Retrieve role
+
+            // Set the logged-in user
+            setLoggedInUser({ firstName, lastName, phoneNumber, role });
         }
     }, []); // Empty dependency array ensures this runs only once
 
@@ -29,19 +39,21 @@ const MainComponent = () => {
         localStorage.removeItem('token'); // Remove token from localStorage
         localStorage.removeItem('firstName'); // Remove first name
         localStorage.removeItem('lastName'); // Remove last name
+        localStorage.removeItem('phoneNumber'); // Remove phone number
+        localStorage.removeItem('role'); // Remove role
         setIsAuthenticated(false); // Set authentication state to false
         setCurrentPage('dashboard'); // Optionally redirect to the dashboard or login
-        setLoggedInUser({ firstName: '', lastName: '' }); // Clear user state
+        setLoggedInUser({ firstName: '', lastName: '', phoneNumber: '', role: '' }); // Clear user state
     };
 
     const renderPage = () => {
         if (!isAuthenticated) {
-            return <Auth setIsAuthenticated={setIsAuthenticated} setLoggedInUser={setLoggedInUser} />; // Pass down setLoggedInUser
+            return <Auth setIsAuthenticated={setIsAuthenticated} setLoggedInUser={setLoggedInUser} />;
         }
 
         switch (currentPage) {
             case 'menu':
-                return <Menu />;
+                return <Menu setIsAuthenticated={setIsAuthenticated} loggedInUser={loggedInUser} />; // Pass down props
             case 'dashboard':
                 return <Dashboard />;
             case 'inventory':
@@ -61,7 +73,7 @@ const MainComponent = () => {
                 <Sidebar setCurrentPage={setCurrentPage} currentPage={currentPage} handleLogout={handleLogout} />
             )}
             <div className="flex flex-col flex-grow" style={{ backgroundColor: '#d7e1fc' }}>
-                {isAuthenticated && <TopBar currentPage={currentPage} loggedInUser={loggedInUser} />} {/* Pass loggedInUser to TopBar */}
+                {isAuthenticated && <TopBar currentPage={currentPage} loggedInUser={loggedInUser} />}
                 <div className="flex-grow p-4">
                     {renderPage()}
                 </div>

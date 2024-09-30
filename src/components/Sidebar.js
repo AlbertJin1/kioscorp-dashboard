@@ -5,6 +5,7 @@ import { MdDashboard, MdManageHistory } from "react-icons/md";
 import { TiHome } from "react-icons/ti";
 import { IoBarChart } from "react-icons/io5";
 import logo from '../img/logo/KIOSCORP LOGO.png';
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
 const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => { // Accept handleLogout as a prop
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -12,6 +13,28 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => { // Accept h
     const toggleCollapse = () => {
         setIsCollapsed(!isCollapsed);
     };
+
+    const confirmLogout = () => {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'You will be logged out of your account.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#0f3a87',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, log out!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Wait for a short duration before calling handleLogout
+                setTimeout(() => {
+                    handleLogout(); // Call the handleLogout function
+                    // Optionally redirect or perform other actions after logout
+                }, 1000); // Adjust the duration (in milliseconds) as needed
+            }
+        });
+    };
+
 
     return (
         <div
@@ -54,7 +77,7 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => { // Accept h
                 ))}
             </ul>
             <button
-                onClick={handleLogout} // Call handleLogout when the button is clicked
+                onClick={confirmLogout} // Call confirmLogout when the button is clicked
                 className="mt-auto flex items-center p-4 cursor-pointer bg-red-600 hover:bg-red-500 transition duration-200"
             >
                 <FontAwesomeIcon icon={faSignOutAlt} className="text-white text-3xl" />

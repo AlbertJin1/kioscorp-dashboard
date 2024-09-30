@@ -86,3 +86,6 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 - npm i -S react-web-vector-icons
 - npm install react-chartjs-2 chart.js
 - npm install react-loader-spinner
+- npm i react-image-crop
+- npm i react-easy-crop
+- npm install react-modal
