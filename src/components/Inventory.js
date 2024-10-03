@@ -20,6 +20,7 @@ const inventoryData = {
         { id: 14, itemNo: 'A003', name: 'Air Filter', variation: 'Standard', price: 8.5, totalStock: 300, inStock: 280, brand: 'FilterMaster', sold: 20 },
         { id: 15, itemNo: 'A003', name: 'Air Filter', variation: 'Standard', price: 8.5, totalStock: 300, inStock: 280, brand: 'FilterMaster', sold: 20 },
         { id: 16, itemNo: 'A003', name: 'Air Filter', variation: 'Standard', price: 8.5, totalStock: 300, inStock: 280, brand: 'FilterMaster', sold: 20 },
+        { id: 17, itemNo: 'A003', name: 'Air Filter', variation: 'Standard', price: 8.5, totalStock: 300, inStock: 280, brand: 'FilterMaster', sold: 20 },
     ],
     bolts: [
         { id: 100, itemNo: 'B001', name: 'Hex Bolt', variation: 'M8', price: 0.15, totalStock: 5000, inStock: 4700, brand: 'BoltMax', sold: 300 },
@@ -68,10 +69,6 @@ const Inventory = () => {
 
     const visibleData = getVisibleData();
 
-    if (loading) {
-        return <Loader />; // Show loader while loading
-    }
-
     return (
         <div className="p-4">
             {/* Category Tabs */}
@@ -107,7 +104,13 @@ const Inventory = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {visibleData.length > 0 ? (
+                        {loading ? (
+                            <tr>
+                                <td colSpan="8" className="text-center py-4 text-white">
+                                    <Loader /> {/* Show loader while loading */}
+                                </td>
+                            </tr>
+                        ) : visibleData.length > 0 ? (
                             visibleData.map((item, index) => (
                                 <tr
                                     key={`${selectedCategory}-${item.id}`} // Unique key using category and item id

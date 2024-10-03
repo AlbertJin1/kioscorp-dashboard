@@ -1,15 +1,16 @@
-// src/components/SalesStatistics.js
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import SalesBarChart from './SalesBarChart';
+import SalesLineChart from './SalesLineChart'; // Line Chart component
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartBar } from '@fortawesome/free-solid-svg-icons';
+import { faChartLine } from '@fortawesome/free-solid-svg-icons';
+import Loader from './Loader'; // Import the Loader component
 
 const SalesStatistics = () => {
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [filteredData, setFilteredData] = useState([]);
+    const [loading, setLoading] = useState(true); // Loading state
 
     // Sample data - replace with actual data from your API
     const data = useMemo(() => [
@@ -21,27 +22,31 @@ const SalesStatistics = () => {
         { name: '2024-06-01', sales: 2390, profit: 3800 },
         { name: '2024-07-01', sales: 3490, profit: 4300 },
         { name: '2024-07-02', sales: 3490, profit: 4300 },
-        { name: '2024-07-03', sales: 3490, profit: 4300 },
-        { name: '2024-07-04', sales: 3490, profit: 4300 },
-    ], []); // Memoized data
+        { name: '2024-07-03', sales: 999, profit: 7680 },
+        { name: '2024-07-04', sales: 366, profit: 456 },
+    ], []);
 
     // Function to apply the date filter
     const applyDateFilter = useCallback((start, end) => {
-        if (start && end) {
-            const startTime = start.getTime();
-            const endTime = end.getTime();
-            const newData = data.filter(item => {
-                const itemDate = new Date(item.name).getTime();
-                return itemDate >= startTime && itemDate <= endTime;
-            });
-            setFilteredData(newData);
-        }
+        setLoading(true); // Set loading to true when applying filter
+        setTimeout(() => {
+            if (start && end) {
+                const startTime = start.getTime();
+                const endTime = end.getTime();
+                const newData = data.filter(item => {
+                    const itemDate = new Date(item.name).getTime();
+                    return itemDate >= startTime && itemDate <= endTime;
+                });
+                setFilteredData(newData);
+                setLoading(false); // Set loading to false after filtering is done
+            }
+        }, 500); // Simulate delay for loading state
     }, [data]);
 
     // Set default dates on component mount
     useEffect(() => {
         const defaultStartDate = new Date();
-        defaultStartDate.setDate(defaultStartDate.getDate() - 90); // 90 days ago
+        defaultStartDate.setDate(defaultStartDate.getDate() - 120); // 120 days ago
         const defaultEndDate = new Date(); // today
 
         setStartDate(defaultStartDate);
@@ -50,9 +55,9 @@ const SalesStatistics = () => {
     }, [applyDateFilter]);
 
     return (
-        <div className="bg-white shadow-md p-4 mb-4 rounded-lg flex-grow h-full">
+        <div className="bg-white shadow-md p-4 rounded-lg flex-grow h-full">
             <div className="flex items-center mb-4">
-                <FontAwesomeIcon icon={faChartBar} className="text-3xl mr-4 text-blue-500" />
+                <FontAwesomeIcon icon={faChartLine} className="text-3xl mr-4 text-blue-500" />
                 <h2 className="text-xl font-semibold">Sales Statistics</h2>
             </div>
             <div className="flex mb-4">
@@ -69,10 +74,6 @@ const SalesStatistics = () => {
                         endDate={endDate}
                         className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
                         placeholderText="Start Date"
-                        dayClassName={date => {
-                            const dateString = date.toISOString().split('T')[0];
-                            return data.some(item => item.name === dateString) ? 'bg-blue-100' : '';
-                        }}
                     />
                 </div>
                 <div className="flex flex-col w-full">
@@ -88,19 +89,22 @@ const SalesStatistics = () => {
                         endDate={endDate}
                         className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
                         placeholderText="End Date"
-                        dayClassName={date => {
-                            const dateString = date.toISOString().split('T')[0];
-                            return data.some(item => item.name === dateString) ? 'bg-blue-100' : '';
-                        }}
                     />
                 </div>
             </div>
-            {filteredData.length > 0 ? (
-                <div className="h-68"> {/* Increased height for chart area */}
-                    <SalesBarChart data={filteredData} />
+
+            {loading ? (
+                <div className="h-60 flex justify-center items-center">
+                    <Loader color="blue" /> {/* Display loader while loading */}
+                </div>
+            ) : filteredData.length > 0 ? (
+                <div className="h-60"> {/* Fixed height for chart area */}
+                    <SalesLineChart data={filteredData} />
                 </div>
             ) : (
-                <p className="text-gray-500">No data available for the selected date range.</p>
+                <p className="text-gray-500 text-center font-semibold text-xl">
+                    No data available for the selected date range.
+                </p>
             )}
         </div>
     );

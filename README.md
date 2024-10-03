@@ -89,3 +89,10 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 - npm i react-image-crop
 - npm i react-easy-crop
 - npm install react-modal
+- npm i react-spinners
+- npm i moment
+- npm install xlsx
+- npm install xlsx-style
+- npm install exceljs file-saver
+- npm install react-phone-number-input
+- npm i react-phone-input-component

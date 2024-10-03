@@ -114,73 +114,84 @@ const MyProfile = ({ setIsAuthenticated }) => {
                 </button>
             </div>
 
-            {/* First Name */}
-            <div className="mb-4">
-                <label className="block text-sm font-medium">First Name</label>
-                <input
-                    type="text"
-                    value={profileData.firstName}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
-                    className={`w-full p-2 rounded-md text-white border bg-blue-700 ${editing ? 'border-green-500' : 'border-transparent'}`}
-                    readOnly={!editing}
-                />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex justify-center">
+                    <img
+                        src="https://via.placeholder.com/150" // Replace with actual profile picture URL
+                        alt="Profile"
+                        className="w-64 h-64 rounded object-cover"
+                    />
+                </div>
+                <div className="col-span-2">
+                    {/* First Name */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium">First Name</label>
+                        <input
+                            type="text"
+                            value={profileData.firstName}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
+                            className={`w-full p-2 rounded-md text-white border bg-blue-700 ${editing ? 'border-green-500' : 'border-transparent'}`}
+                            readOnly={!editing}
+                        />
+                    </div>
 
-            {/* Last Name */}
-            <div className="mb-4">
-                <label className="block text-sm font-medium">Last Name</label>
-                <input
-                    type="text"
-                    value={profileData.lastName}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
-                    className={`w-full p-2 rounded-md text-white border bg-blue-700 ${editing ? 'border-green-500' : 'border-transparent'}`}
-                    readOnly={!editing}
-                />
-            </div>
+                    {/* Last Name */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium">Last Name</label>
+                        <input
+                            type="text"
+                            value={profileData.lastName}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
+                            className={`w-full p-2 rounded-md text-white border bg-blue-700 ${editing ? 'border-green-500' : 'border-transparent'}`}
+                            readOnly={!editing}
+                        />
+                    </div>
 
-            {/* Email */}
-            <div className="mb-4">
-                <label className="block text-sm font-medium">Email</label>
-                <input
-                    type="email"
-                    value={profileData.email}
-                    className="w-full p-2 rounded-md text-white border border-transparent bg-blue-700"
-                    readOnly
-                />
-            </div>
+                    {/* Email */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium">Email</label>
+                        <input
+                            type="email"
+                            value={profileData.email}
+                            className="w-full p-2 rounded-md text-white border border-transparent bg-blue-700"
+                            readOnly
+                        />
+                    </div>
 
-            {/* Gender */}
-            <div className="mb-4">
-                <label className="block text-sm font-medium">Gender</label>
-                <input
-                    type="text"
-                    value={profileData.gender}
-                    className="w-full p-2 rounded-md text-white border border-transparent bg-blue-700"
-                    readOnly
-                />
-            </div>
+                    {/* Gender */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium">Gender</label>
+                        <input
+                            type="text"
+                            value={profileData.gender}
+                            className="w-full p-2 rounded-md text-white border border-transparent bg-blue-700"
+                            readOnly
+                        />
+                    </div>
 
-            {/* Phone Number */}
-            <div className="mb-4">
-                <label className="block text-sm font-medium">Phone Number</label>
-                <input
-                    type="text"
-                    value={profileData.phoneNumber}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                    className={`w-full p-2 rounded-md text-white border bg-blue-700 ${editing ? 'border-green-500' : 'border-transparent'}`}
-                    readOnly={!editing}
-                />
-            </div>
+                    {/* Phone Number */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium">Phone Number</label>
+                        <input
+                            type="text"
+                            value={profileData.phoneNumber}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                            className={`w-full p-2 rounded-md text-white border bg-blue-700 ${editing ? 'border-green-500' : 'border-transparent'}`}
+                            readOnly={!editing}
+                        />
+                    </div>
 
-            {/* Role */}
-            <div className="mb-4">
-                <label className="block text-sm font-medium">Role</label>
-                <input
-                    type="text"
-                    value={profileData.role ? profileData.role.charAt(0).toUpperCase() + profileData.role.slice(1) : 'N/A'}
-                    className="w-full p-2 rounded-md text-white border border-transparent bg-blue-700"
-                    readOnly
-                />
+                    {/* Role */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium">Role</label>
+                        <input
+                            type="text"
+                            value={profileData.role ? profileData.role.charAt(0).toUpperCase() + profileData.role.slice(1) : 'N/A'}
+                            className="w-full p-2 rounded-md text-white border border-transparent bg-blue-700"
+                            readOnly
+                        />
+                    </div>
+                </div>
             </div>
 
             {editing && (

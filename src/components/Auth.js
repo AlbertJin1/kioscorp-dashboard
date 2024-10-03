@@ -22,6 +22,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
     });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showPasskey, setShowPasskey] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -33,6 +34,10 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
 
     const toggleConfirmPasswordVisibility = () => {
         setShowConfirmPassword(!showConfirmPassword);
+    };
+
+    const togglePasskeyVisibility = () => {
+        setShowPasskey(!showPasskey);
     };
 
     const handleSubmit = async (e) => {
@@ -188,13 +193,13 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                 overflow: 'hidden',
             }}
         >
-            <div className="flex bg-white rounded-lg shadow-2xl w-[1080px] h-[620px]">
+            <div className="flex bg-white rounded-lg shadow-2xl w-[950px] h-[500px]">
                 <div
                     className="hidden md:block md:w-1/2 bg-cover bg-center rounded-l-lg"
                     style={{
                         backgroundImage: `url(${sideImage})`,
-                        width: '725px',
-                        height: '620px',
+                        width: '550px',
+                        height: '500px',
                     }}
                 ></div>
                 <div className="p-8 w-full md:w-1/2 flex flex-col justify-center">
@@ -241,7 +246,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                                     value={formData.username}
                                     onChange={handleChange}
                                     required
-                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
+                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                                 <input
                                     type="email"
@@ -250,9 +255,9 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     required
-                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
+                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
-                                <div className="relative mb-4">
+                                <div className="relative">
                                     <input
                                         type={showPassword ? 'text' : 'password'}
                                         name="password"
@@ -270,7 +275,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                                         <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                                     </button>
                                 </div>
-                                <div className="relative mb-4">
+                                <div className="relative">
                                     <input
                                         type={showConfirmPassword ? 'text' : 'password'}
                                         name="confirmPassword"
@@ -311,31 +316,49 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                                     value={formData.gender}
                                     onChange={handleChange}
                                     required
-                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
+                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <option value="" disabled>Select Gender</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
                                 </select>
                                 <input
-                                    type="text"
+                                    type="tel"
                                     name="phoneNumber"
-                                    placeholder="Phone Number"
+                                    placeholder="Phone Number (09xxxxxxxxx)"
                                     value={formData.phoneNumber}
                                     onChange={handleChange}
+                                    onKeyPress={(e) => {
+                                        if (!/[0-9]/.test(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
                                     required
-                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
+                                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    pattern="[0-9]{11}"
+                                    maxLength="11"
+                                    minLength="11"
+                                    inputMode="numeric"
                                 />
                                 {isOwnerRegistration && (
-                                    <input
-                                        type="text"
-                                        name="secretPasskey"
-                                        placeholder="Secret Passkey"
-                                        value={formData.secretPasskey}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 col-span-2"
-                                    />
+                                    <div className="relative col-span-2">
+                                        <input
+                                            type={showPasskey ? 'text' : 'password'}
+                                            name="secretPasskey"
+                                            placeholder="Secret Passkey"
+                                            value={formData.secretPasskey}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={togglePasskeyVisibility}
+                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none"
+                                        >
+                                            <FontAwesomeIcon icon={showPasskey ? faEyeSlash : faEye} />
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         )}

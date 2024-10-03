@@ -1,16 +1,18 @@
 import React from 'react';
-import { TailSpin } from 'react-loader-spinner'; // Import the spinner from the library
+import { FadeLoader } from 'react-spinners'; // Import the FadeLoader from react-spinners
 
 const Loader = () => {
     return (
         <div className="flex flex-col justify-center items-center h-full">
-            <TailSpin
-                height="80"
-                width="80"
+            <FadeLoader
+                height={20}
+                width={5}
+                radius={2}
+                margin={2}
                 color="#00BFFF"
-                ariaLabel="loading"
+                loading={true}
             />
-            <p className="mt-4 text-lg font-semibold text-gray-700">
+            <p className="mt-4 text-2xl font-semibold">
                 Please wait, loading data...
             </p>
         </div>

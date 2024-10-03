@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // Import axios for making HTTP requests
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import Dashboard from './Dashboard';
@@ -7,6 +8,7 @@ import Menu from './Menu';
 import Inventory from './Inventory';
 import OrderHistory from './OrderHistory';
 import Auth from './Auth'; // Import Auth component
+import Swal from 'sweetalert2';
 
 const MainComponent = () => {
     const [currentPage, setCurrentPage] = useState('dashboard'); // Default to Dashboard
@@ -35,15 +37,54 @@ const MainComponent = () => {
         }
     }, []); // Empty dependency array ensures this runs only once
 
-    const handleLogout = () => {
-        localStorage.removeItem('token'); // Remove token from localStorage
-        localStorage.removeItem('firstName'); // Remove first name
-        localStorage.removeItem('lastName'); // Remove last name
-        localStorage.removeItem('phoneNumber'); // Remove phone number
-        localStorage.removeItem('role'); // Remove role
-        setIsAuthenticated(false); // Set authentication state to false
-        setCurrentPage('dashboard'); // Optionally redirect to the dashboard or login
-        setLoggedInUser({ firstName: '', lastName: '', phoneNumber: '', role: '' }); // Clear user state
+    const handleLogout = async () => {
+        const token = localStorage.getItem('token'); // Get token from localStorage
+
+        try {
+            // Make an API call to log out the user with the token
+            await axios.post('http://localhost:8000/api/logout/', {}, {
+                headers: {
+                    Authorization: `Token ${token}` // Include the token in the headers
+                }
+            });
+
+            // Clear local storage
+            localStorage.removeItem('token');
+            localStorage.removeItem('firstName');
+            localStorage.removeItem('lastName');
+            localStorage.removeItem('phoneNumber');
+            localStorage.removeItem('role');
+
+            // Update state
+            setIsAuthenticated(false);
+            setCurrentPage('dashboard');
+            setLoggedInUser({ firstName: '', lastName: '', phoneNumber: '', role: '' });
+
+            // Show logout success alert
+            Swal.fire({
+                title: 'Logged Out!',
+                text: 'You have successfully logged out.',
+                icon: 'success',
+                showConfirmButton: false, // Hide the confirm button
+                timer: 2000, // Automatically close the alert after 2 seconds
+                timerProgressBar: true, // Optional: show a progress bar
+            });
+
+
+            // Delay for 2 seconds before refreshing the page
+            setTimeout(() => {
+                window.location.reload(); // Refresh the page to show Auth component
+            }, 2000);
+        } catch (error) {
+            console.error('Logout failed:', error);
+            // Optional: Handle logout failure (e.g., show an error alert)
+            Swal.fire({
+                title: 'Logout Failed!',
+                text: 'There was an error logging you out. Please try again.',
+                icon: 'error',
+                confirmButtonColor: '#0f3a87'
+            });
+        }
     };
 
     const renderPage = () => {
@@ -70,10 +111,10 @@ const MainComponent = () => {
     return (
         <div className="flex">
             {isAuthenticated && (
-                <Sidebar setCurrentPage={setCurrentPage} currentPage={currentPage} handleLogout={handleLogout} />
+                <Sidebar setCurrentPage={setCurrentPage} currentPage={currentPage} />
             )}
             <div className="flex flex-col flex-grow" style={{ backgroundColor: '#d7e1fc' }}>
-                {isAuthenticated && <TopBar currentPage={currentPage} loggedInUser={loggedInUser} />}
+                {isAuthenticated && <TopBar currentPage={currentPage} loggedInUser={loggedInUser} handleLogout={handleLogout} />}
                 <div className="flex-grow p-4">
                     {renderPage()}
                 </div>
