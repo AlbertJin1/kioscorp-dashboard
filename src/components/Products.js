@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlusCircle, FaTimes, FaSearch } from 'react-icons/fa';
+import { FaPlusCircle, FaTimes, FaSearch, FaFileExcel } from 'react-icons/fa';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import axios from 'axios';
 import Swal from 'sweetalert2'; // Import SweetAlert2
 import './styles.css'; // Import your CSS file for custom scrollbar styles
@@ -11,9 +13,21 @@ const Products = () => {
     const [products, setProducts] = useState([]);
     const [subCategories, setSubCategories] = useState([]);
     const [mainCategories, setMainCategories] = useState([]);
+    const [newProductName, setNewProductName] = useState('');
+    const [newProductType, setNewProductType] = useState('');
+    const [newProductSize, setNewProductSize] = useState('');
+    const [newProductBrand, setNewProductBrand] = useState('');
+    const [newProductColor, setNewProductColor] = useState('');
+    const [newProductQuantity, setNewProductQuantity] = useState('');
+    const [newProductPrice, setNewProductPrice] = useState('');
+    const [newProductDescription, setNewProductDescription] = useState('');
+    const [productImage, setProductImage] = useState(null);
+    const [modalOpenProduct, setModalOpenProduct] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [searchOpen, setSearchOpen] = useState(false);
+    const [searchQueryProduct, setSearchQueryProduct] = useState('');
+    const [searchOpenProduct, setSearchOpenProduct] = useState(false);
 
     // Modal State
     const [modalOpen, setModalOpen] = useState(false);
@@ -90,7 +104,8 @@ const Products = () => {
                             }
                         };
                         const res = await axios.get(`http://localhost:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, config);
-                        setProducts(res.data);
+                        const products = res.data.filter(product => product.sub_category === selectedSubCategory.sub_category_id);
+                        setProducts(products);
                     } else {
                         showError('You are not authorized to view products.');
                     }
@@ -152,7 +167,7 @@ const Products = () => {
 
     const handleProductClick = (product) => {
         // Unselect product if it's already selected
-        if (selectedProduct && product.id === selectedProduct.id) {
+        if (selectedProduct && selectedProduct.product_id === product.product_id) {
             setSelectedProduct(null);
         } else {
             setSelectedProduct(product);
@@ -231,8 +246,99 @@ const Products = () => {
             }
         }
     };
+
+    const handleProductImageChange = (e) => {
+        const image = e.target.files[0];
+        if (!image) return; // Ensure an image is selected
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const width = img.width;
+                const height = img.height;
+                const aspectRatio = width / height;
+                let newWidth, newHeight;
+                // Resize logic based on aspect ratio
+                if (aspectRatio > 1) {
+                    newWidth = height;
+                    newHeight = height;
+                } else {
+                    newWidth = width;
+                    newHeight = width;
+                }
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                ctx.drawImage(img, (width - newWidth) / 2, (height - newHeight) / 2, newWidth, newHeight, 0, 0, newWidth, newHeight);
+                // Convert canvas to blob
+                canvas.toBlob((blob) => {
+                    setProductImage(blob);
+                }, 'image/jpeg', 0.8);
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(image);
+    };
+
+    // Add handleAddProduct function
     const handleAddProduct = async () => {
-        // Add product logic here
+        try {
+            if (!selectedSubCategory) {
+                showError('Please select a subcategory before adding a product.');
+                return;
+            }
+
+            if (!newProductName || !newProductType || !newProductSize || !newProductBrand || !newProductColor || !newProductQuantity || !newProductPrice || !newProductDescription) {
+                showError('Please fill out all fields before adding a product.');
+                return;
+            }
+
+            const data = new FormData();
+            data.append('product_name', newProductName);
+            data.append('product_type', newProductType);
+            data.append('product_size', newProductSize);
+            data.append('product_brand', newProductBrand);
+            data.append('product_color', newProductColor);
+            data.append('product_quantity', newProductQuantity);
+            data.append('product_price', newProductPrice);
+            data.append('product_description', newProductDescription);
+            data.append('sub_category', selectedSubCategory.sub_category_id);
+
+            if (productImage) {
+                data.append('product_image', productImage, 'product-image.jpg');
+            }
+
+            const response = await fetch('http://localhost:8000/api/products/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Token ${localStorage.getItem('token')}`,
+                },
+                body: data
+            });
+
+            if (response.ok) {
+                // Handle successful product addition
+                setModalOpenProduct(false);
+                // Refetch products to include the newly added one
+                const res = await fetch(`http://localhost:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Token ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const products = await res.json();
+                setProducts(products);
+                return true;
+            } else {
+                console.error('Failed to add product:', response.statusText);
+                return false;
+            }
+        } catch (error) {
+            console.error('Error adding product:', error);
+            return false;
+        }
     };
 
     return (
@@ -275,15 +381,16 @@ const Products = () => {
                             }
                         }}>
                             {searchOpen ? (
-                                <FaTimes className="text-yellow-500 hover:text-yellow-300" size={32} />
+                                <FaTimes className="text-yellow-500 hover:text-yellow-300" size={32} title="Close Search Bar" />
                             ) : (
-                                <FaSearch className="text-yellow-500 hover:text-yellow-300" size={30} />
+                                <FaSearch className="text-yellow-500 hover:text-yellow-300" size={30} title="Open Search Bar" />
                             )}
                         </div>
 
                         <FaPlusCircle
                             className="text-yellow-500 cursor-pointer hover:text-yellow-300"
                             size={30}
+                            title="Add New Sub-Category"
                             onClick={() => {
                                 if (mainCategory) {
                                     setModalOpen(true);
@@ -302,13 +409,13 @@ const Products = () => {
                         <div className="categories-list">
                             {subCategories.filter(subCategory => subCategory.sub_category_name.toLowerCase().includes(searchQuery.toLowerCase())).length > 0 ? (
                                 subCategories.filter(subCategory => subCategory.sub_category_name.toLowerCase().includes(searchQuery.toLowerCase())).map((category, index) => (
-                                    <li
+                                    <div
                                         key={index}
                                         onClick={() => handleSubCategoryClick(category)}
                                         className={`rounded-full py-2 px-4 mb-1 hover:bg-yellow-500 hover:text-black cursor-pointer ${selectedSubCategory?.sub_category_id === category.sub_category_id ? 'bg-yellow-500 text-black' : 'bg-blue-700 text-white'}`}
                                     >
                                         {category.sub_category_name}
-                                    </li>
+                                    </div>
                                 ))
                             ) : (
                                 <p className="text-white text-center py-10">No categories found with the name "{searchQuery}"</p>
@@ -325,29 +432,57 @@ const Products = () => {
                 {/* Title Section */}
                 <div className="text-2xl text-yellow-500 p-4 bg-blue-900 rounded-tl-lg rounded-tr-lg flex justify-between items-center">
                     <h2>Products</h2>
-                    {/* Add Product Icon */}
-                    <FaPlusCircle
-                        className="text-yellow-500 cursor-pointer hover:text-yellow-300"
-                        size={30}
-                        onClick={() => {
-                            if (selectedSubCategory) {
-                                handleAddProduct();
-                            } else {
-                                showError('Please select a subcategory before adding a product.'); // Use SweetAlert2 for this alert
+                    {/* Search Input */}
+                    <div className={`flex items-center transition-all duration-500 ease-in-out ${searchOpenProduct ? 'w-1/2 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
+                        <div className="flex items-center w-full px-2">
+                            <input
+                                type="text"
+                                value={searchQueryProduct}
+                                onChange={(e) => setSearchQueryProduct(e.target.value)}
+                                className="p-1 rounded text-md text-black font-semibold w-full transition-width duration-500 ease-in-out"
+                                placeholder="Search"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-end gap-x-2">
+                        {/* Search Icon */}
+                        <div className="flex items-center cursor-pointer" onClick={() => {
+                            setSearchOpenProduct(!searchOpenProduct);
+                            if (searchOpenProduct) {
+                                setSearchQueryProduct('');
                             }
-                        }} // Open modal on click
-                    />
+                        }}>
+                            {searchOpenProduct ? (
+                                <FaTimes className="text-yellow-500 hover:text-yellow-300" size={32} title="Close Search Bar" />
+                            ) : (
+                                <FaSearch className="text-yellow-500 hover:text-yellow-300" size={30} title="Open Search Bar" />
+                            )}
+                        </div>
+                        {/* Add Product Icon */}
+                        <FaPlusCircle
+                            className="text-yellow-500 cursor-pointer hover:text-yellow-300"
+                            size={30}
+                            title="Add Product"
+                            onClick={() => {
+                                if (selectedSubCategory) {
+                                    setModalOpenProduct(true);
+                                } else {
+                                    showError('Please select a subcategory before adding a product.'); // Use SweetAlert2 for this alert
+                                }
+                            }} // Open modal on click
+                        />
+                    </div>
                 </div>
 
                 {/* Scrollable Products Section */}
                 <div className="flex-grow px-4 pb-2 bg-blue-900 rounded-br-lg rounded-bl-lg overflow-y-auto custom-scrollbar">
                     {products.length > 0 ? (
                         <ul>
-                            {products.map((product) => (
+                            {products.filter(product => product.product_name.toLowerCase().includes(searchQueryProduct.toLowerCase())).map((product) => (
                                 <li
-                                    key={product.id}
+                                    key={product.product_id}
                                     onClick={() => handleProductClick(product)}
-                                    className={`rounded-full py-2 px-4 mb-1 hover:bg-yellow-500 hover:text-black cursor-pointer ${selectedProduct?.id === product.id ? 'bg-yellow-500 text-black' : 'bg-blue-700 text-white'}`}
+                                    className={`rounded-full py-2 px-4 mb-1 hover:bg-yellow-500 hover:text-black cursor-pointer ${selectedProduct?.product_id === product.product_id ? 'bg-yellow-500 text-black' : 'bg-blue-700 text-white'}`}
                                 >
                                     {product.product_name}
                                 </li>
@@ -361,29 +496,222 @@ const Products = () => {
 
             {/* Right Product Detail Section */}
             <div className="w-full lg:w-1/2 flex flex-col">
+
                 {/* Title for Product Details */}
-                <div className="text-2xl text-yellow-500 p-4 bg-blue-900 rounded-tl-lg rounded-tr-lg">
+                <div className="text-2xl text-yellow-500 p-4 bg-blue-900 rounded-tl-lg rounded-tr-lg flex justify-between items-center">
                     <h2>Product Details</h2>
+                    <div className="flex items-center justify-end">
+                        <FaFileExcel
+                            className="text-yellow-500 cursor-pointer hover:text-yellow-300"
+                            size={30}
+                            title="Save to Spreadsheet"
+                            onClick={async () => {
+                                const token = localStorage.getItem('token');
+                                if (token) {
+                                    const config = {
+                                        headers: {
+                                            'Authorization': `Token ${token}`,
+                                        }
+                                    };
+                                    const res = await axios.get('http://localhost:8000/api/products/', config);
+                                    const products = res.data;
+
+                                    const workbook = new ExcelJS.Workbook();
+                                    const worksheet = workbook.addWorksheet('Product Details');
+
+                                    worksheet.addRow(['Product ID', 'Product Name', 'Product Type', 'Product Size', 'Product Quantity', 'Product Color', 'Product Brand', 'Product Price', 'Product Description']);
+
+                                    worksheet.columns = [
+                                        { header: 'Product ID', key: 'product_id', width: 15 },
+                                        { header: 'Product Name', key: 'product_name', width: 35 },
+                                        { header: 'Product Type', key: 'product_type', width: 20 },
+                                        { header: 'Product Size', key: 'product_size', width: 20 },
+                                        { header: 'Product Quantity', key: 'product_quantity', width: 25 },
+                                        { header: 'Product Color', key: 'product_color', width: 20 },
+                                        { header: 'Product Brand', key: 'product_brand', width: 20 },
+                                        { header: 'Product Price', key: 'product_price', width: 20 },
+                                        { header: 'Product Description', key: 'product_description', width: 30 },
+                                    ];
+
+                                    worksheet.addRow(['', '', '', '', '', '', '', '', '']);
+
+                                    if (products.length > 0) {
+                                        products.forEach((product) => {
+                                            worksheet.addRow([
+                                                product.product_id,
+                                                product.product_name,
+                                                product.product_type,
+                                                product.product_size,
+                                                product.product_quantity,
+                                                product.product_color,
+                                                product.product_brand,
+                                                product.product_price,
+                                                product.product_description,
+                                            ]);
+                                        });
+                                    }
+
+                                    // Apply styles to the header and increase its height
+                                    worksheet.getRow(1).height = 30;  // Set header row height to 25 (adjust as needed)
+                                    worksheet.getRow(1).eachCell(cell => {
+                                        cell.font = { bold: true };
+                                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                                        cell.fill = {
+                                            type: 'pattern',
+                                            pattern: 'solid',
+                                            fgColor: { argb: 'FFFFF0' },  // Light fill color
+                                        };
+                                    });
+
+                                    // Apply styles to data rows
+                                    worksheet.eachRow((row, rowNumber) => {
+                                        row.eachCell((cell) => {
+                                            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                                            cell.border = {
+                                                top: { style: 'thin' },
+                                                left: { style: 'thin' },
+                                                bottom: { style: 'thin' },
+                                                right: { style: 'thin' },
+                                            };
+                                        });
+
+                                        // Alternate row color
+                                        if (rowNumber % 2 === 0) {
+                                            row.eachCell((cell) => {
+                                                cell.fill = {
+                                                    type: 'pattern',
+                                                    pattern: 'solid',
+                                                    fgColor: { argb: 'FFEEEEEE' }, // Light grey for even rows
+                                                };
+                                            });
+                                        }
+                                    });
+
+                                    workbook.xlsx.writeBuffer().then((buffer) => {
+                                        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                                        saveAs(blob, 'products.xlsx');
+                                    });
+                                }
+                            }}
+                        />
+                    </div>
                 </div>
 
                 {/* Product Details */}
                 <div className="flex-grow px-4 pb-2 bg-blue-900 rounded-br-lg rounded-bl-lg overflow-y-auto custom-scrollbar">
                     {selectedProduct ? (
-                        <div>
-                            <h3 className="text-yellow-500">{selectedProduct.product_name}</h3>
-                            <p>{selectedProduct.description}</p>
-                            <p>Price: ${selectedProduct.price}</p>
+                        <div className="flex flex-wrap">
+                            {/* Left side: Image */}
+                            <div className="w-full md:w-1/2 mb-4">
+                                {selectedProduct.product_image && (
+                                    <img
+                                        src={`http://localhost:8000${selectedProduct.product_image}`}
+                                        alt="Product_Image"
+                                        className="border-2 border-black rounded w-64 h-64 object-cover mx-auto"
+                                    />
+                                )}
+                            </div>
+
+                            {/* Right side: Product Name, Type, and Size */}
+                            <div className="w-full md:w-1/2 px-4 mb-4 flex flex-col justify-center">
+                                <div className="flex flex-col gap-2 mb-4">
+                                    <label className="text-white">Product Name:</label>
+                                    <input
+                                        type="text"
+                                        value={selectedProduct.product_name}
+                                        readOnly
+                                        className="p-2 w-full rounded bg-gray-200 text-black"
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2 mb-4">
+                                    <label className="text-white">Product Type:</label>
+                                    <input
+                                        type="text"
+                                        value={selectedProduct.product_type}
+                                        readOnly
+                                        className="p-2 w-full rounded bg-gray-200 text-black"
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2 mb-4">
+                                    <label className="text-white">Product Size:</label>
+                                    <input
+                                        type="text"
+                                        value={selectedProduct.product_size}
+                                        readOnly
+                                        className="p-2 w-full rounded bg-gray-200 text-black"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Centered Columns for other fields */}
+                            <div className="w-full flex flex-wrap justify-center">
+                                <div className="w-full md:w-1/2 px-4 mb-4">
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-white">Product Quantity:</label>
+                                        <input
+                                            type="text"
+                                            value={selectedProduct.product_quantity}
+                                            readOnly
+                                            className="p-2 w-full rounded bg-gray-200 text-black"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="w-full md:w-1/2 px-4 mb-4">
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-white">Product Color:</label>
+                                        <input
+                                            type="text"
+                                            value={selectedProduct.product_color}
+                                            readOnly
+                                            className="p-2 w-full rounded bg-gray-200 text-black"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="w-full md:w-1/2 px-4 mb-4">
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-white">Product Brand:</label>
+                                        <input
+                                            type="text"
+                                            value={selectedProduct.product_brand}
+                                            readOnly
+                                            className="p-2 w-full rounded bg-gray-200 text-black"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="w-full md:w-1/2 px-4 mb-4">
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-white">Product Price:</label>
+                                        <input
+                                            type="text"
+                                            value={`₱${selectedProduct.product_price}`}
+                                            readOnly
+                                            className="p-2 w-full rounded bg-gray-200 text-black"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="w-full px-4 mb-4">
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-white">Product Description:</label>
+                                        <textarea
+                                            readOnly
+                                            value={selectedProduct.product_description}
+                                            className="p-2 w-full rounded bg-gray-200 text-black h-48 overflow-y-auto resize-none text-md font-semibold"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     ) : (
                         <p className="text-white text-center py-10">Select a product to see details</p>
                     )}
                 </div>
+
             </div>
 
             {/* Modal for Adding Subcategory */}
             {modalOpen && (
                 <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
-                    <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black">
+                    <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-1/2 lg:w-1/3 xl:w-1/4">
                         <h2 className="text-xl mb-4 text-yellow-500">Add Subcategory</h2>
                         <input
                             type="text"
@@ -407,6 +735,156 @@ const Products = () => {
                                 onClick={() => {
                                     setModalOpen(false);
                                     setNewSubCategoryName(''); // Clear the input when closing the modal
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal for Adding Product */}
+            {modalOpenProduct && (
+                <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
+                    <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-3/4 lg:w-2/3 xl:w-1/2">
+                        <h2 className="text-xl mb-4 text-yellow-500">Add Product</h2>
+                        <div className="flex flex-wrap -mx-4">
+                            <div className="w-full md:w-1/2 px-4 mb-4">
+                                <label className="block text-white mb-2">Product Name</label>
+                                <input
+                                    type="text"
+                                    value={newProductName}
+                                    onChange={(e) => setNewProductName(e.target.value)}
+                                    className="p-2 w-full rounded"
+                                    placeholder="Enter product name"
+                                />
+                            </div>
+                            <div className="w-full md:w-1/2 px-4 mb-4">
+                                <label className="block text-white mb-2">Product Type</label>
+                                <input
+                                    type="text"
+                                    value={newProductType}
+                                    onChange={(e) => setNewProductType(e.target.value)}
+                                    className="p-2 w-full rounded"
+                                    placeholder="Enter product type"
+                                />
+                            </div>
+                            <div className="w-full md:w-1/2 px-4 mb-4">
+                                <label className="block text-white mb-2">Product Size</label>
+                                <input
+                                    type="text"
+                                    value={newProductSize}
+                                    onChange={(e) => setNewProductSize(e.target.value)}
+                                    className="p-2 w-full rounded"
+                                    placeholder="Enter product size"
+                                />
+                            </div>
+                            <div className="w-full md:w-1/2 px-4 mb-4">
+                                <label className="block text-white mb-2">Product Brand</label>
+                                <input
+                                    type="text"
+                                    value={newProductBrand}
+                                    onChange={(e) => setNewProductBrand(e.target.value)}
+                                    className="p-2 w-full rounded"
+                                    placeholder="Enter product brand"
+                                />
+                            </div>
+                            <div className="w-full md:w-1/2 px-4 mb-4">
+                                <label className="block text-white mb-2">Product Color</label>
+                                <input
+                                    type="text"
+                                    value={newProductColor}
+                                    onChange={(e) => setNewProductColor(e.target.value)}
+                                    className="p-2 w-full rounded"
+                                    placeholder="Enter product color"
+                                />
+                            </div>
+                            <div className="w-full md:w-1/2 px-4 mb-4">
+                                <label className="block text-white mb-2">Product Quantity</label>
+                                <input
+                                    type="number"
+                                    value={newProductQuantity}
+                                    onChange={(e) => setNewProductQuantity(e.target.value)}
+                                    className="p-2 w-full rounded"
+                                    placeholder="Enter product quantity"
+                                />
+                            </div>
+                            <div className="w-full md:w-1/2 px-4 mb-4">
+                                <label className="block text-white mb-2">Product Price</label>
+                                <input
+                                    type="number"
+                                    value={newProductPrice}
+                                    onChange={(e) => setNewProductPrice(e.target.value)}
+                                    className="p-2 w-full rounded"
+                                    placeholder="Enter product price"
+                                />
+                            </div>
+                            <div className="w-full md:w-1/2 px-4 mb-4">
+                                <label className="block text-white mb-2">Product Description</label>
+                                <textarea
+                                    type="text"
+                                    value={newProductDescription}
+                                    onChange={(e) => setNewProductDescription(e.target.value)}
+                                    className="p-2 w-full rounded"
+                                    placeholder="Enter product description"
+                                />
+                            </div>
+                            <div className="w-full md:w-1/2 px-4 mb-4">
+                                <label className="block text-white mb-2">Product Image</label>
+                                <input
+                                    type="file"
+                                    onChange={(e) => handleProductImageChange(e)}
+                                    className="p-2 w-full rounded"
+                                />
+                            </div>
+                            {/* Display the image preview after selecting an image */}
+                            {productImage && (
+                                <div className="w-full px-4 mb-4">
+                                    <label className="block text-white mb-2">Image Preview</label>
+                                    <img
+                                        src={URL.createObjectURL(productImage)}
+                                        alt="Selected product"
+                                        className="rounded w-40 h-40 object-cover"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex justify-end">
+                            <button
+                                className="bg-yellow-500 text-black rounded px-4 py-2 mr-2"
+                                onClick={async () => {
+                                    const success = await handleAddProduct();
+                                    if (success) {
+                                        // Clear fields only if the product was added successfully
+                                        setNewProductName('');
+                                        setNewProductType('');
+                                        setNewProductSize('');
+                                        setNewProductBrand('');
+                                        setNewProductColor('');
+                                        setNewProductQuantity('');
+                                        setNewProductPrice('');
+                                        setNewProductDescription('');
+                                        setProductImage(null);
+                                    }
+                                }}
+                            >
+                                Add
+                            </button>
+                            <button
+                                className="bg-red-500 text-white rounded px-4 py-2"
+                                onClick={() => {
+                                    setModalOpenProduct(false);
+                                    // Reset fields when cancelling
+                                    setNewProductName('');
+                                    setNewProductType('');
+                                    setNewProductSize('');
+                                    setNewProductBrand('');
+                                    setNewProductColor('');
+                                    setNewProductQuantity('');
+                                    setNewProductPrice('');
+                                    setNewProductDescription('');
+                                    setProductImage(null);
                                 }}
                             >
                                 Cancel
