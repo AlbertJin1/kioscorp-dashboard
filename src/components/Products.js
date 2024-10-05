@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlusCircle, FaTimes, FaSearch, FaFileExcel } from 'react-icons/fa';
+import { FaPlusCircle, FaTimes, FaSearch, FaDownload } from 'react-icons/fa';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
@@ -104,8 +104,9 @@ const Products = () => {
                             }
                         };
                         const res = await axios.get(`http://localhost:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, config);
-                        const products = res.data.filter(product => product.sub_category === selectedSubCategory.sub_category_id);
-                        setProducts(products);
+                        const products = res.data;
+                        const filteredProducts = products.filter(product => product.sub_category === selectedSubCategory.sub_category_id);
+                        setProducts(filteredProducts);
                     } else {
                         showError('You are not authorized to view products.');
                     }
@@ -329,7 +330,8 @@ const Products = () => {
                     }
                 });
                 const products = await res.json();
-                setProducts(products);
+                const filteredProducts = products.filter(product => product.sub_category === selectedSubCategory.sub_category_id);
+                setProducts(filteredProducts);
                 return true;
             } else {
                 console.error('Failed to add product:', response.statusText);
@@ -501,7 +503,7 @@ const Products = () => {
                 <div className="text-2xl text-yellow-500 p-4 bg-blue-900 rounded-tl-lg rounded-tr-lg flex justify-between items-center">
                     <h2>Product Details</h2>
                     <div className="flex items-center justify-end">
-                        <FaFileExcel
+                        <FaDownload
                             className="text-yellow-500 cursor-pointer hover:text-yellow-300"
                             size={30}
                             title="Save to Spreadsheet"
