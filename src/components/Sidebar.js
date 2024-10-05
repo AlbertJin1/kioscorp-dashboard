@@ -6,7 +6,7 @@ import { TiHome } from "react-icons/ti";
 import { IoBarChart } from "react-icons/io5";
 import logo from '../img/logo/KIOSCORP LOGO.png';
 
-const Sidebar = ({ setCurrentPage, currentPage }) => { // Removed handleLogout prop
+const Sidebar = ({ setCurrentPage, currentPage }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     const toggleCollapse = () => {
@@ -36,11 +36,11 @@ const Sidebar = ({ setCurrentPage, currentPage }) => { // Removed handleLogout p
                     { icon: <FontAwesomeIcon icon={faBoxesStacked} className="text-3xl" style={{ color: 'white' }} />, label: 'Inventory', page: 'inventory' },
                     { icon: <IoBarChart className="text-white text-3xl" />, label: 'Sales', page: 'sales-management' },
                     { icon: <MdManageHistory className="text-white text-3xl" />, label: 'Order History', page: 'order-history' },
-                    { icon: <FontAwesomeIcon icon={faWarehouse} className="text-3xl" style={{ color: 'white' }} />, label: 'Add Stocks', page: 'add-stock' },
+                    { icon: <FontAwesomeIcon icon={faWarehouse} className="text-3xl" style={{ color: 'white' }} />, label: 'Products', page: 'product' },
                 ].map((item, index) => (
                     <li
                         key={index}
-                        className={`flex items-center p-4 cursor-pointer relative ${currentPage === item.page ? 'bg-[#022a5e]' : 'hover:bg-[#022a5e]'}`}
+                        className={`flex items-center p-4 cursor-pointer relative transition duration-300 ${currentPage === item.page ? 'bg-[#022a5e]' : 'hover:bg-[#022a5e]'}`}
                         onClick={() => setCurrentPage(item.page)}
                     >
                         <div className="flex justify-center items-center" style={{ minWidth: '2.5rem' }}>
@@ -48,7 +48,10 @@ const Sidebar = ({ setCurrentPage, currentPage }) => { // Removed handleLogout p
                         </div>
                         {!isCollapsed && <span className="ml-3 text-xl">{item.label}</span>}
                         {currentPage === item.page && (
-                            <div className="absolute right-0 top-0 h-full w-2 bg-white transition-all duration-300 transform scale-y-100" />
+                            <div
+                                className="absolute right-0 top-0 h-full w-2 bg-white transition-all duration-300 transform scale-y-100"
+                                style={{ transitionDelay: `${currentPage === item.page ? '0.1s' : '0s'}` }}
+                            />
                         )}
                     </li>
                 ))}

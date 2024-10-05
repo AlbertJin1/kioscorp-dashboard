@@ -261,11 +261,11 @@ const UserManagement = () => {
         const data = users.map((user) => ({
             id: user.id,
             username: user.username,
-            firstName: user.firstName,
-            lastName: user.lastName,
+            firstName: user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1),
+            lastName: user.lastName.charAt(0).toUpperCase() + user.lastName.slice(1),
             email: user.email,
-            gender: user.gender,
-            role: user.role,
+            gender: user.gender.charAt(0).toUpperCase() + user.gender.slice(1),
+            role: user.role.charAt(0).toUpperCase() + user.role.slice(1),
             phoneNumber: user.phoneNumber,
         }));
 
@@ -279,7 +279,7 @@ const UserManagement = () => {
             { header: 'Username', key: 'username', width: 20 },
             { header: 'First Name', key: 'firstName', width: 20 },
             { header: 'Last Name', key: 'lastName', width: 20 },
-            { header: 'Email', key: 'email', width: 30 },
+            { header: 'Email', key: 'email', width: 45 },
             { header: 'Gender', key: 'gender', width: 15 },
             { header: 'Role', key: 'role', width: 15 },
             { header: 'Phone Number', key: 'phoneNumber', width: 20 },

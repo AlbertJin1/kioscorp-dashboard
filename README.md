@@ -96,3 +96,6 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 - npm install exceljs file-saver
 - npm install react-phone-number-input
 - npm i react-phone-input-component
+- npm install react-select
+- npm i react-cropper
+- npm i react-bootstrap

@@ -47,8 +47,8 @@ const TopBar = ({ currentPage, handleLogout }) => {
         case 'order-history':
             title = 'Order History';
             break;
-        case 'add-stock':
-            title = 'Add Stock';
+        case 'product':
+            title = 'Products';
             break;
         default:
             title = 'Dashboard';

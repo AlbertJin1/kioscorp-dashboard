@@ -9,6 +9,7 @@ import Inventory from './Inventory';
 import OrderHistory from './OrderHistory';
 import Auth from './Auth'; // Import Auth component
 import Swal from 'sweetalert2';
+import Products from './Products';
 
 const MainComponent = () => {
     const [currentPage, setCurrentPage] = useState('dashboard'); // Default to Dashboard
@@ -103,19 +104,32 @@ const MainComponent = () => {
                 return <SalesManagement />;
             case 'order-history':
                 return <OrderHistory />;
+            case 'product':
+                return <Products />;
             default:
                 return <Dashboard />; // Fallback to Dashboard
         }
     };
 
     return (
-        <div className="flex">
+        <div className="flex h-screen">
             {isAuthenticated && (
-                <Sidebar setCurrentPage={setCurrentPage} currentPage={currentPage} />
+                <Sidebar
+                    className="fixed top-0 left-0 w-64 h-screen overflow-y-auto bg-white border-r"
+                    setCurrentPage={setCurrentPage}
+                    currentPage={currentPage}
+                />
             )}
-            <div className="flex flex-col flex-grow" style={{ backgroundColor: '#d7e1fc' }}>
-                {isAuthenticated && <TopBar currentPage={currentPage} loggedInUser={loggedInUser} handleLogout={handleLogout} />}
-                <div className="flex-grow p-4">
+            <div className="flex flex-col flex-grow h-screen bg-gray-100">
+                {isAuthenticated && (
+                    <TopBar
+                        className="fixed top-0 w-full h-16 bg-white border-b"
+                        currentPage={currentPage}
+                        loggedInUser={loggedInUser}
+                        handleLogout={handleLogout}
+                    />
+                )}
+                <div className="flex-grow p-4 overflow-y-auto">
                     {renderPage()}
                 </div>
             </div>
