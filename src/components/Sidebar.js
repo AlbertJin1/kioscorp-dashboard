@@ -5,8 +5,9 @@ import { MdDashboard, MdManageHistory } from "react-icons/md";
 import { TiHome } from "react-icons/ti";
 import { IoBarChart } from "react-icons/io5";
 import logo from '../img/logo/KIOSCORP LOGO.png';
+import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 
-const Sidebar = ({ setCurrentPage, currentPage }) => {
+const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     const toggleCollapse = () => {
@@ -56,6 +57,13 @@ const Sidebar = ({ setCurrentPage, currentPage }) => {
                     </li>
                 ))}
             </ul>
+            <button
+                onClick={handleLogout}
+                className="flex items-center p-4 bg-red-600 text-white hover:bg-red-500 transition duration-200 font-semibold"
+            >
+                <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" />
+                {!isCollapsed && <span>Logout</span>}
+            </button>
         </div>
     );
 };

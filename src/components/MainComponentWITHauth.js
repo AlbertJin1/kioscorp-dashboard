@@ -18,7 +18,7 @@ const MainComponent = () => {
         firstName: '',
         lastName: '',
         phoneNumber: '',
-        role: '' // Add role to loggedInUser state
+        role: '' // Add role to loggedInUser  state
     });
 
     // Check for token in localStorage on component mount
@@ -118,6 +118,7 @@ const MainComponent = () => {
                     className="fixed top-0 left-0 w-64 h-screen overflow-y-auto bg-white border-r"
                     setCurrentPage={setCurrentPage}
                     currentPage={currentPage}
+                    handleLogout={handleLogout}
                 />
             )}
             <div className="flex flex-col flex-grow h-screen bg-gray-100">
@@ -126,7 +127,6 @@ const MainComponent = () => {
                         className="fixed top-0 w-full h-16 bg-white border-b"
                         currentPage={currentPage}
                         loggedInUser={loggedInUser}
-                        handleLogout={handleLogout}
                     />
                 )}
                 <div className="flex-grow p-4 overflow-y-auto">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlusCircle, FaTimes, FaSearch, FaDownload } from 'react-icons/fa';
+import { FaPlusCircle, FaTimes, FaSearch, FaDownload, FaTrash } from 'react-icons/fa';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
@@ -332,6 +332,27 @@ const Products = () => {
                 const products = await res.json();
                 const filteredProducts = products.filter(product => product.sub_category === selectedSubCategory.sub_category_id);
                 setProducts(filteredProducts);
+                // Show success alert
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Product Added!',
+                    text: 'Product added successfully.',
+                    position: 'top-end',
+                    toast: true,
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                });
+                // Clear fields only if the product was added successfully
+                setNewProductName('');
+                setNewProductType('');
+                setNewProductSize('');
+                setNewProductBrand('');
+                setNewProductColor('');
+                setNewProductQuantity('');
+                setNewProductPrice('');
+                setNewProductDescription('');
+                setProductImage(null);
                 return true;
             } else {
                 console.error('Failed to add product:', response.statusText);
@@ -340,6 +361,58 @@ const Products = () => {
         } catch (error) {
             console.error('Error adding product:', error);
             return false;
+        }
+    };
+
+    const handleDeleteProduct = async (productId) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                const config = {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                    }
+                };
+                const response = await axios.delete(`http://localhost:8000/api/products/${productId}/`, config);
+                if (response.status === 204) {
+                    // Refetch products to exclude the deleted one
+                    const res = await fetch(`http://localhost:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Token ${localStorage.getItem('token')}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const products = await res.json();
+                    const filteredProducts = products.filter(product => product.sub_category === selectedSubCategory.sub_category_id);
+                    setProducts(filteredProducts);
+                    // Unselect the deleted product
+                    if (selectedProduct && selectedProduct.product_id === productId) {
+                        setSelectedProduct(null);
+                    }
+                    // Show success alert
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Product deleted successfully.',
+                        position: 'top-end',
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                    });
+                } else {
+                    showError('Error deleting product');
+                }
+            } else {
+                showError('You are not authorized to delete products.');
+            }
+        } catch (error) {
+            if (error.response.status === 403) {
+                showError('You do not have permission to delete products.');
+            } else {
+                showError('Error deleting product');
+            }
         }
     };
 
@@ -483,10 +556,14 @@ const Products = () => {
                             {products.filter(product => product.product_name.toLowerCase().includes(searchQueryProduct.toLowerCase())).map((product) => (
                                 <li
                                     key={product.product_id}
-                                    onClick={() => handleProductClick(product)}
                                     className={`rounded-full py-2 px-4 mb-1 hover:bg-yellow-500 hover:text-black cursor-pointer ${selectedProduct?.product_id === product.product_id ? 'bg-yellow-500 text-black' : 'bg-blue-700 text-white'}`}
+                                    onClick={(e) => {
+                                        if (e.target.tagName !== 'svg' && e.target.tagName !== 'path') {
+                                            handleProductClick(product);
+                                        }
+                                    }}
                                 >
-                                    {product.product_name}
+                                    <span>{product.product_name}</span>
                                 </li>
                             ))}
                         </ul>
@@ -502,7 +579,29 @@ const Products = () => {
                 {/* Title for Product Details */}
                 <div className="text-2xl text-yellow-500 p-4 bg-blue-900 rounded-tl-lg rounded-tr-lg flex justify-between items-center">
                     <h2>Product Details</h2>
-                    <div className="flex items-center justify-end">
+                    <div className="flex items-center justify-end gap-x-4">
+                        <FaTrash
+                            className={`text-red-500 cursor-pointer hover:text-red-700 ${selectedProduct ? '' : 'opacity-50 pointer-events-none'}`}
+                            size={30}
+                            title="Delete Product"
+                            onClick={() => {
+                                if (selectedProduct) {
+                                    Swal.fire({
+                                        title: 'Delete Product?',
+                                        text: `Are you sure you want to delete ${selectedProduct.product_name}?`,
+                                        icon: 'warning',
+                                        showCancelButton: true,
+                                        confirmButtonColor: '#3085d6',
+                                        cancelButtonColor: '#d33',
+                                        confirmButtonText: 'Yes, delete it!'
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            handleDeleteProduct(selectedProduct.product_id);
+                                        }
+                                    });
+                                }
+                            }}
+                        />
                         <FaDownload
                             className="text-yellow-500 cursor-pointer hover:text-yellow-300"
                             size={30}

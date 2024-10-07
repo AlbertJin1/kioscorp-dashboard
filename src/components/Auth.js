@@ -23,6 +23,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [showPasskey, setShowPasskey] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -43,6 +44,12 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (isSubmitting) {
+            return;
+        }
+
+        setIsSubmitting(true);
+
         // Define the API endpoint based on the registration type
         const url = isLogin
             ? 'http://localhost:8000/api/login/'
@@ -60,6 +67,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                     timer: 2000,
                     showConfirmButton: false,
                 });
+                setIsSubmitting(false);
                 return;
             }
         } else {
@@ -83,6 +91,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                     timer: 2000,
                     showConfirmButton: false,
                 });
+                setIsSubmitting(false);
                 return;
             }
 
@@ -95,6 +104,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                     timer: 2000,
                     showConfirmButton: false,
                 });
+                setIsSubmitting(false);
                 return;
             }
         }
@@ -109,6 +119,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                 timer: 2000,
                 showConfirmButton: false,
             });
+            setIsSubmitting(false);
             return;
         }
 
@@ -160,6 +171,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                 timer: 2000,
                 showConfirmButton: false,
             });
+            setIsSubmitting(false);
         } catch (error) {
             Swal.fire({
                 icon: 'error',
@@ -168,6 +180,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                 timer: 2000,
                 showConfirmButton: false,
             });
+            setIsSubmitting(false);
         }
     };
 
@@ -366,6 +379,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                             type="submit"
                             className="w-full mt-4 p-2 text-white rounded hover:bg-blue-600 transition duration-200 text-xl font-semibold"
                             style={{ backgroundColor: '#0f3a87' }} // Set background color to #0f3a87
+                            disabled={isSubmitting}
                         >
                             {isLogin ? 'Login' : isOwnerRegistration ? 'Register as Owner' : 'Register'}
                         </button>

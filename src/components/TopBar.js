@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import logo from '../img/logo/dashboard.png'; // Adjust the path as needed
-import Swal from 'sweetalert2'; // Import SweetAlert2
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 
-const TopBar = ({ currentPage, handleLogout }) => {
+const TopBar = ({ currentPage, loggedInUser }) => {
     const [currentTime, setCurrentTime] = useState('');
-    const [loggedInUser, setLoggedInUser] = useState({ firstName: '', lastName: '' });
     const [currentDate, setCurrentDate] = useState('');
 
     useEffect(() => {
@@ -21,13 +17,6 @@ const TopBar = ({ currentPage, handleLogout }) => {
         const intervalId = setInterval(updateTime, 60000); // Update every minute
 
         return () => clearInterval(intervalId);
-    }, []);
-
-    useEffect(() => {
-        // Fetch user's first and last name from localStorage
-        const firstName = localStorage.getItem('firstName') || 'Guest'; // Default to Guest if not found
-        const lastName = localStorage.getItem('lastName') || ''; // Default to empty string
-        setLoggedInUser({ firstName, lastName }); // Set the logged-in user
     }, []);
 
     let title = '';
@@ -54,25 +43,6 @@ const TopBar = ({ currentPage, handleLogout }) => {
             title = 'Dashboard';
     }
 
-    // Confirm Logout
-    const confirmLogout = () => {
-        console.log('Confirming logout...');
-        Swal.fire({
-            title: 'Are you sure?',
-            text: 'You will be logged out of your account.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#0f3a87',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, log out!',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                handleLogout(); // Call the handleLogout function directly
-            }
-        });
-    };
-
     return (
         <div className="bg-white shadow pt-2 pb-2 pl-4 pr-4 items-center">
             <div className="flex items-start w-full justify-between">
@@ -96,13 +66,6 @@ const TopBar = ({ currentPage, handleLogout }) => {
                 <div className="pl-2 pr-2 pt-1 pb-1 rounded-2xl" style={{ backgroundColor: '#033372' }}>
                     <h1 className="font-bold text-[#FFBD59] text-2xl">{title}</h1>
                 </div>
-                <button
-                    onClick={confirmLogout}
-                    className="flex items-center p-2 bg-red-600 text-white rounded-2xl hover:bg-red-500 transition duration-200 font-semibold"
-                >
-                    <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" />
-                    <span>Logout</span>
-                </button>
             </div>
         </div>
     );
