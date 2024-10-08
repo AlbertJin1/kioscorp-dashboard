@@ -107,6 +107,20 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                 setIsSubmitting(false);
                 return;
             }
+
+            // Email validation
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailRegex.test(formData.email)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Email',
+                    text: 'Please enter a valid email address.',
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+                setIsSubmitting(false);
+                return;
+            }
         }
 
         const regex = /^.{8,}$/;

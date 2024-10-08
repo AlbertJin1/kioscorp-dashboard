@@ -47,7 +47,7 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
                         <div className="flex justify-center items-center" style={{ minWidth: '2.5rem' }}>
                             {item.icon}
                         </div>
-                        {!isCollapsed && <span className="ml-3 text-xl">{item.label}</span>}
+                        {!isCollapsed && <span className="ml-3 text-lg font-semibold overflow-hidden">{item.label}</span>}
                         {currentPage === item.page && (
                             <div
                                 className="absolute right-0 top-0 h-full w-2 bg-white transition-all duration-300 transform scale-y-100"
@@ -59,7 +59,7 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
             </ul>
             <button
                 onClick={handleLogout}
-                className="flex items-center p-4 bg-red-600 text-white hover:bg-red-500 transition duration-200 font-semibold"
+                className="flex items-center p-4 bg-red-600 text-white hover:bg-red-500 transition duration-200 font-semibold text-xl"
             >
                 <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" />
                 {!isCollapsed && <span>Logout</span>}
