@@ -410,8 +410,8 @@ const UserManagement = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredUsers.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage).map((user) => (
-                            <tr key={user.id} className="bg-blue-600">
+                        {filteredUsers.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage).map((user, index) => (
+                            <tr key={user.id} className={`bg-blue-600 ${index % 2 === 0 ? 'bg-blue-500' : ''}`}>
                                 <td className="border-r border-b px-4 py-2">{user.id}</td>
                                 <td className="border-r border-b px-4 py-2">{user.firstName} {user.lastName}</td>
                                 <td className="border-r border-b px-4 py-2">{user.email}</td>

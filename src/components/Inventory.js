@@ -74,13 +74,13 @@ const Inventory = () => {
             {/* Category Tabs */}
             <div className="flex font-bold text-2xl">
                 <button
-                    className={`flex-1 py-2 px-4 rounded-tl-lg ${selectedCategory === 'autoSupply' ? 'bg-blue-700 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-800 transition-colors duration-200 focus:outline-none`}
+                    className={`flex-1 py-2 px-4 rounded-tl-lg ${selectedCategory === 'autoSupply' ? 'bg-blue-700 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-800 hover:text-white transition-colors duration-200 focus:outline-none`}
                     onClick={() => handleCategoryChange('autoSupply')}
                 >
                     Auto Supply
                 </button>
                 <button
-                    className={`flex-1 py-2 px-4 rounded-tr-lg ${selectedCategory === 'bolts' ? 'bg-blue-700 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-800 transition-colors duration-200 focus:outline-none`}
+                    className={`flex-1 py-2 px-4 rounded-tr-lg ${selectedCategory === 'bolts' ? 'bg-blue-700 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-800 hover:text-white transition-colors duration-200 focus:outline-none`}
                     onClick={() => handleCategoryChange('bolts')}
                 >
                     Bolts

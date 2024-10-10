@@ -16,6 +16,9 @@ const MyProfile = ({ setIsAuthenticated }) => {
     const [originalProfileData, setOriginalProfileData] = useState({});
     const [editing, setEditing] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [profilePicture, setProfilePicture] = useState(null);
+    const [profilePicturePreview, setProfilePicturePreview] = useState(null);
+    const [showSaveButton, setShowSaveButton] = useState(false);
 
     useEffect(() => {
         const firstName = localStorage.getItem('firstName');
@@ -36,6 +39,25 @@ const MyProfile = ({ setIsAuthenticated }) => {
 
         setProfileData(initialProfileData);
         setOriginalProfileData(initialProfileData);
+    }, []);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const fetchProfilePicture = async () => {
+            try {
+                const response = await axios.get('http://localhost:8000/api/profile-picture/', {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                    },
+                    responseType: 'blob',
+                });
+                const profilePicture = URL.createObjectURL(response.data);
+                setProfilePicturePreview(profilePicture);
+            } catch (error) {
+                console.error('Error fetching profile picture:', error);
+            }
+        };
+        fetchProfilePicture();
     }, []);
 
     const handleEditToggle = () => {
@@ -62,13 +84,18 @@ const MyProfile = ({ setIsAuthenticated }) => {
                 return;
             }
 
-            await axios.put('http://localhost:8000/api/profile/', {
-                firstName: profileData.firstName,
-                lastName: profileData.lastName,
-                phoneNumber: profileData.phoneNumber,
-            }, {
+            const formData = new FormData();
+            formData.append('firstName', profileData.firstName);
+            formData.append('lastName', profileData.lastName);
+            formData.append('phoneNumber', profileData.phoneNumber);
+            if (profilePicture) {
+                formData.append('profilePicture', profilePicture);
+            }
+
+            await axios.put('http://localhost:8000/api/profile/', formData, {
                 headers: {
                     'Authorization': `Token ${token}`,
+                    'Content-Type': 'multipart/form-data',
                 },
             });
 
@@ -101,11 +128,78 @@ const MyProfile = ({ setIsAuthenticated }) => {
         }
     };
 
+    const handleProductImageChange = (e) => {
+        const image = e.target.files[0];
+        if (!image) return; // Ensure an image is selected
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const width = img.width;
+                const height = img.height;
+                const aspectRatio = width / height;
+                let newWidth, newHeight;
+                // Resize logic based on aspect ratio
+                if (aspectRatio > 1) {
+                    newWidth = height;
+                    newHeight = height;
+                } else {
+                    newWidth = width;
+                    newHeight = width;
+                }
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                ctx.drawImage(img, (width - newWidth) / 2, (height - newHeight) / 2, newWidth, newHeight, 0, 0, newWidth, newHeight);
+                // Convert canvas to blob
+                canvas.toBlob((blob) => {
+                    setProfilePicture(blob);
+                    setProfilePicturePreview(URL.createObjectURL(blob));
+                    setShowSaveButton(true); // Set showSaveButton to true here
+                }, 'image/jpeg', 0.8);
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(image);
+    };
+
+    const handleSaveProfilePicture = async () => {
+        const token = localStorage.getItem('token');
+        const formData = new FormData();
+        formData.append('profilePicture', profilePicture);
+
+        try {
+            await axios.put('http://localhost:8000/api/update-profile-picture/', formData, {
+                headers: {
+                    'Authorization': `Token ${token}`,
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            // Handle the response from the backend
+            Swal.fire({
+                icon: 'success',
+                title: 'Profile Picture Updated',
+                text: 'Your profile picture has been updated successfully.',
+                timer: 2000,
+                showConfirmButton: false,
+            });
+        } catch (error) {
+            console.error('Error updating profile picture:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to update profile picture. Please try again later.',
+            });
+        }
+    };
+
     return (
         <div className="flex flex-col bg-blue-900 text-white p-6 rounded-md">
             {loading && <Loader />}
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Profile</h2>
+                <h2 className="text-2xl font-bold">Profile</h2>
                 <button
                     onClick={handleEditToggle}
                     className="bg-blue-700 text-white p-2 rounded hover:bg-blue-800 transition duration-200"
@@ -115,17 +209,42 @@ const MyProfile = ({ setIsAuthenticated }) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex justify-center">
-                    <img
-                        src="https://via.placeholder.com/150" // Replace with actual profile picture URL
-                        alt="Profile"
-                        className="w-64 h-64 rounded object-cover"
-                    />
+                <div className="flex flex-col items-center">
+                    {profilePicturePreview ? (
+                        <img
+                            src={profilePicturePreview}
+                            alt="Profile"
+                            className="w-72 h-72 rounded object-cover border-2 border-black shadow-lg"
+                        />
+                    ) : (
+                        <img
+                            src="https://via.placeholder.com/150" // Replace with actual profile picture URL
+                            alt="Profile"
+                            className="w-64 h-64 rounded object-cover"
+                        />
+                    )}
+                    <label className="mt-4 bg-blue-700 text-white p-2 rounded hover:bg-blue-800 transition duration-200">
+                        Upload Profile Picture
+                        <input
+                            type="file"
+                            onChange={handleProductImageChange}
+                            accept=".jpg, .jpeg, .png"
+                            className="hidden"
+                        />
+                    </label>
+                    {showSaveButton && (
+                        <button
+                            onClick={handleSaveProfilePicture}
+                            className="mt-4 p-2 bg-green-500 text-white rounded hover:bg-green-600 transition duration-200"
+                        >
+                            Save Profile Picture
+                        </button>
+                    )}
                 </div>
                 <div className="col-span-2">
                     {/* First Name */}
                     <div className="mb-4">
-                        <label className="block text-sm font-medium">First Name</label>
+                        <label className="block text-md font-medium">First Name</label>
                         <input
                             type="text"
                             value={profileData.firstName}
@@ -137,7 +256,7 @@ const MyProfile = ({ setIsAuthenticated }) => {
 
                     {/* Last Name */}
                     <div className="mb-4">
-                        <label className="block text-sm font-medium">Last Name</label>
+                        <label className="block text-md font-medium">Last Name</label>
                         <input
                             type="text"
                             value={profileData.lastName}
@@ -149,7 +268,7 @@ const MyProfile = ({ setIsAuthenticated }) => {
 
                     {/* Email */}
                     <div className="mb-4">
-                        <label className="block text-sm font-medium">Email</label>
+                        <label className="block text-md font-medium">Email</label>
                         <input
                             type="email"
                             value={profileData.email}
@@ -160,7 +279,7 @@ const MyProfile = ({ setIsAuthenticated }) => {
 
                     {/* Gender */}
                     <div className="mb-4">
-                        <label className="block text-sm font-medium">Gender</label>
+                        <label className="block text-md font-medium">Gender</label>
                         <input
                             type="text"
                             value={profileData.gender}
@@ -171,7 +290,7 @@ const MyProfile = ({ setIsAuthenticated }) => {
 
                     {/* Phone Number */}
                     <div className="mb-4">
-                        <label className="block text-sm font-medium">Phone Number</label>
+                        <label className="block text-md font-medium">Phone Number</label>
                         <input
                             type="text"
                             value={profileData.phoneNumber}
@@ -183,7 +302,7 @@ const MyProfile = ({ setIsAuthenticated }) => {
 
                     {/* Role */}
                     <div className="mb-4">
-                        <label className="block text-sm font-medium">Role</label>
+                        <label className="block text-md font-medium">Role</label>
                         <input
                             type="text"
                             value={profileData.role ? profileData.role.charAt(0).toUpperCase() + profileData.role.slice(1) : 'N/A'}

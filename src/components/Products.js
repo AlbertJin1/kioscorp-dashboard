@@ -260,6 +260,7 @@ const Products = () => {
     const handleProductImageChange = (e) => {
         const image = e.target.files[0];
         if (!image) return; // Ensure an image is selected
+
         const reader = new FileReader();
         reader.onload = (event) => {
             const img = new Image();
@@ -281,10 +282,15 @@ const Products = () => {
                 canvas.width = newWidth;
                 canvas.height = newHeight;
                 ctx.drawImage(img, (width - newWidth) / 2, (height - newHeight) / 2, newWidth, newHeight, 0, 0, newWidth, newHeight);
-                // Convert canvas to blob
+
+                // Compress the image
                 canvas.toBlob((blob) => {
-                    setProductImage(blob);
-                }, 'image/jpeg', 0.8);
+                    const compressedImage = new File([blob], image.name, {
+                        type: blob.type,
+                        lastModified: Date.now(),
+                    });
+                    setProductImage(compressedImage);
+                }, 'image/jpeg', 0.5); // Compress the image to 50% quality
             };
             img.src = event.target.result;
         };
@@ -1175,7 +1181,7 @@ const Products = () => {
                 )
             }
 
-        </div >
+        </div>
     );
 };
 
