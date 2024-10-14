@@ -465,8 +465,10 @@ const Inventory = () => {
 
                         {isAddStockModalOpen && selectedRow && (
                             <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
-                                <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-1/4"> {/* Adjusted width here */}
-                                    <h2 className="text-2xl font-bold text-yellow-500 mb-4">Add stock for {selectedRow.product_name}</h2>
+                                <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-1/4">
+                                    <h2 className="text-2xl font-bold text-yellow-500 mb-4">
+                                        Add stock for {selectedRow.product_name}
+                                    </h2>
                                     <input
                                         type="number"
                                         value={stockToAdd}
@@ -477,13 +479,64 @@ const Inventory = () => {
                                     <div className="flex justify-end">
                                         <button
                                             className="bg-green-500 text-white rounded px-4 py-2 mr-2"
-                                            onClick={handleAddStock}
+                                            onClick={() => {
+                                                // Check if the stockToAdd field is empty or invalid
+                                                if (!stockToAdd || stockToAdd <= 0) {
+                                                    Swal.fire({
+                                                        icon: 'warning',
+                                                        title: 'Oops...',
+                                                        text: 'Please enter a valid stock quantity!',
+                                                        position: 'top-end', // Set position to top-end
+                                                        timer: 2000,
+                                                        showConfirmButton: false,
+                                                        timerProgressBar: true,
+                                                    });
+                                                    return;
+                                                }
+
+                                                // Add stock function
+                                                handleAddStock();
+
+                                                // Reset state
+                                                setStockToAdd('');
+
+                                                // Fully unselect the row
+                                                setSelectedRow(null);
+
+                                                // Close the modal after success
+                                                setIsAddStockModalOpen(false);
+
+                                                // Success notification at top-end
+                                                Swal.fire({
+                                                    icon: 'success',
+                                                    title: 'Stock added!',
+                                                    text: 'The stock was successfully added.',
+                                                    position: 'top-end', // Set position to top-end
+                                                    timer: 2000,
+                                                    showConfirmButton: false,
+                                                    timerProgressBar: true,
+                                                });
+                                            }}
                                         >
                                             Add Stock
                                         </button>
                                         <button
                                             className="bg-red-500 text-white rounded px-4 py-2"
-                                            onClick={() => setIsAddStockModalOpen(false)}
+                                            onClick={() => {
+                                                // Close the modal
+                                                setIsAddStockModalOpen(false);
+
+                                                // Reset state
+                                                setStockToAdd('');
+
+                                                // FULLY UNSELECT the row
+                                                setSelectedRow(null);
+
+                                                // OPTIONAL: Delay to allow reselecting the same row
+                                                setTimeout(() => {
+                                                    setSelectedRow(null); // Forcefully ensure row is fully unselected
+                                                }, 0);
+                                            }}
                                         >
                                             Cancel
                                         </button>
@@ -491,7 +544,6 @@ const Inventory = () => {
                                 </div>
                             </div>
                         )}
-
 
                         {/* Edit and Delete Buttons */}
                         <button
