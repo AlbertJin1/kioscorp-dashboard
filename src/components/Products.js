@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlusCircle, FaTimes, FaSearch, FaDownload, FaTrash, FaEdit } from 'react-icons/fa';
-import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
+import { FaPlusCircle, FaTimes, FaSearch, FaTrash, FaEdit } from 'react-icons/fa';
 import axios from 'axios';
 import Swal from 'sweetalert2'; // Import SweetAlert2
+import imagePlaceholder from '../img/logo/placeholder-image.png'
 import './styles.css'; // Import your CSS file for custom scrollbar styles
 
 const Products = () => {
@@ -504,11 +503,25 @@ const Products = () => {
                 const config = {
                     headers: {
                         'Authorization': `Token ${token}`,
+                        'Content-Type': 'multipart/form-data',  // Ensure the form data is correctly encoded for file uploads
                     }
                 };
-                const response = await axios.patch(`http://localhost:8000/api/sub-categories/${editingSubCategory.sub_category_id}/`, {
-                    sub_category_name: newSubCategoryName,
-                }, config);
+
+                const formData = new FormData(); // Use FormData to handle both text and file data
+
+                // Append the updated name if it was changed
+                if (newSubCategoryName) {
+                    formData.append('sub_category_name', newSubCategoryName);
+                }
+
+                // Append the new image if one was selected
+                if (subCategoryImage) {
+                    formData.append('sub_category_image', subCategoryImage); // 'sub_category_image' is the key expected by your API
+                }
+
+                // Make the patch request to update the subcategory
+                const response = await axios.patch(`http://localhost:8000/api/sub-categories/${editingSubCategory.sub_category_id}/`, formData, config);
+
                 if (response.status === 200) {
                     // Refetch subcategories to include the updated one
                     const res = await fetch(`http://localhost:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, {
@@ -518,12 +531,20 @@ const Products = () => {
                             'Content-Type': 'application/json'
                         }
                     });
+
                     const subCategories = await res.json();
+
+                    // Update the state to include the latest subcategories
                     setSubCategories(subCategories.filter(subCategory => subCategory.main_category === mainCategory.main_category_id));
+
                     // Unselect the subcategory
                     setSelectedSubCategory(null);
-                    // Reset the newSubCategoryName state
+
+                    // Reset the newSubCategoryName and image states
                     setNewSubCategoryName('');
+                    setSubCategoryImage(null);
+                    setSubCategoryImagePreview(null);
+
                     // Show success alert
                     Swal.fire({
                         icon: 'success',
@@ -542,13 +563,14 @@ const Products = () => {
                 showError('You are not authorized to update subcategories.');
             }
         } catch (error) {
-            if (error.response.status === 403) {
+            if (error.response && error.response.status === 403) {
                 showError('You do not have permission to update subcategories.');
             } else {
                 showError('Error updating subcategory');
             }
         }
     };
+
 
     const handleDeleteSubCategory = async (subCategoryId) => {
         try {
@@ -820,99 +842,6 @@ const Products = () => {
                                 }
                             }}
                         />
-                        <FaDownload
-                            className="text-yellow-500 cursor-pointer hover:text-yellow-300"
-                            size={30}
-                            title="Save to Spreadsheet"
-                            onClick={async () => {
-                                const token = localStorage.getItem('token');
-                                if (token) {
-                                    const config = {
-                                        headers: {
-                                            'Authorization': `Token ${token}`,
-                                        }
-                                    };
-                                    const res = await axios.get('http://localhost:8000/api/products/', config);
-                                    const products = res.data;
-
-                                    const workbook = new ExcelJS.Workbook();
-                                    const worksheet = workbook.addWorksheet('Product Details');
-
-                                    worksheet.addRow(['Product ID', 'Product Name', 'Product Type', 'Product Size', 'Product Quantity', 'Product Color', 'Product Brand', 'Product Price', 'Product Description']);
-
-                                    worksheet.columns = [
-                                        { header: 'Product ID', key: 'product_id', width: 15 },
-                                        { header: 'Product Name', key: 'product_name', width: 35 },
-                                        { header: 'Product Type', key: 'product_type', width: 20 },
-                                        { header: 'Product Size', key: 'product_size', width: 20 },
-                                        { header: 'Product Quantity', key: 'product_quantity', width: 25 },
-                                        { header: 'Product Color', key: 'product_color', width: 20 },
-                                        { header: 'Product Brand', key: 'product_brand', width: 20 },
-                                        { header: 'Product Price', key: 'product_price', width: 20 },
-                                        { header: 'Product Description', key: 'product_description', width: 30 },
-                                    ];
-
-                                    worksheet.addRow(['', '', '', '', '', '', '', '', '']);
-
-                                    if (products.length > 0) {
-                                        products.forEach((product) => {
-                                            worksheet.addRow([
-                                                product.product_id,
-                                                product.product_name,
-                                                product.product_type,
-                                                product.product_size,
-                                                product.product_quantity,
-                                                product.product_color,
-                                                product.product_brand,
-                                                product.product_price,
-                                                product.product_description,
-                                            ]);
-                                        });
-                                    }
-
-                                    // Apply styles to the header and increase its height
-                                    worksheet.getRow(1).height = 30;  // Set header row height to 25 (adjust as needed)
-                                    worksheet.getRow(1).eachCell(cell => {
-                                        cell.font = { bold: true };
-                                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                                        cell.fill = {
-                                            type: 'pattern',
-                                            pattern: 'solid',
-                                            fgColor: { argb: 'FFFFF0' },  // Light fill color
-                                        };
-                                    });
-
-                                    // Apply styles to data rows
-                                    worksheet.eachRow((row, rowNumber) => {
-                                        row.eachCell((cell) => {
-                                            cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                                            cell.border = {
-                                                top: { style: 'thin' },
-                                                left: { style: 'thin' },
-                                                bottom: { style: 'thin' },
-                                                right: { style: 'thin' },
-                                            };
-                                        });
-
-                                        // Alternate row color
-                                        if (rowNumber % 2 === 0) {
-                                            row.eachCell((cell) => {
-                                                cell.fill = {
-                                                    type: 'pattern',
-                                                    pattern: 'solid',
-                                                    fgColor: { argb: 'FFEEEEEE' }, // Light grey for even rows
-                                                };
-                                            });
-                                        }
-                                    });
-
-                                    workbook.xlsx.writeBuffer().then((buffer) => {
-                                        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                                        saveAs(blob, 'products.xlsx');
-                                    });
-                                }
-                            }}
-                        />
                     </div>
                 </div>
 
@@ -1045,15 +974,21 @@ const Products = () => {
                             className="p-2 mb-4 w-full rounded"
                             accept="image/*"
                         />
-                        {subCategoryImagePreview && (
-                            <div className="mb-4">
+                        <div className="mb-4">
+                            {subCategoryImagePreview ? (
                                 <img
                                     src={subCategoryImagePreview}
                                     alt="Subcategory preview"
-                                    className="w-full h-40 object-cover rounded"
+                                    className="w-48 h-48 object-cover rounded border-2 border-black"
                                 />
-                            </div>
-                        )}
+                            ) : (
+                                <img
+                                    src={imagePlaceholder} // Placeholder image for when no image is uploaded
+                                    alt="Placeholder"
+                                    className="w-48 h-48 object-cover rounded border-2 border-black"
+                                />
+                            )}
+                        </div>
                         <div className="flex justify-end">
                             <button
                                 className="bg-yellow-500 text-black rounded px-4 py-2 mr-2"
@@ -1076,6 +1011,7 @@ const Products = () => {
                     </div>
                 </div>
             )}
+
             {editingSubCategory && (
                 <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
                     <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-1/2 lg:w-1/3 xl:w-1/4">
@@ -1111,138 +1047,127 @@ const Products = () => {
             )}
 
             {/* Modal for Adding Product */}
-            {
-                modalOpenProduct && (
-                    <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
-                        <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-3/4 lg:w-2/3 xl:w-1/2">
-                            <h2 className="text-xl mb-4 text-yellow-500">Add Product</h2>
-                            <div className="flex flex-wrap -mx-4">
-                                <div className="w-full md:w-1/2 px-4 mb-4">
-                                    <label className="block text-white mb-2">Product Name</label>
-                                    <input
-                                        type="text"
-                                        value={newProductName}
-                                        onChange={(e) => setNewProductName(e.target.value)}
-                                        className="p-2 w-full rounded"
-                                        placeholder="Enter product name"
-                                    />
-                                </div>
-                                <div className="w-full md:w-1/2 px-4 mb-4">
-                                    <label className="block text-white mb-2">Product Type</label>
-                                    <input
-                                        type="text"
-                                        value={newProductType}
-                                        onChange={(e) => setNewProductType(e.target.value)}
-                                        className="p-2 w-full rounded"
-                                        placeholder="Enter product type"
-                                    />
-                                </div>
-                                <div className="w-full md:w-1/2 px-4 mb-4">
-                                    <label className="block text-white mb-2">Product Size</label>
-                                    <input
-                                        type="text"
-                                        value={newProductSize}
-                                        onChange={(e) => setNewProductSize(e.target.value)}
-                                        className="p-2 w-full rounded"
-                                        placeholder="Enter product size"
-                                    />
-                                </div>
-                                <div className="w-full md:w-1/2 px-4 mb-4">
-                                    <label className="block text-white mb-2">Product Brand</label>
-                                    <input
-                                        type="text"
-                                        value={newProductBrand}
-                                        onChange={(e) => setNewProductBrand(e.target.value)}
-                                        className="p-2 w-full rounded"
-                                        placeholder="Enter product brand"
-                                    />
-                                </div>
-                                <div className="w-full md:w-1/2 px-4 mb-4">
-                                    <label className="block text-white mb-2">Product Color</label>
-                                    <input
-                                        type="text"
-                                        value={newProductColor}
-                                        onChange={(e) => setNewProductColor(e.target.value)}
-                                        className="p-2 w-full rounded"
-                                        placeholder="Enter product color"
-                                    />
-                                </div>
-                                <div className="w-full md:w-1/2 px-4 mb-4">
-                                    <label className="block text-white mb-2">Product Quantity</label>
-                                    <input
-                                        type="number"
-                                        value={newProductQuantity}
-                                        onChange={(e) => setNewProductQuantity(e.target.value)}
-                                        className="p-2 w-full rounded"
-                                        placeholder="Enter product quantity"
-                                    />
-                                </div>
-                                <div className="w-full md:w-1/2 px-4 mb-4">
-                                    <label className="block text-white mb-2">Product Price</label>
-                                    <input
-                                        type="number"
-                                        value={newProductPrice}
-                                        onChange={(e) => setNewProductPrice(e.target.value)}
-                                        className="p-2 w-full rounded"
-                                        placeholder="Enter product price"
-                                    />
-                                </div>
-                                <div className="w-full md:w-1/2 px-4 mb-4">
-                                    <label className="block text-white mb-2">Product Description</label>
-                                    <textarea
-                                        type="text"
-                                        value={newProductDescription}
-                                        onChange={(e) => setNewProductDescription(e.target.value)}
-                                        className="p-2 w-full rounded"
-                                        placeholder="Enter product description"
-                                    />
-                                </div>
-                                <div className="w-full md:w-1/2 px-4 mb-4">
-                                    <label className="block text-white mb-2">Product Image</label>
-                                    <input
-                                        type="file"
-                                        onChange={(e) => handleProductImageChange(e)}
-                                        className="p-2 w-full rounded"
-                                    />
-                                </div>
+            {modalOpenProduct && (
+                <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
+                    <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-3/4 lg:w-2/3 xl:w-1/2">
+                        <h2 className="text-2xl mb-4 text-yellow-500">Add Product</h2>
+                        <div className="flex flex-wrap">
+                            {/* Product Image Section */}
+                            <div className="w-full md:w-1/3 px-4 mb-4 flex flex-col items-center">
+                                <label className="block text-white mb-2">Product Image</label>
+                                <input
+                                    type="file"
+                                    onChange={(e) => handleProductImageChange(e)}
+                                    className="p-2 w-full rounded mb-2" // Added margin-bottom for spacing
+                                />
                                 {/* Display the image preview after selecting an image */}
-                                {productImage && (
-                                    <div className="w-full px-4 mb-4">
-                                        <label className="block text-white mb-2">Image Preview</label>
-                                        <img
-                                            src={URL.createObjectURL(productImage)}
-                                            alt="Selected product"
-                                            className="rounded w-40 h-40 object-cover"
-                                        />
-                                    </div>
+                                {productImage ? (
+                                    <img
+                                        src={URL.createObjectURL(productImage)}
+                                        alt="Selected product"
+                                        className="rounded border-2 border-black w-64 h-64 object-cover shadow-lg"
+                                    />
+                                ) : (
+                                    <img
+                                        src={imagePlaceholder} // Update this path to your actual placeholder image location
+                                        alt="Placeholder"
+                                        className="rounded border-2 border-black w-64 h-64 object-cover shadow-lg"
+                                    />
                                 )}
                             </div>
-                            <div className="flex justify-end">
-                                <button
-                                    className="bg-yellow-500 text-black rounded px-4 py-2 mr-2"
-                                    onClick={async () => {
-                                        const success = await handleAddProduct();
-                                        if (success) {
-                                            // Clear fields only if the product was added successfully
-                                            setNewProductName('');
-                                            setNewProductType('');
-                                            setNewProductSize('');
-                                            setNewProductBrand('');
-                                            setNewProductColor('');
-                                            setNewProductQuantity('');
-                                            setNewProductPrice('');
-                                            setNewProductDescription('');
-                                            setProductImage(null);
-                                        }
-                                    }}
-                                >
-                                    Add
-                                </button>
-                                <button
-                                    className="bg-red-500 text-white rounded px-4 py-2"
-                                    onClick={() => {
-                                        setModalOpenProduct(false);
-                                        // Reset fields when cancelling
+
+                            {/* Input Fields Section */}
+                            <div className="w-full md:w-2/3 px-4 mb-4">
+                                <div className="flex flex-wrap -mx-4">
+                                    <div className="w-full md:w-1/2 px-4 mb-4">
+                                        <label className="block text-white mb-2">Product Name</label>
+                                        <input
+                                            type="text"
+                                            value={newProductName}
+                                            onChange={(e) => setNewProductName(e.target.value)}
+                                            className="p-2 w-full rounded shadow-lg"
+                                            placeholder="Enter product name"
+                                        />
+                                    </div>
+                                    <div className="w-full md:w-1/2 px-4 mb-4">
+                                        <label className="block text-white mb-2">Product Type</label>
+                                        <input
+                                            type="text"
+                                            value={newProductType}
+                                            onChange={(e) => setNewProductType(e.target.value)}
+                                            className="p-2 w-full rounded shadow-lg"
+                                            placeholder="Enter product type"
+                                        />
+                                    </div>
+                                    <div className="w-full md:w-1/2 px-4 mb-4">
+                                        <label className="block text-white mb-2">Product Size</label>
+                                        <input
+                                            type="text"
+                                            value={newProductSize}
+                                            onChange={(e) => setNewProductSize(e.target.value)}
+                                            className="p-2 w-full rounded shadow-lg"
+                                            placeholder="Enter product size"
+                                        />
+                                    </div>
+                                    <div className="w-full md:w-1/2 px-4 mb-4">
+                                        <label className="block text-white mb-2">Product Brand</label>
+                                        <input
+                                            type="text"
+                                            value={newProductBrand}
+                                            onChange={(e) => setNewProductBrand(e.target.value)}
+                                            className="p-2 w-full rounded shadow-lg"
+                                            placeholder="Enter product brand"
+                                        />
+                                    </div>
+                                    <div className="w-full md:w-1/2 px-4 mb-4">
+                                        <label className="block text-white mb-2">Product Color</label>
+                                        <input
+                                            type="text"
+                                            value={newProductColor}
+                                            onChange={(e) => setNewProductColor(e.target.value)}
+                                            className="p-2 w-full rounded shadow-lg"
+                                            placeholder="Enter product color"
+                                        />
+                                    </div>
+                                    <div className="w-full md:w-1/2 px-4 mb-4">
+                                        <label className="block text-white mb-2">Product Quantity</label>
+                                        <input
+                                            type="number"
+                                            value={newProductQuantity}
+                                            onChange={(e) => setNewProductQuantity(e.target.value)}
+                                            className="p-2 w-full rounded shadow-lg"
+                                            placeholder="Enter product quantity"
+                                        />
+                                    </div>
+                                    <div className="w-full md:w-1/2 px-4 mb-4">
+                                        <label className="block text-white mb-2">Product Price</label>
+                                        <input
+                                            type="number"
+                                            value={newProductPrice}
+                                            onChange={(e) => setNewProductPrice(e.target.value)}
+                                            className="p-2 w-full rounded shadow-lg"
+                                            placeholder="Enter product price"
+                                        />
+                                    </div>
+                                    <div className="w-full md:w-1/2 px-4 mb-4">
+                                        <label className="block text-white mb-2">Product Description</label>
+                                        <textarea
+                                            value={newProductDescription}
+                                            onChange={(e) => setNewProductDescription(e.target.value)}
+                                            className="p-2 w-full rounded shadow-lg resize-none"
+                                            placeholder="Enter product description"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex justify-end">
+                            <button
+                                className="bg-yellow-500 text-black rounded px-4 py-2 mr-2 shadow-lg"
+                                onClick={async () => {
+                                    const success = await handleAddProduct();
+                                    if (success) {
+                                        // Clear fields only if the product was added successfully
                                         setNewProductName('');
                                         setNewProductType('');
                                         setNewProductSize('');
@@ -1252,15 +1177,33 @@ const Products = () => {
                                         setNewProductPrice('');
                                         setNewProductDescription('');
                                         setProductImage(null);
-                                    }}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
+                                    }
+                                }}
+                            >
+                                Add
+                            </button>
+                            <button
+                                className="bg-red-500 text-white rounded px-4 py-2 shadow-lg"
+                                onClick={() => {
+                                    setModalOpenProduct(false);
+                                    // Reset fields when cancelling
+                                    setNewProductName('');
+                                    setNewProductType('');
+                                    setNewProductSize('');
+                                    setNewProductBrand('');
+                                    setNewProductColor('');
+                                    setNewProductQuantity('');
+                                    setNewProductPrice('');
+                                    setNewProductDescription('');
+                                    setProductImage(null);
+                                }}
+                            >
+                                Cancel
+                            </button>
                         </div>
                     </div>
-                )
-            }
+                </div>
+            )}
 
         </div>
     );

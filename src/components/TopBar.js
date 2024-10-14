@@ -55,8 +55,8 @@ const TopBar = ({ currentPage, loggedInUser }) => {
                 </div>
 
                 <div className="flex flex-col items-end">
-                    <h2 className="text-lg text-[#033372] font-bold">Universal Auto Supply <span className='text-[#FFBD59]'>and</span> Bolt Center</h2>
-                    <h3 className="text-xl font-bold pl-4 pr-4 pt-1 pb-1 rounded-2xl" style={{ backgroundColor: '#033372', color: 'white' }}>
+                    <h2 className="text-xl text-[#033372] font-bold">Universal Auto Supply <span className='text-[#FFBD59]'>and</span> Bolt Center</h2>
+                    <h3 className="text-lg font-bold pl-4 pr-4 pt-1 pb-1 rounded-2xl" style={{ backgroundColor: '#033372', color: 'white' }}>
                         {currentDate} | {currentTime}
                     </h3>
                 </div>

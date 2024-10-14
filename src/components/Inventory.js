@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faFilter, faFileExport, faCircle, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
-import { FaSortAlphaUp, FaSortAlphaDown, FaSortAmountDownAlt, FaSortAmountUp, FaBoxes, FaBox, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaSortAlphaUp, FaSortAlphaDown, FaSortAmountDownAlt, FaSortAmountUp, FaBoxes, FaBox, FaEdit, FaTrash, FaBoxOpen, FaUpload } from 'react-icons/fa';
 import Swal from 'sweetalert2'; // Import SweetAlert2
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -24,6 +24,8 @@ const Inventory = () => {
     const [productImage, setProductImage] = useState(null); // Handle product image
     const [productImagePreview, setProductImagePreview] = useState(null); // Image preview
     const [selectedProductId, setSelectedProductId] = useState(null);
+    const [isAddStockModalOpen, setIsAddStockModalOpen] = useState(false);
+    const [stockToAdd, setStockToAdd] = useState(0);
 
     const fetchProductsRef = useRef(null);
     const filterDropdownRef = useRef(null);
@@ -341,6 +343,41 @@ const Inventory = () => {
         return Math.round(price).toLocaleString();
     };
 
+    const handleAddStock = async () => {
+        const token = localStorage.getItem('token');
+        if (token && selectedRow) {
+            try {
+                const newQuantity = selectedRow.product_quantity + parseInt(stockToAdd, 10); // Update quantity
+
+                const config = {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                    },
+                };
+
+                const response = await axios.patch(`http://localhost:8000/api/products/${selectedRow.product_id}/`, { product_quantity: newQuantity }, config);
+
+                if (response.status === 200) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: `Stock added successfully!`,
+                        text: `New quantity for ${selectedRow.product_name} is ${newQuantity}.`,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                    });
+                    setIsAddStockModalOpen(false);  // Close modal after success
+                    fetchProductsRef.current();  // Refresh product list
+                }
+            } catch (error) {
+                console.error('Error adding stock:', error);
+                Swal.fire('Error', 'Error updating stock.', 'error');
+            }
+        }
+    };
+
     return (
         <div className="p-4">
             {/* Search and Action Buttons */}
@@ -416,6 +453,45 @@ const Inventory = () => {
                                 </div>
                             )}
                         </div>
+
+                        <button
+                            onClick={() => setIsAddStockModalOpen(true)}  // Open the modal on click
+                            disabled={!selectedRow}  // Disable if no row is selected
+                            className={`px-4 py-2 flex items-center ${selectedRow ? 'bg-green-500 hover:bg-green-600 text-white shadow' : 'bg-gray-200 text-gray-500 cursor-not-allowed'} border border-gray-300 rounded-md`}
+                        >
+                            <FaBoxOpen className="mr-2" />  {/* Icon for stock */}
+                            Add Stock
+                        </button>
+
+                        {isAddStockModalOpen && selectedRow && (
+                            <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
+                                <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-1/4"> {/* Adjusted width here */}
+                                    <h2 className="text-2xl font-bold text-yellow-500 mb-4">Add stock for {selectedRow.product_name}</h2>
+                                    <input
+                                        type="number"
+                                        value={stockToAdd}
+                                        onChange={(e) => setStockToAdd(e.target.value)}
+                                        className="p-2 mb-4 w-full border border-gray-300 rounded"
+                                        placeholder="Enter stock quantity to add"
+                                    />
+                                    <div className="flex justify-end">
+                                        <button
+                                            className="bg-green-500 text-white rounded px-4 py-2 mr-2"
+                                            onClick={handleAddStock}
+                                        >
+                                            Add Stock
+                                        </button>
+                                        <button
+                                            className="bg-red-500 text-white rounded px-4 py-2"
+                                            onClick={() => setIsAddStockModalOpen(false)}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
 
                         {/* Edit and Delete Buttons */}
                         <button
@@ -639,25 +715,37 @@ const Inventory = () => {
             {isEditModalOpen && selectedRow && (
                 <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
                     <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-3/4 lg:w-2/3 xl:w-1/2">
-                        <h2 className="text-xl mb-4 text-yellow-500">Edit Product</h2>
+                        <h2 className="text-2xl mb-4 font-bold text-yellow-500">Edit Product</h2>
                         <div className="flex flex-col md:flex-row gap-4">
                             {/* Image upload section */}
                             <div className="flex-shrink-0 mb-4 md:mb-0 w-full md:w-1/3">
-                                <label className="block text-white mb-2">New Product Image</label>
-                                <input
-                                    type="file"
-                                    onChange={handleProductImageChange}
-                                    className="p-2 w-full rounded"
-                                />
-                                {productImagePreview && (
-                                    <div className="mt-4">
-                                        <img
-                                            src={productImagePreview}
-                                            alt="Product preview"
-                                            className="w-full h-auto object-cover border-2 border-black rounded"
-                                        />
-                                    </div>
-                                )}
+                                <div className="flex flex-col mb-4">
+                                    <label className="block text-white mb-2">New Product Image</label>
+                                    <input
+                                        type="file"
+                                        onChange={handleProductImageChange}
+                                        className="hidden" // Hide the default input
+                                        id="file-upload"
+                                    />
+                                    <label
+                                        htmlFor="file-upload" // Associate label with the input
+                                        className="flex items-center justify-center cursor-pointer p-4 border-2 border-dashed border-gray-300 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200"
+                                    >
+                                        <span className="mr-2">Choose a file</span>
+                                        <FaUpload /> {/* Add an upload icon */}
+                                    </label>
+
+                                    {productImagePreview && (
+                                        <div className="mt-4">
+                                            <img
+                                                src={productImagePreview}
+                                                alt="Product preview"
+                                                className="w-full h-auto object-cover border-2 border-black rounded shadow-lg"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
                             </div>
 
                             {/* Data Fields Section */}
