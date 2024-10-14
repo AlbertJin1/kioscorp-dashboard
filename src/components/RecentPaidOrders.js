@@ -64,7 +64,7 @@ const RecentPaidOrders = () => {
                                 <tr>
                                     <th className="px-4 py-2 border border-gray-200 text-left">Order ID</th>
                                     <th className="px-4 py-2 border border-gray-200 text-center">Customer</th>
-                                    <th className="px-4 py-2 border border-gray-200 text-center">Total ($)</th>
+                                    <th className="px-4 py-2 border border-gray-200 text-center">Total (₱)</th>
                                     <th className="px-4 py-2 border border-gray-200 text-center">Status</th>
                                 </tr>
                             </thead>
@@ -73,7 +73,7 @@ const RecentPaidOrders = () => {
                                     <tr key={index}>
                                         <td className="border px-4 py-2">{item.orderId}</td>
                                         <td className="border px-4 py-2 text-center">{item.customer}</td>
-                                        <td className="border px-4 py-2 text-center">{item.total}</td>
+                                        <td className="border px-4 py-2 text-center">₱{item.total}</td>
                                         <td className="border px-4 py-2 text-center">{item.status}</td>
                                     </tr>
                                 ))}

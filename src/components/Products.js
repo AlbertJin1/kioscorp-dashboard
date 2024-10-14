@@ -24,6 +24,9 @@ const Products = () => {
     const [productImage, setProductImage] = useState(null);
     const [modalOpenProduct, setModalOpenProduct] = useState(false);
     const [editingSubCategory, setEditingSubCategory] = useState(null);
+    const [subCategoryImage, setSubCategoryImage] = useState(null);
+    const [subCategoryImagePreview, setSubCategoryImagePreview] = useState(null);
+
 
     const [searchQuery, setSearchQuery] = useState('');
     const [searchOpen, setSearchOpen] = useState(false);
@@ -36,9 +39,10 @@ const Products = () => {
 
     useEffect(() => {
         if (mainCategory && selectedSubCategory && selectedSubCategory.main_category !== mainCategory.main_category_id) {
-            setSelectedSubCategory(null);
+            setSelectedSubCategory(null); // Clear the subcategory if it doesn't match the main category
         }
     }, [mainCategory, selectedSubCategory]);
+
 
     useEffect(() => {
         const fetchMainCategories = async () => {
@@ -110,10 +114,13 @@ const Products = () => {
                                 'Authorization': `Token ${token}`,
                             }
                         };
-                        const res = await axios.get(`http://localhost:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, config);
+                        const params = {
+                            subcategory: selectedSubCategory.sub_category_name, // Use the subcategory name or ID based on your API design
+                            include_subcategory: true, // Include subcategory details
+                        };
+                        const res = await axios.get('http://localhost:8000/api/products/', { params, headers: config.headers });
                         const products = res.data;
-                        const filteredProducts = products.filter(product => product.sub_category === selectedSubCategory.sub_category_id);
-                        setProducts(filteredProducts);
+                        setProducts(products); // No need for additional filtering here
                     } else {
                         showError('You are not authorized to view products.');
                     }
@@ -130,7 +137,8 @@ const Products = () => {
         };
 
         fetchProducts();
-    }, [selectedSubCategory, mainCategory]); // Add mainCategory as a dependency
+    }, [selectedSubCategory, mainCategory]);
+    // Add mainCategory as a dependency
 
     const showError = (message) => {
         Swal.fire({
@@ -146,6 +154,34 @@ const Products = () => {
                 Swal.showLoading();
             },
         });
+    };
+
+    const fetchSubCategories = async () => {
+        if (mainCategory) {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    const config = {
+                        headers: {
+                            'Authorization': `Token ${token}`,
+                        }
+                    };
+                    const res = await axios.get(`http://localhost:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, config);
+                    const subCategories = res.data.filter(subCategory => subCategory.main_category === mainCategory.main_category_id);
+                    setSubCategories(subCategories.sort((a, b) => a.sub_category_name.localeCompare(b.sub_category_name)));
+                } else {
+                    showError('You are not authorized to view subcategories.');
+                }
+            } catch (error) {
+                if (error.response.status === 403) {
+                    showError('You do not have permission to view subcategories.');
+                } else {
+                    showError('Error fetching subcategories');
+                }
+            }
+        } else {
+            setSubCategories([]); // Clear subcategories when no main category is selected
+        }
     };
 
     const handleMainCategoryClick = (category) => {
@@ -187,7 +223,6 @@ const Products = () => {
     // handleAddSubCategory
     const handleAddSubCategory = async () => {
         if (!newSubCategoryName) {
-            // Show error if the input is empty
             Swal.fire({
                 icon: 'warning',
                 title: 'Input Required',
@@ -205,31 +240,26 @@ const Products = () => {
             try {
                 const token = localStorage.getItem('token');
                 if (token) {
-                    const data = {
-                        sub_category_name: newSubCategoryName,
-                        main_category: mainCategory.main_category_id
-                    };
-                    const response = await fetch('http://localhost:8000/api/sub-categories/', {
-                        method: 'POST',
+                    const formData = new FormData();
+                    formData.append('sub_category_name', newSubCategoryName);
+                    formData.append('main_category', mainCategory.main_category_id);
+                    if (subCategoryImage) {
+                        formData.append('sub_category_image', subCategoryImage, 'subcategory_image.jpg');
+                    }
+
+                    const response = await axios.post('http://localhost:8000/api/sub-categories/', formData, {
                         headers: {
                             'Authorization': `Token ${token}`,
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'multipart/form-data',
                         },
-                        body: JSON.stringify(data)
                     });
-                    if (response.ok) {
+                    if (response.status === 201) {
                         setNewSubCategoryName('');
                         setModalOpen(false);
-                        // Refetch subcategories to include the newly added one
-                        const res = await fetch(`http://localhost:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, {
-                            method: 'GET',
-                            headers: {
-                                'Authorization': `Token ${token}`,
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                        const subCategories = await res.json();
-                        setSubCategories(subCategories.filter(subCategory => subCategory.main_category === mainCategory.main_category_id));
+                        setSubCategoryImage(null);
+                        setSubCategoryImagePreview(null);
+                        // Refetch subcategories
+                        fetchSubCategories();
                         // Show success alert
                         Swal.fire({
                             icon: 'success',
@@ -248,13 +278,49 @@ const Products = () => {
                     showError('You are not authorized to add subcategories.');
                 }
             } catch (error) {
-                if (error.response.status === 403) {
+                if (error.response && error.response.status === 403) {
                     showError('You do not have permission to add subcategories.');
                 } else {
                     showError('Error adding subcategory');
                 }
             }
         }
+    };
+
+    const handleSubCategoryImageChange = (e) => {
+        const image = e.target.files[0];
+        if (!image) return; // Ensure an image is selected
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const width = img.width;
+                const height = img.height;
+                const aspectRatio = width / height;
+                let newWidth, newHeight;
+                // Resize logic based on aspect ratio
+                if (aspectRatio > 1) {
+                    newWidth = height;
+                    newHeight = height;
+                } else {
+                    newWidth = width;
+                    newHeight = width;
+                }
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                ctx.drawImage(img, (width - newWidth) / 2, (height - newHeight) / 2, newWidth, newHeight, 0, 0, newWidth, newHeight);
+                // Convert canvas to blob
+                canvas.toBlob((blob) => {
+                    setSubCategoryImage(blob);
+                    setSubCategoryImagePreview(URL.createObjectURL(blob));
+                }, 'image/jpeg', 0.8);
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(image);
     };
 
     const handleProductImageChange = (e) => {
@@ -677,19 +743,22 @@ const Products = () => {
                 <div className="flex-grow px-4 pb-2 bg-blue-900 rounded-br-lg rounded-bl-lg overflow-y-auto custom-scrollbar">
                     {products.length > 0 ? (
                         <ul>
-                            {products.filter(product => product.product_name.toLowerCase().includes(searchQueryProduct.toLowerCase())).map((product) => (
-                                <li
-                                    key={product.product_id}
-                                    className={`rounded-full py-2 px-4 mb-1 hover:bg-yellow-500 hover:text-black cursor-pointer ${selectedProduct?.product_id === product.product_id ? 'bg-yellow-500 text-black' : 'bg-blue-700 text-white'}`}
-                                    onClick={(e) => {
-                                        if (e.target.tagName !== 'svg' && e.target.tagName !== 'path') {
-                                            handleProductClick(product);
-                                        }
-                                    }}
-                                >
-                                    <span>{product.product_name}</span>
-                                </li>
-                            ))}
+                            {products
+                                .filter(product => product.product_name.toLowerCase().includes(searchQueryProduct.toLowerCase()))
+                                .sort((a, b) => a.product_name.localeCompare(b.product_name)) // Sort alphabetically
+                                .map((product) => (
+                                    <li
+                                        key={product.product_id}
+                                        className={`rounded-full py-2 px-4 mb-1 hover:bg-yellow-500 hover:text-black cursor-pointer ${selectedProduct?.product_id === product.product_id ? 'bg-yellow-500 text-black' : 'bg-blue-700 text-white'}`}
+                                        onClick={(e) => {
+                                            if (e.target.tagName !== 'svg' && e.target.tagName !== 'path') {
+                                                handleProductClick(product);
+                                            }
+                                        }}
+                                    >
+                                        <span>{product.product_name}</span>
+                                    </li>
+                                ))}
                         </ul>
                     ) : (
                         <p className="text-white text-center py-10">No products found</p>
@@ -959,42 +1028,54 @@ const Products = () => {
             </div>
 
             {/* Modal for Adding Subcategory */}
-            {
-                modalOpen && (
-                    <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
-                        <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-1/2 lg:w-1/3 xl:w-1/4">
-                            <h2 className="text-xl mb-4 text-yellow-500">Add Subcategory</h2>
-                            <input
-                                type="text"
-                                value={newSubCategoryName}
-                                onChange={(e) => setNewSubCategoryName(e.target.value)}
-                                className="p-2 mb-4 w-full rounded"
-                                placeholder="Enter subcategory name"
-                            />
-                            <div className="flex justify-end">
-                                <button
-                                    className="bg-yellow-500 text-black rounded px-4 py-2 mr-2"
-                                    onClick={() => {
-                                        handleAddSubCategory();
-                                        setNewSubCategoryName(''); // Clear the input after adding
-                                    }}
-                                >
-                                    Add
-                                </button>
-                                <button
-                                    className="bg-red-500 text-white rounded px-4 py-2"
-                                    onClick={() => {
-                                        setModalOpen(false);
-                                        setNewSubCategoryName(''); // Clear the input when closing the modal
-                                    }}
-                                >
-                                    Cancel
-                                </button>
+            {modalOpen && (
+                <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
+                    <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-1/2 lg:w-1/3 xl:w-1/4">
+                        <h2 className="text-xl mb-4 text-yellow-500">Add Subcategory</h2>
+                        <input
+                            type="text"
+                            value={newSubCategoryName}
+                            onChange={(e) => setNewSubCategoryName(e.target.value)}
+                            className="p-2 mb-4 w-full rounded"
+                            placeholder="Enter subcategory name"
+                        />
+                        <input
+                            type="file"
+                            onChange={handleSubCategoryImageChange}
+                            className="p-2 mb-4 w-full rounded"
+                            accept="image/*"
+                        />
+                        {subCategoryImagePreview && (
+                            <div className="mb-4">
+                                <img
+                                    src={subCategoryImagePreview}
+                                    alt="Subcategory preview"
+                                    className="w-full h-40 object-cover rounded"
+                                />
                             </div>
+                        )}
+                        <div className="flex justify-end">
+                            <button
+                                className="bg-yellow-500 text-black rounded px-4 py-2 mr-2"
+                                onClick={handleAddSubCategory}
+                            >
+                                Add
+                            </button>
+                            <button
+                                className="bg-red-500 text-white rounded px-4 py-2"
+                                onClick={() => {
+                                    setModalOpen(false);
+                                    setNewSubCategoryName('');
+                                    setSubCategoryImage(null);
+                                    setSubCategoryImagePreview(null);
+                                }}
+                            >
+                                Cancel
+                            </button>
                         </div>
                     </div>
-                )
-            }
+                </div>
+            )}
             {editingSubCategory && (
                 <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
                     <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-1/2 lg:w-1/3 xl:w-1/4">

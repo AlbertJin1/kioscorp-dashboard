@@ -62,7 +62,7 @@ const LowDemandItems = () => {
                                     <th className="px-4 py-2 border border-gray-200 text-left">Item Name</th>
                                     <th className="px-4 py-2 border border-gray-200 text-center">Type</th>
                                     <th className="px-4 py-2 border border-gray-200 text-center">Sold Quantity</th>
-                                    <th className="px-4 py-2 border border-gray-200 text-center">Revenue ($)</th>
+                                    <th className="px-4 py-2 border border-gray-200 text-center">Revenue (₱)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -71,7 +71,7 @@ const LowDemandItems = () => {
                                         <td className="border px-4 py-2">{item.name}</td>
                                         <td className="border px-4 py-2 text-center">{item.type}</td>
                                         <td className="border px-4 py-2 text-center">{item.soldQuantity}</td>
-                                        <td className="border px-4 py-2 text-center">${item.revenue}</td>
+                                        <td className="border px-4 py-2 text-center">₱{item.revenue}</td>
                                     </tr>
                                 ))}
                             </tbody>
