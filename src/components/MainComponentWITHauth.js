@@ -1,93 +1,96 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // Import axios for making HTTP requests
+import React, { useCallback, useState, useEffect } from 'react';
+import axios from 'axios';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
+import Auth from './Auth';
+import Swal from 'sweetalert2';
 import Dashboard from './Dashboard';
 import SalesManagement from './SalesManagement';
 import Menu from './Menu';
 import Inventory from './Inventory';
 import OrderHistory from './OrderHistory';
-import Auth from './Auth'; // Import Auth component
-import Swal from 'sweetalert2';
 import Products from './Products';
 
 const MainComponent = () => {
-    const [currentPage, setCurrentPage] = useState('dashboard'); // Default to Dashboard
-    const [isAuthenticated, setIsAuthenticated] = useState(false); // State for authentication
+    const [currentPage, setCurrentPage] = useState('dashboard');
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loggedInUser, setLoggedInUser] = useState({
         firstName: '',
         lastName: '',
         phoneNumber: '',
-        role: '' // Add role to loggedInUser  state
+        role: ''
     });
 
-    // Check for token in localStorage on component mount
-    useEffect(() => {
+    // Memoize the checkSessionValidity function using useCallback
+    const checkSessionValidity = useCallback(async () => {
         const token = localStorage.getItem('token');
         if (token) {
-            setIsAuthenticated(true); // User is authenticated if token is present
-
-            // Retrieve user info from localStorage
-            const firstName = localStorage.getItem('firstName') || 'Guest';
-            const lastName = localStorage.getItem('lastName') || '';
-            const phoneNumber = localStorage.getItem('phoneNumber') || '';
-            const role = localStorage.getItem('role') || ''; // Retrieve role
-
-            // Set the logged-in user
-            setLoggedInUser({ firstName, lastName, phoneNumber, role });
+            try {
+                const response = await axios.get('http://localhost:8000/api/validate-session/', {
+                    headers: { Authorization: `Token ${token}` }
+                });
+                if (response.status === 200) {
+                    setIsAuthenticated(true);
+                } else {
+                    throw new Error('Unauthorized');
+                }
+            } catch (error) {
+                handleInvalidSession();  // Handle session invalidation
+            }
+        } else {
+            handleInvalidSession();  // No token found
         }
-    }, []); // Empty dependency array ensures this runs only once
+    }, []);
+
+    // Handle invalid session by clearing data and redirecting to Auth.js
+    const handleInvalidSession = () => {
+        Swal.fire({
+            title: 'Session Invalid',
+            text: 'Your session is invalid or has expired. Please log in again.',
+            icon: 'error',
+            confirmButtonColor: '#0f3a87',
+            timer: 2000,
+            showConfirmButton: false,
+        });
+        localStorage.clear();  // Clear any stored session data
+        setIsAuthenticated(false);
+        setCurrentPage('auth');  // Redirect to the authentication page
+    };
+
+    useEffect(() => {
+        checkSessionValidity();
+    }, [checkSessionValidity]);
 
     const handleLogout = async () => {
-        const token = localStorage.getItem('token'); // Get token from localStorage
-
+        const token = localStorage.getItem('token');
         try {
-            // Make an API call to log out the user with the token
             await axios.post('http://localhost:8000/api/logout/', {}, {
-                headers: {
-                    Authorization: `Token ${token}` // Include the token in the headers
-                }
+                headers: { Authorization: `Token ${token}` }
             });
 
-            // Clear local storage
-            localStorage.removeItem('token');
-            localStorage.removeItem('firstName');
-            localStorage.removeItem('lastName');
-            localStorage.removeItem('phoneNumber');
-            localStorage.removeItem('role');
-
-            // Update state
+            localStorage.clear();
             setIsAuthenticated(false);
-            setCurrentPage('dashboard');
+            setCurrentPage('auth');
             setLoggedInUser({ firstName: '', lastName: '', phoneNumber: '', role: '' });
 
-            // Show logout success alert
             Swal.fire({
                 title: 'Logged Out!',
                 text: 'You have successfully logged out.',
                 icon: 'success',
-                showConfirmButton: false, // Hide the confirm button
-                timer: 2000, // Automatically close the alert after 2 seconds
-                timerProgressBar: true, // Optional: show a progress bar
+                timer: 2000,
+                showConfirmButton: false,
             });
-
-
-            // Delay for 2 seconds before refreshing the page
-            setTimeout(() => {
-                window.location.reload(); // Refresh the page to show Auth component
-            }, 2000);
         } catch (error) {
-            console.error('Logout failed:', error);
-            // Optional: Handle logout failure (e.g., show an error alert)
             Swal.fire({
                 title: 'Logout Failed!',
                 text: 'There was an error logging you out. Please try again.',
                 icon: 'error',
-                confirmButtonColor: '#0f3a87'
+                confirmButtonColor: '#0f3a87',
             });
         }
     };
 
+    // Render different pages based on the currentPage state
     const renderPage = () => {
         if (!isAuthenticated) {
             return <Auth setIsAuthenticated={setIsAuthenticated} setLoggedInUser={setLoggedInUser} />;
@@ -95,7 +98,7 @@ const MainComponent = () => {
 
         switch (currentPage) {
             case 'menu':
-                return <Menu setIsAuthenticated={setIsAuthenticated} loggedInUser={loggedInUser} />; // Pass down props
+                return <Menu setIsAuthenticated={setIsAuthenticated} loggedInUser={loggedInUser} />;
             case 'dashboard':
                 return <Dashboard />;
             case 'inventory':
@@ -107,7 +110,7 @@ const MainComponent = () => {
             case 'product':
                 return <Products />;
             default:
-                return <Dashboard />; // Fallback to Dashboard
+                return <Dashboard />;
         }
     };
 
