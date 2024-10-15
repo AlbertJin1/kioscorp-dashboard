@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload, faPlus } from '@fortawesome/free-solid-svg-icons';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import imagePlaceholder from '../img/logo/placeholder-image.png'; // Path to your placeholder image
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -179,12 +180,33 @@ const UserManagement = () => {
 
         try {
             const token = localStorage.getItem('token');
+            // Fetch user details
             const response = await axios.get(`http://localhost:8000/api/users/${user.id}/`, {
                 headers: {
                     'Authorization': `Token ${token}`,
                 },
             });
-            setSelectedUser(response.data); // Set fetched user data
+
+            // Fetch profile picture as blob
+            let profilePicture = imagePlaceholder; // Default to placeholder
+
+            try {
+                const profileResponse = await axios.get(`http://localhost:8000/api/users/${user.id}/profile-picture/`, {
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                    },
+                    responseType: 'blob',  // Fetch as blob for images
+                });
+
+                if (profileResponse.data) {
+                    // If profile picture is returned, convert it to a URL
+                    profilePicture = URL.createObjectURL(profileResponse.data);
+                }
+            } catch (error) {
+                console.warn('No profile picture available, using placeholder.');
+            }
+
+            setSelectedUser({ ...response.data, profilePicture });
             setViewModalOpen(true);
         } catch (error) {
             console.error('Error fetching user details:', error);
@@ -195,6 +217,8 @@ const UserManagement = () => {
             });
         }
     };
+
+
 
     const handleCloseModals = () => {
         setViewModalOpen(false);
@@ -582,10 +606,11 @@ const UserManagement = () => {
                             {/* Profile Picture Section */}
                             <div className="flex-shrink-0 flex items-center justify-center mb-4 md:mb-0 md:mr-4">
                                 <img
-                                    src={selectedUser.profilePicture || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'} // Replace with actual profile picture URL
+                                    src={selectedUser.profilePicture || imagePlaceholder}
                                     alt="Profile"
-                                    className="h-32 w-32 md:h-64 md:w-64 rounded-full object-cover" // Center the profile picture and maintain aspect ratio
+                                    className="h-32 w-32 md:h-64 md:w-64 rounded border-2 border-black object-cover shadow-lg"
                                 />
+
                             </div>
 
                             {/* User Information Section */}

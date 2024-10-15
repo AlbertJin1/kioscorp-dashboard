@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import Loader from './Loader'; // Import the Loader component
+import imagePlaceholder from '../img/logo/placeholder-image.png';
 
 const MyProfile = ({ setIsAuthenticated }) => {
     const [profileData, setProfileData] = useState({
@@ -185,6 +186,9 @@ const MyProfile = ({ setIsAuthenticated }) => {
                 timer: 2000,
                 showConfirmButton: false,
             });
+
+            // Hide the save button after successful upload
+            setShowSaveButton(false);
         } catch (error) {
             console.error('Error updating profile picture:', error);
             Swal.fire({
@@ -194,6 +198,7 @@ const MyProfile = ({ setIsAuthenticated }) => {
             });
         }
     };
+
 
     return (
         <div className="flex flex-col bg-blue-900 text-white p-6 rounded-md">
@@ -218,9 +223,9 @@ const MyProfile = ({ setIsAuthenticated }) => {
                         />
                     ) : (
                         <img
-                            src="https://via.placeholder.com/150" // Replace with actual profile picture URL
+                            src={imagePlaceholder} // Replace with actual profile picture URL
                             alt="Profile"
-                            className="w-64 h-64 rounded object-cover"
+                            className="w-72 h-72 rounded object-cover"
                         />
                     )}
                     <label className="mt-4 bg-blue-700 text-white p-2 rounded hover:bg-blue-800 transition duration-200">
