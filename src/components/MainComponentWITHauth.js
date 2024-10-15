@@ -21,7 +21,6 @@ const MainComponent = () => {
         role: ''
     });
 
-    // Memoize the checkSessionValidity function using useCallback
     const checkSessionValidity = useCallback(async () => {
         const token = localStorage.getItem('token');
         if (token) {
@@ -31,6 +30,12 @@ const MainComponent = () => {
                 });
                 if (response.status === 200) {
                     setIsAuthenticated(true);
+                    setLoggedInUser({
+                        firstName: response.data.firstName,
+                        lastName: response.data.lastName,
+                        phoneNumber: response.data.phoneNumber,
+                        role: response.data.role
+                    });
                 } else {
                     throw new Error('Unauthorized');
                 }
@@ -42,7 +47,6 @@ const MainComponent = () => {
         }
     }, []);
 
-    // Handle invalid session by clearing data and redirecting to Auth.js
     const handleInvalidSession = () => {
         Swal.fire({
             title: 'Session Invalid',
@@ -58,8 +62,10 @@ const MainComponent = () => {
     };
 
     useEffect(() => {
-        checkSessionValidity();
-    }, [checkSessionValidity]);
+        if (isAuthenticated) {
+            checkSessionValidity();
+        }
+    }, [currentPage, isAuthenticated, checkSessionValidity]);
 
     const handleLogout = async () => {
         const token = localStorage.getItem('token');
@@ -110,7 +116,7 @@ const MainComponent = () => {
             case 'product':
                 return <Products />;
             default:
-                return <Dashboard />;
+                return <Dashboard />;  // Default page if no match
         }
     };
 

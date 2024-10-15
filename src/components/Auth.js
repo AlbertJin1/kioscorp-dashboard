@@ -71,7 +71,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                 return;
             }
         } else {
-            // Check for required fields and matching passwords
+            // Check for required fields and matching passwords during registration
             if (
                 !formData.username ||
                 !formData.password ||
@@ -123,8 +123,8 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
             }
         }
 
+        // Password validation
         const regex = /^.{8,}$/;
-
         if (!regex.test(formData.password)) {
             Swal.fire({
                 icon: 'error',
@@ -150,6 +150,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
             });
 
             if (isLogin) {
+                // Save token and user details on successful login
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('firstName', response.data.firstName);
                 localStorage.setItem('lastName', response.data.lastName);
@@ -165,6 +166,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                     role: response.data.role,
                 });
             } else {
+                // Clear the form after successful registration
                 setFormData({
                     username: '',
                     password: '',
@@ -176,8 +178,10 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                     email: '',
                     secretPasskey: '', // Clear secret passkey after registration
                 });
-                setIsLogin(true);
+                setIsLogin(true);  // Switch back to login view
             }
+
+            // Success message
             Swal.fire({
                 icon: 'success',
                 title: isLogin ? 'Login Successful' : 'Registration Successful',
@@ -185,6 +189,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                 timer: 2000,
                 showConfirmButton: false,
             });
+
             setIsSubmitting(false);
         } catch (error) {
             Swal.fire({
@@ -197,6 +202,8 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
             setIsSubmitting(false);
         }
     };
+
+
 
     // Use effect to check authentication on mount
     useEffect(() => {

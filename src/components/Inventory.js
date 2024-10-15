@@ -66,7 +66,7 @@ const Inventory = () => {
 
     // Polling to fetch products every 5 seconds
     useEffect(() => {
-        const interval = setInterval(() => fetchProductsRef.current(), 5000);
+        const interval = setInterval(() => fetchProductsRef.current(), 15000);
         return () => clearInterval(interval); // Cleanup on unmount
     }, []);
 
