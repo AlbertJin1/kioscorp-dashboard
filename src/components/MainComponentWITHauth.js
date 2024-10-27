@@ -42,8 +42,6 @@ const MainComponent = () => {
             } catch (error) {
                 handleInvalidSession();  // Handle session invalidation
             }
-        } else {
-            handleInvalidSession();  // No token found
         }
     }, []);
 
@@ -61,11 +59,10 @@ const MainComponent = () => {
         setCurrentPage('auth');  // Redirect to the authentication page
     };
 
+    // Check session validity when the component mounts
     useEffect(() => {
-        if (isAuthenticated) {
-            checkSessionValidity();
-        }
-    }, [currentPage, isAuthenticated, checkSessionValidity]);
+        checkSessionValidity();
+    }, [checkSessionValidity]);
 
     const handleLogout = async () => {
         const token = localStorage.getItem('token');

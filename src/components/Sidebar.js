@@ -14,12 +14,24 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
         setIsCollapsed(!isCollapsed);
     };
 
+    const handlePageClick = (page) => {
+        if (page === currentPage) {
+            // If the same page is clicked again, reload it
+            setCurrentPage(''); // Temporarily set to an empty string or a different page
+            setTimeout(() => {
+                setCurrentPage(page); // Reset to the original page after a short delay
+            }, 0); // You can adjust the delay if necessary
+        } else {
+            setCurrentPage(page);
+        }
+    };
+
     return (
         <div
             className={`min-h-screen flex flex-col bg-[#033372] text-white transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}
         >
             <div className="flex items-center justify-between p-4">
-                {!isCollapsed && <img src={logo} alt="Kioscorp Logo" className="h-12" />}
+                {!isCollapsed && <img src={logo} alt="Kioscorp Logo" className="h-14" />}
                 <button
                     onClick={toggleCollapse}
                     className={`focus:outline-none flex items-center justify-center ${isCollapsed ? 'w-full' : ''}`}
@@ -42,7 +54,7 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
                     <li
                         key={index}
                         className={`flex items-center p-4 cursor-pointer relative transition duration-300 ${currentPage === item.page ? 'bg-[#022a5e]' : 'hover:bg-[#022a5e]'}`}
-                        onClick={() => setCurrentPage(item.page)}
+                        onClick={() => handlePageClick(item.page)} // Use the new handler
                     >
                         <div className="flex justify-center items-center" style={{ minWidth: '2.5rem' }}>
                             {item.icon}
@@ -57,7 +69,7 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
                     </li>
                 ))}
             </ul>
-            <button
+            < button
                 onClick={handleLogout}
                 className="flex items-center p-4 bg-red-600 text-white hover:bg-red-500 transition duration-200 font-semibold text-xl"
             >

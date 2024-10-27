@@ -55,6 +55,12 @@ const Products = () => {
                     };
                     const res = await axios.get('http://localhost:8000/api/main-categories/', config);
                     setMainCategories(res.data);
+
+                    // Set "Auto Supply" as the default main category
+                    const autoSupplyCategory = res.data.find(category => category.main_category_name === 'Auto Supply');
+                    if (autoSupplyCategory) {
+                        setMainCategory(autoSupplyCategory);
+                    }
                 } else {
                     showError('You are not authorized to view main categories.');
                 }
