@@ -2,7 +2,6 @@ import React, { useCallback, useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
-import Auth from './Auth';
 import Swal from 'sweetalert2';
 import Dashboard from './Dashboard';
 import SalesManagement from './SalesManagement';
@@ -11,15 +10,9 @@ import Inventory from './Inventory';
 import OrderHistory from './OrderHistory';
 import Products from './Products';
 
-const MainComponent = () => {
+const MainComponentWITHauth = ({ loggedInUser, handleLogout }) => {
     const [currentPage, setCurrentPage] = useState('dashboard');
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [loggedInUser, setLoggedInUser] = useState({
-        firstName: '',
-        lastName: '',
-        phoneNumber: '',
-        role: ''
-    });
+    const [isAuthenticated, setIsAuthenticated] = useState(true); // Assume true since this component is for authenticated users
 
     const checkSessionValidity = useCallback(async () => {
         const token = localStorage.getItem('token');
@@ -28,15 +21,7 @@ const MainComponent = () => {
                 const response = await axios.get('http://localhost:8000/api/validate-session/', {
                     headers: { Authorization: `Token ${token}` }
                 });
-                if (response.status === 200) {
-                    setIsAuthenticated(true);
-                    setLoggedInUser({
-                        firstName: response.data.firstName,
-                        lastName: response.data.lastName,
-                        phoneNumber: response.data.phoneNumber,
-                        role: response.data.role
-                    });
-                } else {
+                if (response.status !== 200) {
                     throw new Error('Unauthorized');
                 }
             } catch (error) {
@@ -56,7 +41,6 @@ const MainComponent = () => {
         });
         localStorage.clear();  // Clear any stored session data
         setIsAuthenticated(false);
-        setCurrentPage('auth');  // Redirect to the authentication page
     };
 
     // Check session validity when the component mounts
@@ -64,41 +48,8 @@ const MainComponent = () => {
         checkSessionValidity();
     }, [checkSessionValidity]);
 
-    const handleLogout = async () => {
-        const token = localStorage.getItem('token');
-        try {
-            await axios.post('http://localhost:8000/api/logout/', {}, {
-                headers: { Authorization: `Token ${token}` }
-            });
-
-            localStorage.clear();
-            setIsAuthenticated(false);
-            setCurrentPage('auth');
-            setLoggedInUser({ firstName: '', lastName: '', phoneNumber: '', role: '' });
-
-            Swal.fire({
-                title: 'Logged Out!',
-                text: 'You have successfully logged out.',
-                icon: 'success',
-                timer: 2000,
-                showConfirmButton: false,
-            });
-        } catch (error) {
-            Swal.fire({
-                title: 'Logout Failed!',
-                text: 'There was an error logging you out. Please try again.',
-                icon: 'error',
-                confirmButtonColor: '#0f3a87',
-            });
-        }
-    };
-
     // Render different pages based on the currentPage state
     const renderPage = () => {
-        if (!isAuthenticated) {
-            return <Auth setIsAuthenticated={setIsAuthenticated} setLoggedInUser={setLoggedInUser} />;
-        }
-
         switch (currentPage) {
             case 'menu':
                 return <Menu setIsAuthenticated={setIsAuthenticated} loggedInUser={loggedInUser} />;
@@ -124,7 +75,7 @@ const MainComponent = () => {
                     className="fixed top-0 left-0 w-64 h-screen overflow-y-auto bg-white border-r"
                     setCurrentPage={setCurrentPage}
                     currentPage={currentPage}
-                    handleLogout={handleLogout}
+                    handleLogout={handleLogout} // Pass handleLogout to Sidebar
                 />
             )}
             <div className="flex flex-col flex-grow h-screen bg-gray-100">
@@ -133,6 +84,7 @@ const MainComponent = () => {
                         className="fixed top-0 w-full h-16 bg-white border-b"
                         currentPage={currentPage}
                         loggedInUser={loggedInUser}
+                        handleLogout={handleLogout} // Pass handleLogout to TopBar if needed
                     />
                 )}
                 <div className="flex-grow p-4 overflow-y-auto">
@@ -143,4 +95,4 @@ const MainComponent = () => {
     );
 };
 
-export default MainComponent;
+export default MainComponentWITHauth;

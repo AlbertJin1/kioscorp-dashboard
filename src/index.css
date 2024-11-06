@@ -41,6 +41,32 @@ code {
 }
 
 
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 10px;
+  /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #0f3a87;
+  /* Color of the scrollbar thumb */
+  border-radius: 6px;
+  /* Rounded corners for the scrollbar thumb */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  /* Background color of the scrollbar track */
+  border-radius: 6px;
+  /* Rounded corners for the scrollbar track */
+}
+
+/* Optional: Change scrollbar color on hover */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #0a2a57;
+  /* Darker color on hover */
+}
+
 
 @tailwind base;
 @tailwind components;

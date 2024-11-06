@@ -7,18 +7,18 @@ import Loader from './Loader'; // Import the Loader component
 const MonthlySales = () => {
     // Sample monthly sales data
     const data = [
-        { month: 'January', sales: 2400 },
-        { month: 'February', sales: 2210 },
-        { month: 'March', sales: 2290 },
-        { month: 'April', sales: 2000 },
+        { month: 'Jan', sales: 2400 },
+        { month: 'Feb', sales: 2210 },
+        { month: 'Mar', sales: 2290 },
+        { month: 'Apr', sales: 2000 },
         { month: 'May', sales: 2180 },
-        { month: 'June', sales: 2500 },
-        { month: 'July', sales: 3000 },
-        { month: 'August', sales: 2780 },
-        { month: 'September', sales: 2400 },
-        { month: 'October', sales: 2700 },
-        { month: 'November', sales: 3200 },
-        { month: 'December', sales: 3600 },
+        { month: 'Jun', sales: 2500 },
+        { month: 'Jul', sales: 3000 },
+        { month: 'Aug', sales: 2780 },
+        { month: 'Sep', sales: 2400 },
+        { month: 'Oct', sales: 2700 },
+        { month: 'Nov', sales: 3200 },
+        { month: 'Dec', sales: 3600 },
     ];
 
     const [loading, setLoading] = useState(true); // State for loading

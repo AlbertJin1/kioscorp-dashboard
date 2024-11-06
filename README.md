@@ -99,3 +99,4 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 - npm install react-select
 - npm i react-cropper
 - npm i react-bootstrap
+- npm install react-transition-group

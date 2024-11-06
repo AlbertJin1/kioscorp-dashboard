@@ -404,7 +404,7 @@ const Inventory = () => {
                     <div className="flex space-x-4">
                         <div className="relative">
                             <button
-                                className="flex items-center px-4 py-2 bg-[#022a5e] border border-gray-300 rounded-md text-white shadow hover:bg-[#024b8c] filter-button"
+                                className={`flex items-center px-4 py-2 border border-gray-300 rounded-md text-white shadow transition-colors duration-200 ${isFilterOpen ? 'bg-[#024b8c]' : 'bg-[#022a5e] hover:bg-[#024b8c]'}`}
                                 onClick={handleFilterToggle}
                             >
                                 <FontAwesomeIcon icon={faFilter} className="mr-2" />
@@ -464,7 +464,7 @@ const Inventory = () => {
                         </button>
 
                         {isAddStockModalOpen && selectedRow && (
-                            <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
+                            <div className="bg-black bg-opacity-50 backdrop-blur-sm fixed inset-0 flex justify-center items-center z-50">
                                 <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-1/4">
                                     <h2 className="text-2xl font-bold text-yellow-500 mb-4">
                                         Add stock for {selectedRow.product_name}
@@ -765,7 +765,7 @@ const Inventory = () => {
 
             {/* Edit Product Modal */}
             {isEditModalOpen && selectedRow && (
-                <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
+                <div className="bg-black bg-opacity-50 backdrop-blur-sm fixed inset-0 flex justify-center items-center z-50">
                     <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-3/4 lg:w-2/3 xl:w-1/2">
                         <h2 className="text-2xl mb-4 font-bold text-yellow-500">Edit Product</h2>
                         <div className="flex flex-col md:flex-row gap-4">

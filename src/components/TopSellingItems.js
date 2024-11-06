@@ -48,7 +48,7 @@ const TopSellingItems = () => {
 
     return (
         <div className="bg-white shadow-md p-4 rounded-lg flex-grow flex flex-col h-full">
-            <div className="flex items-center mb-2">
+            <div className="flex items-center mb-4">
                 <FontAwesomeIcon icon={faTrophy} className="text-3xl mr-4 text-yellow-500" />
                 <h2 className="text-xl font-semibold">Top Selling Items</h2>
             </div>
@@ -59,9 +59,9 @@ const TopSellingItems = () => {
                 </div>
             ) : (
                 <>
-                    <div className="flex-grow overflow-auto h-64">
-                        <table className="min-w-full mt-2 border-collapse border border-gray-200">
-                            <thead className="bg-gray-100">
+                    <div className="flex-grow overflow-auto h-72">
+                        <table className="min-w-full border-collapse border border-gray-200">
+                            <thead className="bg-gray-100 sticky top-0">
                                 <tr>
                                     <th className="px-4 py-2 border border-gray-200 text-left w-1/2">Product Name</th>
                                     <th className="px-4 py-2 border border-gray-200 text-center w-1/4">Month</th>
@@ -88,7 +88,7 @@ const TopSellingItems = () => {
                         >
                             <FontAwesomeIcon icon={faChevronLeft} className="text-xl" />
                         </button>
-                        <span className="font-semibold text-gray-700">
+                        < span className="font-semibold text-gray-700">
                             Page {currentPage} of {totalPages}
                         </span>
                         <button

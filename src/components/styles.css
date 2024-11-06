@@ -6,27 +6,22 @@
 
 .custom-scrollbar::-webkit-scrollbar-track {
     background: #2b2b2b;
+    /* Keep the track color as is or change it to a lighter shade of blue if desired */
     /* color of the track */
-    border-radius: 6px;
+    border-radius: 0;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #f39c12;
+    background: #007bff;
+    /* Change to blue for the scrollbar thumb */
     /* color of the scrollbar thumb */
-    border-radius: 6px;
+    border-radius: 0;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #d35400;
+    background: #0056b3;
+    /* Change to a darker blue when hovering over the thumb */
     /* color when hovering over the thumb */
-}
-
-/* Custom scrollbar styles for Firefox */
-.custom-scrollbar {
-    scrollbar-width: thin;
-    /* "auto" or "thin" */
-    scrollbar-color: #f39c12 #2b2b2b;
-    /* thumb color and track color */
 }
 
 /* Ensuring the custom scrollbar is applied */
@@ -36,4 +31,3 @@
     height: 100%;
     /* full height to see the scrollbar */
 }
-

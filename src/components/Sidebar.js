@@ -5,10 +5,14 @@ import { MdDashboard, MdManageHistory } from "react-icons/md";
 import { TiHome } from "react-icons/ti";
 import { IoBarChart } from "react-icons/io5";
 import logo from '../img/logo/KIOSCORP LOGO.png';
-import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { FaCashRegister, FaSignOutAlt } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+
 
 const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const navigate = useNavigate(); // Initialize useNavigate
+
 
     const toggleCollapse = () => {
         setIsCollapsed(!isCollapsed);
@@ -16,14 +20,18 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
 
     const handlePageClick = (page) => {
         if (page === currentPage) {
-            // If the same page is clicked again, reload it
             setCurrentPage(''); // Temporarily set to an empty string or a different page
             setTimeout(() => {
                 setCurrentPage(page); // Reset to the original page after a short delay
-            }, 0); // You can adjust the delay if necessary
+            }, 0);
         } else {
             setCurrentPage(page);
         }
+    };
+
+    const handlePOSAccess = () => {
+        // Redirect to the POS component
+        navigate('/pos'); // Assuming '/pos' is the route for MainComponentPOS
     };
 
     return (
@@ -54,7 +62,7 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
                     <li
                         key={index}
                         className={`flex items-center p-4 cursor-pointer relative transition duration-300 ${currentPage === item.page ? 'bg-[#022a5e]' : 'hover:bg-[#022a5e]'}`}
-                        onClick={() => handlePageClick(item.page)} // Use the new handler
+                        onClick={() => handlePageClick(item.page)}
                     >
                         <div className="flex justify-center items-center" style={{ minWidth: '2.5rem' }}>
                             {item.icon}
@@ -69,11 +77,21 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
                     </li>
                 ))}
             </ul>
-            < button
+
+            {/* Add Access POS button here */}
+            <button
+                onClick={handlePOSAccess}
+                className={`flex items-center p-4 bg-green-600 text-white hover:bg-green-500 transition duration-200 font-semibold text-xl`}
+            >
+                <FaCashRegister className="mr-2" size={30} /> {/* Add the icon here */}
+                Access POS
+            </button>
+
+            <button
                 onClick={handleLogout}
                 className="flex items-center p-4 bg-red-600 text-white hover:bg-red-500 transition duration-200 font-semibold text-xl"
             >
-                <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" />
+                <FaSignOutAlt className="mr-2" size={30} />
                 {!isCollapsed && <span>Logout</span>}
             </button>
         </div>

@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { FaEye, FaEdit, FaTrash, FaTimes, FaChevronUp, FaChevronDown, FaChevronLeft, FaChevronRight } from 'react-icons/fa'; // Imported icons
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FaEye, FaEdit, FaTrash, FaTimes, FaChevronUp, FaChevronDown, FaChevronLeft, FaChevronRight, FaPlus, FaDownload } from 'react-icons/fa'; // Imported icons
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import imagePlaceholder from '../img/logo/placeholder-image.png'; // Path to your placeholder image
@@ -30,7 +28,7 @@ const UserManagement = () => {
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const rowsPerPage = 11; // Show 10 rows per page
+    const rowsPerPage = 10; // Show 10 rows per page
 
     // Sort state
     const [sortKey, setSortKey] = useState('id'); // Default sorting by ID
@@ -52,6 +50,10 @@ const UserManagement = () => {
                     icon: 'error',
                     title: 'Error',
                     text: 'Could not fetch users. Please try again later.',
+                    position: 'top-end', // Position at top-end
+                    timer: 2000, // Auto-close after 2 seconds
+                    backdrop: false, // No background dimming
+                    showConfirmButton: false, // No confirmation button
                 });
             }
         };
@@ -149,13 +151,22 @@ const UserManagement = () => {
                         'Authorization': `Token ${token}`,
                     },
                 });
-                Swal.fire('Deleted!', 'User has been deleted.', 'success');
+                Swal.fire('Deleted!', 'User  has been deleted.', 'success', {
+                    position: 'top-end',
+                    timer: 2000,
+                    backdrop: false,
+                    showConfirmButton: false,
+                });
                 setUsers(users.filter(user => user.id !== userId));
             } catch (error) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
                     text: 'Could not delete user. Please try again later.',
+                    position: 'top-end',
+                    timer: 2000,
+                    backdrop: false,
+                    showConfirmButton: false,
                 });
             }
         }
@@ -237,7 +248,12 @@ const UserManagement = () => {
                     'Authorization': `Token ${token}`,
                 },
             });
-            Swal.fire('Success', 'User information updated!', 'success');
+            Swal.fire('Success', 'User  information updated!', 'success', {
+                position: 'top-end',
+                timer: 2000,
+                backdrop: false,
+                showConfirmButton: false,
+            });
             setEditModalOpen(false);
             setUsers(users.map(user => (user.id === selectedUser.id ? selectedUser : user)));
         } catch (error) {
@@ -245,6 +261,10 @@ const UserManagement = () => {
                 icon: 'error',
                 title: 'Error',
                 text: 'Could not update user. Please try again later.',
+                position: 'top-end',
+                timer: 2000,
+                backdrop: false,
+                showConfirmButton: false,
             });
         }
     };
@@ -268,7 +288,12 @@ const UserManagement = () => {
                     'Authorization': `Token ${token}`,
                 },
             });
-            Swal.fire('Success', 'New user added successfully!', 'success');
+            Swal.fire('Success', 'New user added successfully!', 'success', {
+                position: 'top-end',
+                timer: 2000,
+                backdrop: false,
+                showConfirmButton: false,
+            });
             setUsers([...users, newUser]); // Update the users state to include the new user
             handleCloseModals(); // Close the modal after successful addition
         } catch (error) {
@@ -277,6 +302,10 @@ const UserManagement = () => {
                 icon: 'error',
                 title: 'Error',
                 text: 'Could not add user. Please try again later.',
+                position: 'top-end',
+                timer: 2000,
+                backdrop: false,
+                showConfirmButton: false,
             });
         }
     };
@@ -352,29 +381,42 @@ const UserManagement = () => {
         workbook.xlsx.writeBuffer().then((buffer) => {
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             saveAs(blob, 'users.xlsx');
+
+            // Show success alert after download
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'User  data has been downloaded successfully!',
+                position: 'top-end', // Position at top-end
+                timer: 2000, // Auto-close after 2 seconds
+                backdrop: false, // No background dimming
+                showConfirmButton: false, // No confirmation button
+            });
         });
     };
 
     return (
         <div className="bg-blue-900 text-white p-6 rounded-md">
             <div className="flex justify-between items-center mb-2">
-                <h2 className="text-xl font-bold">User    Management</h2>
+                <h2 className="text-2xl font-bold">User Management</h2>
                 {(localStorage.getItem('role') === 'admin' || localStorage.getItem('role') === 'owner') && (
                     <div className="flex justify-between">
-                        <button
-                            className="bg-green-500 hover:bg-green-700 text-white font-bold px-3 py-1 rounded text-sm flex justify-center items-center"
-                            title="Export Users"
-                            onClick={handleExportUsers}
-                        >
-                            <FontAwesomeIcon icon={faDownload} className="text-md" />
-                        </button>
-                        <button
-                            className="bg-green-500 hover:bg-green-700 text-white font-bold px-3 py-1 rounded hover:bg-green-700 flex justify-center items-center ml-2"
-                            title="Add New User"
-                            onClick={() => setAddModalOpen(true)} // Open add user modal
-                        >
-                            <FontAwesomeIcon icon={faPlus} className="text-md" />
-                        </button>
+                        <div className="flex justify-between">
+                            <button
+                                className="bg-green-500 hover:bg-green-700 text-white font-bold p-2 px-4 rounded flex justify-center items-center transition duration-200 ease-in-out transform"
+                                title="Export Users"
+                                onClick={handleExportUsers}
+                            >
+                                <FaDownload size={25} />
+                            </button>
+                            <button
+                                className="bg-green-500 hover:bg-green-700 text-white font-bold p-2 px-4 rounded flex justify-center items-center ml-2 transition duration-200 ease-in-out transform"
+                                title="Add New User"
+                                onClick={() => setAddModalOpen(true)} // Open add user modal
+                            >
+                                <FaPlus size={25} />
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
@@ -386,11 +428,33 @@ const UserManagement = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="border border-gray-300 p-2 rounded mb-4 w-full text-black"
             />
+
+            {/* Pagination Controls */}
+            <div className="flex justify-between items-center mb-4">
+                <button
+                    className={`py-2 px-4 text-white transition-colors duration-200 focus:outline-none rounded flex items-center ${currentPage === 1 ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-700 hover:bg-blue-800'}`}
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                >
+                    <FaChevronLeft className="mr-2" /> {/* Add left arrow icon */}
+                    Prev
+                </button>
+                <span className="font-semibold text-white flex-1 text-center">Page {currentPage} of {totalPages}</span>
+                <button
+                    className={`py-2 px-4 text-white transition-colors duration-200 focus:outline-none rounded flex items-center ${currentPage === totalPages ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-700 hover:bg-blue-800'}`}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                >
+                    Next
+                    <FaChevronRight className="ml-2" /> {/* Add right arrow icon */}
+                </button>
+            </div>
+
             <div className="overflow-x-auto">
-                <table className="min-w-full table-auto">
-                    <thead>
-                        <tr className="bg-blue-700 border-b">
-                            <th className="px-4 py-2 cursor-pointer rounded-tl-lg" onClick={() => handleSort('id')}>
+                <table className="min-w-full table-auto border-collapse">
+                    <thead className="bg-blue-800 text-white">
+                        <tr>
+                            <th className="px-4 py-2 cursor-pointer" onClick={() => handleSort('id')}>
                                 <div className="flex items-center justify-between">
                                     <span>ID</span>
                                     <span>
@@ -430,31 +494,31 @@ const UserManagement = () => {
                                     </span>
                                 </div>
                             </th>
-                            <th className="px-4 py-2  rounded-tr-lg">Actions</th>
+                            <th className="px-4 py-2">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className='text-black'>
                         {filteredUsers.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage).map((user, index) => (
-                            <tr key={user.id} className={`bg-blue-600 ${index % 2 === 0 ? 'bg-blue-500' : ''}`}>
-                                <td className="border-r border-b px-4 py-2">{user.id}</td>
-                                <td className="border-r border-b px-4 py-2">{user.firstName} {user.lastName}</td>
-                                <td className="border-r border-b px-4 py-2">{user.email}</td>
-                                <td className="border-r border-b px-4 py-2">{user.gender}</td>
-                                <td className="border-r border-b px-4 py-2 capitalize">{user.role}</td>
+                            <tr key={user.id} className={`border-b transition duration-300 ease-in-out ${index % 2 === 0 ? 'bg-blue-50' : 'bg-white'} hover:bg-blue-100`}>
+                                <td className="border-r border-gray-300 px-4 py-2 text-center">{user.id}</td>
+                                <td className="border-r border-gray-300 px-4 py-2 text-center">{user.firstName} {user.lastName}</td>
+                                <td className="border-r border-gray-300 px-4 py-2 text-center">{user.email}</td>
+                                <td className="border-r border-gray-300 px-4 py-2 text-center">{user.gender}</td>
+                                <td className="border-r border-gray-300 px-4 py-2 text-center capitalize">{user.role}</td>
                                 {/* Actions Cell */}
-                                <td className="px-4 py-2 text-center border-b">
+                                <td className="px-4 py-2 text-center">
                                     <div className="flex justify-center space-x-4">
                                         <FaEye
-                                            className="cursor-pointer text-yellow-500 hover:text-yellow-700 text-2xl"
+                                            className="cursor-pointer text-yellow-500 hover:text-yellow-700 text-xl"
                                             onClick={() => handleView(user)}
                                         />
                                         <FaEdit
-                                            className="cursor-pointer text-green-500 hover:text-green-700 text-2xl"
+                                            className="cursor-pointer text-green-500 hover:text-green-700 text-xl"
                                             onClick={() => handleEdit(user)}
                                         />
                                         {localStorage.getItem('role') !== 'admin' && (
                                             <FaTrash
-                                                className="cursor-pointer text-red-500 hover:text-red-700 text-2xl"
+                                                className="cursor-pointer text-red-500 hover:text-red-700 text-xl"
                                                 onClick={() => handleDelete(user.id)}
                                             />
                                         )}
@@ -465,44 +529,39 @@ const UserManagement = () => {
                     </tbody>
                 </table>
             </div>
-            {/* Pagination Controls */}
-            <div className="flex justify-between items-center mt-8">
-                <button
-                    className="py-2 px-4 bg-blue-700 text-white hover:bg-blue-800 transition-colors duration-200 focus:outline-none rounded-lg flex items-center cursor-not-allowed"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                >
-                    <FaChevronLeft className="mr-2" /> {/* Add left arrow icon */}
-                    Previous
-                </button>
-                <span className="font-semibold text-white flex-1 text-center">Page {currentPage} of {totalPages}</span>
-                <button
-                    className="py-2 px-4 bg-blue-700 text-white hover:bg-blue-800 transition-colors duration-200 focus:outline-none rounded-lg flex items-center"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                >
-                    Next
-                    <FaChevronRight className="ml-2" /> {/* Add right arrow icon */}
-                </button>
-            </div>
 
             {/* Modal for Adding User */}
             {addModalOpen && (
-                <div className="fixed inset-0 flex items-center justify-center z-50">
+                <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50">
+                    <div className="fixed inset-0 bg-black opacity-50"></div>
                     <div className="bg-white p-6 rounded-md shadow-lg z-50 text-black w-11/12 max-w-lg">
-                        <h2 className="text-xl font-bold mb-4">Add New User</h2>
-                        <div className="mb-4">
-                            <label className="block">Username</label>
-                            <input
-                                type="text"
-                                value={newUserUsername}
-                                onChange={(e) => setNewUserUsername(e.target.value)}
-                                placeholder="Enter username" // Added placeholder
-                                className="border px-2 py-1 w-full"
-                            />
-                        </div>
-                        <div className="mb-4 flex">
-                            <div className="mr-2 flex-1">
+                        <h2 className="text-xl font-bold mb-4 col-span-2">Add New User</h2>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                            {/* Username */}
+                            <div>
+                                <label className="block">Username</label>
+                                <input
+                                    type="text"
+                                    value={newUserUsername}
+                                    onChange={(e) => setNewUserUsername(e.target.value)}
+                                    placeholder="Enter username"
+                                    className="border px-2 py-1 w-full"
+                                />
+                            </div>
+
+                            {/* Email */}
+                            <div>
+                                <label className="block">Email</label>
+                                <input
+                                    type="email"
+                                    value={newUserEmail}
+                                    onChange={(e) => setNewUserEmail(e.target.value)}
+                                    className="border px-2 py-1 w-full"
+                                />
+                            </div>
+
+                            {/* First Name */}
+                            <div>
                                 <label className="block">First Name</label>
                                 <input
                                     type="text"
@@ -511,7 +570,9 @@ const UserManagement = () => {
                                     className="border px-2 py-1 w-full"
                                 />
                             </div>
-                            <div className="flex-1">
+
+                            {/* Last Name */}
+                            <div>
                                 <label className="block">Last Name</label>
                                 <input
                                     type="text"
@@ -520,222 +581,231 @@ const UserManagement = () => {
                                     className="border px-2 py-1 w-full"
                                 />
                             </div>
+
+                            {/* Gender */}
+                            <div>
+                                <label className="block">Gender</label>
+                                <select
+                                    value={newUserGender}
+                                    onChange={(e) => setNewUserGender(e.target.value)}
+                                    className="border px-2 py-1 w-full"
+                                >
+                                    <option value="" disabled>Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+
+                            {/* Role */}
+                            <div>
+                                <label className="block">Role</label>
+                                <select
+                                    value={newUserRole}
+                                    onChange={(e) => setNewUserRole(e.target.value)}
+                                    className="border px-2 py-1 w-full"
+                                >
+                                    {localStorage.getItem('role') === 'admin' ? (
+                                        <option value="cashier">Cashier</option>
+                                    ) : (
+                                        <>
+                                            <option value="" disabled>Select Role</option>
+                                            <option value="cashier">Cashier</option>
+                                            <option value="admin">Admin</option>
+                                            <option value="owner">Owner</option>
+                                        </>
+                                    )}
+                                </select>
+                            </div>
+
+                            {/* Phone Number */}
+                            <div>
+                                <label className="block">Phone Number</label>
+                                <input
+                                    type="text"
+                                    value={newUserPhoneNumber}
+                                    onChange={(e) => setNewUserPhoneNumber(e.target.value)}
+                                    className="border px-2 py-1 w-full"
+                                />
+                            </div>
+
+                            {/* Password */}
+                            <div>
+                                <label className="block">Password</label>
+                                <input
+                                    type="password"
+                                    value={newUserPassword}
+                                    onChange={(e) => setNewUserPassword(e.target.value)}
+                                    className="border px-2 py-1 w-full"
+                                />
+                            </div>
                         </div>
-                        <div className="mb-4">
-                            <label className="block">Email</label>
-                            <input
-                                type="email"
-                                value={newUserEmail}
-                                onChange={(e) => setNewUserEmail(e.target.value)}
-                                className="border px-2 py-1 w-full"
-                            />
+
+                        {/* Buttons */}
+                        <div className="flex justify-end space-x-2 col-span-2">
+                            <button onClick={handleAddUser} className="bg-green-500 text-white p-2 rounded">Add User</button>
+                            <button onClick={handleCloseModals} className="bg-red-500 text-white p-2 rounded">Cancel</button>
                         </div>
-                        <div className="mb-4">
-                            <label className="block">Gender</label>
-                            <select
-                                value={newUserGender}
-                                onChange={(e) => setNewUserGender(e.target.value)}
-                                className="border px-2 py-1 w-full"
-                            >
-                                <option value="" disabled>Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                            </select>
-                        </div>
-                        <div className="mb-4">
-                            <label className="block">Role</label>
-                            <select
-                                value={newUserRole}
-                                onChange={(e) => setNewUserRole(e.target.value)}
-                                className="border px-2 py-1 w-full"
-                            >
-                                {localStorage.getItem('role') === 'admin' ? (
-                                    <option value="employee">Employee</option>
-                                ) : (
-                                    <>
-                                        <option value="" disabled>Select Role</option>
-                                        <option value="employee">Employee</option>
-                                        <option value="admin">Admin</option>
-                                        <option value="owner">Owner</option>
-                                    </>
-                                )}
-                            </select>
-                        </div>
-                        <div className="mb-4">
-                            <label className="block">Phone Number</label>
-                            <input
-                                type="text"
-                                value={newUserPhoneNumber}
-                                onChange={(e) => setNewUserPhoneNumber(e.target.value)}
-                                className="border px-2 py-1 w-full"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block">Password</label>
-                            <input
-                                type="password"
-                                value={newUserPassword}
-                                onChange={(e) => setNewUserPassword(e.target.value)}
-                                className="border px-2 py-1 w-full"
-                            />
-                        </div>
-                        <button onClick={handleAddUser} className="bg-green-500 text-white p-2 rounded mr-2">Add User</button>
-                        <button onClick={handleCloseModals} className="bg-red-500 text-white p-2 rounded">Cancel</button>
                     </div>
-                    <div className="fixed inset-0 bg-black opacity-50"></div>
                 </div>
             )}
+
 
             {/* Modal for Viewing User */}
-            {viewModalOpen && selectedUser && (
-                <div className="fixed inset-0 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-md shadow-lg z-50 text-black w-11/12 max-w-2xl relative">
-                        {/* Close Icon */}
-                        <button
-                            onClick={handleCloseModals}
-                            className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                        >
-                            <FaTimes size={20} />
-                        </button>
+            {
+                viewModalOpen && selectedUser && (
+                    <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50">
+                        {/* Overlay Background */}
+                        <div className="fixed inset-0 bg-black opacity-50"></div>
 
-                        {/* User Information Title */}
-                        <h2 className="text-xl font-bold mb-4 text-center">User Information</h2>
+                        {/* Modal Content */}
+                        <div className="bg-white p-6 rounded-md shadow-lg z-50 text-black w-11/12 max-w-2xl relative">
+                            {/* Close Icon */}
+                            <button
+                                onClick={handleCloseModals}
+                                className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                            >
+                                <FaTimes size={20} />
+                            </button>
 
-                        {/* Profile Picture and User Data Section */}
-                        <div className="flex flex-col md:flex-row md:items-center">
-                            {/* Profile Picture Section */}
-                            <div className="flex-shrink-0 flex items-center justify-center mb-4 md:mb-0 md:mr-4">
-                                <img
-                                    src={selectedUser.profilePicture || imagePlaceholder}
-                                    alt="Profile"
-                                    className="h-32 w-32 md:h-64 md:w-64 rounded border-2 border-black object-cover shadow-lg"
-                                />
+                            {/* User Information Title */}
+                            <h2 className="text-xl font-bold mb-4 text-center">User  Information</h2>
 
-                            </div>
+                            {/* Profile Picture and User Data Section */}
+                            <div className="flex flex-col md:flex-row md:items-center">
+                                {/* Profile Picture Section */}
+                                <div className="flex-shrink-0 flex items-center justify-center mb-4 md:mb-0 md:mr-4">
+                                    <img
+                                        src={selectedUser.profilePicture || imagePlaceholder}
+                                        alt="Profile"
+                                        className="h-32 w-32 md:h-64 md:w-64 rounded border-2 border-black object-cover shadow-lg"
+                                    />
+                                </div>
 
-                            {/* User Information Section */}
-                            <div className="flex-grow flex flex-col">
-                                <div className="mb-2">
-                                    <span className="font-semibold">First Name:</span> {selectedUser.firstName}
-                                </div>
-                                <div className="mb-2">
-                                    <span className="font-semibold">Last Name:</span> {selectedUser.lastName}
-                                </div>
-                                <div className="mb-2">
-                                    <span className="font-semibold">Email:</span> {selectedUser.email}
-                                </div>
-                                <div className="mb-2">
-                                    <span className="font-semibold">Gender:</span> {selectedUser.gender}
-                                </div>
-                                <div className="mb-2">
-                                    <span className="font-semibold">Phone Number:</span> {selectedUser.phoneNumber}
-                                </div>
-                                <div className="mb-2">
-                                    <span className="font-semibold">Role:</span> {selectedUser.role.toUpperCase()} {/* Capitalize role */}
+                                {/* User Information Section */}
+                                <div className="flex-grow flex flex-col">
+                                    <div className="mb-2">
+                                        <span className="font-semibold">First Name:</span> {selectedUser.firstName}
+                                    </div>
+                                    <div className="mb-2">
+                                        <span className="font-semibold">Last Name:</span> {selectedUser.lastName}
+                                    </div>
+                                    <div className="mb-2">
+                                        <span className="font-semibold">Email:</span> {selectedUser.email}
+                                    </div>
+                                    <div className="mb-2">
+                                        <span className="font-semibold">Gender:</span> {selectedUser.gender}
+                                    </div>
+                                    <div className="mb-2">
+                                        <span className="font-semibold">Phone Number:</span> {selectedUser.phoneNumber}
+                                    </div>
+                                    <div className="mb-2">
+                                        <span className="font-semibold">Role:</span> {selectedUser.role.toUpperCase()} {/* Capitalize role */}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="fixed inset-0 bg-black opacity-50"></div>
-                </div>
-            )}
+                )
+            }
 
             {/* Modal for Editing User */}
-            {editModalOpen && selectedUser && (
-                <div className="fixed inset-0 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-md shadow-lg z-50 text-black w-11/12 max-w-lg">
-                        <h2 className="text-xl font-bold mb-4">Edit User</h2>
-                        {localStorage.getItem('role') === 'admin' && selectedUser.role === 'owner' ? (
-                            <div className="text-red-500 text-center mb-4">
-                                You do not have permission to edit this user's profile.
-                            </div>
-                        ) : (
-                            <div>
-                                <div className="mb-4 flex">
-                                    <div className="mr-2 flex-1">
-                                        <label className="block">First Name</label>
+            {
+                editModalOpen && selectedUser && (
+                    <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50">
+                        <div className="fixed inset-0 bg-black opacity-50"></div>
+                        <div className="bg-white p-6 rounded-md shadow-lg z-50 text-black w-11/12 max-w-lg">
+                            <h2 className="text-xl font-bold mb-4">Edit User</h2>
+                            {localStorage.getItem('role') === 'admin' && selectedUser.role === 'owner' ? (
+                                <div className="text-red-500 text-center mb-4">
+                                    You do not have permission to edit this user's profile.
+                                </div>
+                            ) : (
+                                <div>
+                                    <div className="mb-4 flex">
+                                        <div className="mr-2 flex-1">
+                                            <label className="block">First Name</label>
+                                            <input
+                                                type="text"
+                                                value={selectedUser.firstName || ''}
+                                                onChange={(e) => setSelectedUser({ ...selectedUser, firstName: e.target.value })}
+                                                className="border px-2 py-1 w-full"
+                                                disabled={localStorage.getItem('role') === 'admin' && selectedUser.role === 'owner'}
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="block">Last Name</label>
+                                            <input
+                                                type="text"
+                                                value={selectedUser.lastName || ''}
+                                                onChange={(e) => setSelectedUser({ ...selectedUser, lastName: e.target.value })}
+                                                className="border px-2 py-1 w-full"
+                                                disabled={localStorage.getItem('role') === 'admin' && selectedUser.role === 'owner'}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="block">Email</label>
                                         <input
-                                            type="text"
-                                            value={selectedUser.firstName || ''}
-                                            onChange={(e) => setSelectedUser({ ...selectedUser, firstName: e.target.value })}
+                                            type="email"
+                                            value={selectedUser.email || ''}
+                                            onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
                                             className="border px-2 py-1 w-full"
                                             disabled={localStorage.getItem('role') === 'admin' && selectedUser.role === 'owner'}
                                         />
                                     </div>
-                                    <div className="flex-1">
-                                        <label className="block">Last Name</label>
+                                    <div className="mb-4">
+                                        <label className="block">Gender</label>
+                                        <select
+                                            value={selectedUser.gender || ''}
+                                            onChange={(e) => setSelectedUser({ ...selectedUser, gender: e.target.value })}
+                                            className="border px-2 py-1 w-full"
+                                            disabled={localStorage.getItem('role') === 'admin' && selectedUser.role === 'owner'}
+                                        >
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                        </select>
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="block">Phone Number</label>
                                         <input
                                             type="text"
-                                            value={selectedUser.lastName || ''}
-                                            onChange={(e) => setSelectedUser({ ...selectedUser, lastName: e.target.value })}
+                                            value={selectedUser.phoneNumber || ''}
+                                            onChange={(e) => setSelectedUser({ ...selectedUser, phoneNumber: e.target.value })}
                                             className="border px-2 py-1 w-full"
                                             disabled={localStorage.getItem('role') === 'admin' && selectedUser.role === 'owner'}
                                         />
                                     </div>
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block">Email</label>
-                                    <input
-                                        type="email"
-                                        value={selectedUser.email || ''}
-                                        onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
-                                        className="border px-2 py-1 w-full"
-                                        disabled={localStorage.getItem('role') === 'admin' && selectedUser.role === 'owner'}
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block">Gender</label>
-                                    <select
-                                        value={selectedUser.gender || ''}
-                                        onChange={(e) => setSelectedUser({ ...selectedUser, gender: e.target.value })}
-                                        className="border px-2 py-1 w-full"
+                                    <div className="mb-4">
+                                        <label className="block">Role</label>
+                                        <select
+                                            value={selectedUser.role || ''}
+                                            onChange={(e) => {
+                                                if (localStorage.getItem('role') === 'owner') {
+                                                    setSelectedUser({ ...selectedUser, role: e.target.value });
+                                                }
+                                            }}
+                                            className={`border px-2 py-1 w-full ${localStorage.getItem('role') !== 'owner' ? 'pointer-events-none opacity-50' : ''}`}
+                                        >
+                                            <option value="owner">Owner</option>
+                                            <option value="admin">Admin</option>
+                                            <option value="cashier">Cashier</option>
+                                        </select>
+                                    </div>
+                                    <button
+                                        onClick={handleSaveChanges}
+                                        className="bg-green-500 text-white p-2 rounded mr-2"
                                         disabled={localStorage.getItem('role') === 'admin' && selectedUser.role === 'owner'}
                                     >
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                    </select>
+                                        Save Changes
+                                    </button>
+                                    <button onClick={handleCloseModals} className="bg-red-500 text-white p-2 rounded">Close</button>
                                 </div>
-                                <div className="mb-4">
-                                    <label className="block">Phone Number</label>
-                                    <input
-                                        type="text"
-                                        value={selectedUser.phoneNumber || ''}
-                                        onChange={(e) => setSelectedUser({ ...selectedUser, phoneNumber: e.target.value })}
-                                        className="border px-2 py-1 w-full"
-                                        disabled={localStorage.getItem('role') === 'admin' && selectedUser.role === 'owner'}
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block">Role</label>
-                                    <select
-                                        value={selectedUser.role || ''}
-                                        onChange={(e) => {
-                                            if (localStorage.getItem('role') === 'owner') {
-                                                setSelectedUser({ ...selectedUser, role: e.target.value });
-                                            }
-                                        }}
-                                        className={`border px-2 py-1 w-full ${localStorage.getItem('role') !== 'owner' ? 'pointer-events-none opacity-50' : ''}`}
-                                    >
-                                        <option value="owner">Owner</option>
-                                        <option value="admin">Admin</option>
-                                        <option value="employee">Employee</option>
-                                    </select>
-                                </div>
-                                <button
-                                    onClick={handleSaveChanges}
-                                    className="bg-green-500 text-white p-2 rounded mr-2"
-                                    disabled={localStorage.getItem('role') === 'admin' && selectedUser.role === 'owner'}
-                                >
-                                    Save Changes
-                                </button>
-                                <button onClick={handleCloseModals} className="bg-red-500 text-white p-2 rounded">Close</button>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
-                    <div className="fixed inset-0 bg-black opacity-50"></div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

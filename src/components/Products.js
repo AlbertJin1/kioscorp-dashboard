@@ -789,13 +789,13 @@ const Products = () => {
                                 ))}
                         </ul>
                     ) : (
-                        <p className="text-white text-center py-10">No products found</p>
+                        <p className="text-white text-center py-10">Please select a category to view products</p>
                     )}
                 </div>
             </div>
 
             {/* Right Product Detail Section */}
-            <div className="w-full lg:w-1/2 flex flex-col">
+            <div className="w-1/2 max-w-2xl flex flex-col overflow-hidden">
 
                 {/* Title for Product Details */}
                 <div className="text-2xl text-yellow-500 p-4 bg-blue-900 rounded-tl-lg rounded-tr-lg flex justify-between items-center">
@@ -852,7 +852,7 @@ const Products = () => {
                 </div>
 
                 {/* Product Details */}
-                <div className="flex-grow px-4 pb-2 bg-blue-900 rounded-br-lg rounded-bl-lg overflow-y-auto custom-scrollbar">
+                <div className="flex-grow px-2 bg-blue-900 rounded-br-lg rounded-bl-lg overflow-y-auto custom-scrollbar max-w-full">
                     {selectedProduct ? (
                         <div className="flex flex-wrap">
                             {/* Left side: Image */}
@@ -962,9 +962,10 @@ const Products = () => {
 
             </div>
 
+
             {/* Modal for Adding Subcategory */}
             {modalOpen && (
-                <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
+                <div className="bg-black bg-opacity-50 backdrop-blur-sm fixed inset-0 flex justify-center items-center z-50">
                     <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-1/2 lg:w-1/3 xl:w-1/4">
                         <h2 className="text-xl mb-4 text-yellow-500">Add Subcategory</h2>
                         <input
@@ -1019,7 +1020,7 @@ const Products = () => {
             )}
 
             {editingSubCategory && (
-                <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
+                <div className="bg-black bg-opacity-50 backdrop-blur-sm fixed inset-0 flex justify-center items-center z-50">
                     <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-1/2 lg:w-1/3 xl:w-1/4">
                         <h2 className="text-xl mb-4 text-yellow-500">Edit Subcategory</h2>
                         <input
@@ -1054,7 +1055,7 @@ const Products = () => {
 
             {/* Modal for Adding Product */}
             {modalOpenProduct && (
-                <div className="bg-black bg-opacity-50 fixed inset-0 flex justify-center items-center z-50">
+                <div className="bg-black bg-opacity-50 backdrop-blur-sm fixed inset-0 flex justify-center items-center z-50">
                     <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-3/4 lg:w-2/3 xl:w-1/2">
                         <h2 className="text-2xl mb-4 text-yellow-500">Add Product</h2>
                         <div className="flex flex-wrap">

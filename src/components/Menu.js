@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import MyProfile from './MyProfile';
 import UserManagement from './UserManagement';
 import Loader from './Loader';
-import Logs from './Logs'; // Add Logs component
-import ChangePassword from './ChangePassword'; // Import Change Password component
+import Logs from './Logs';
+import ChangePassword from './ChangePassword';
 
 const Menu = ({ setIsAuthenticated }) => {
-    const [activeTab, setActiveTab] = useState('profile'); // Default tab is 'profile'
+    const [activeTab, setActiveTab] = useState('profile');
     const [loading, setLoading] = useState(false);
     const [userRole, setUserRole] = useState('');
 
@@ -22,6 +22,8 @@ const Menu = ({ setIsAuthenticated }) => {
             setLoading(false);
         }, 1000);
     };
+
+
 
     return (
         <div className="flex h-full overflow-hidden rounded-lg">
@@ -76,8 +78,8 @@ const Menu = ({ setIsAuthenticated }) => {
                     <>
                         {activeTab === 'profile' && <MyProfile setIsAuthenticated={setIsAuthenticated} />}
                         {(activeTab === 'management' && (userRole === 'owner' || userRole === 'admin')) && <UserManagement />}
-                        {(activeTab === 'logs' && (userRole === 'owner' || userRole === 'admin')) && <Logs />} {/* Add Logs component */}
-                        {activeTab === 'changePassword' && <ChangePassword />} {/* Add Change Password component */}
+                        {(activeTab === 'logs' && (userRole === 'owner' || userRole === 'admin')) && <Logs />}
+                        {activeTab === 'changePassword' && <ChangePassword />}
                     </>
                 )}
             </div>
