@@ -46,7 +46,7 @@ const SalesStatistics = () => {
     // Set default dates on component mount
     useEffect(() => {
         const defaultStartDate = new Date();
-        defaultStartDate.setDate(defaultStartDate.getDate() - 120); // 120 days ago
+        defaultStartDate.setDate(defaultStartDate.getDate() - 180); // 120 days ago
         const defaultEndDate = new Date(); // today
 
         setStartDate(defaultStartDate);
@@ -60,7 +60,7 @@ const SalesStatistics = () => {
                 <FontAwesomeIcon icon={faChartLine} className="text-3xl mr-4 text-blue-500" />
                 <h2 className="text-xl font-semibold">Sales Statistics</h2>
             </div>
-            <div className="flex mb-4">
+            <div className="flex mb-2">
                 <div className="flex flex-col mr-4 w-full">
                     <label className="mb-1 font-medium">From:</label>
                     <DatePicker

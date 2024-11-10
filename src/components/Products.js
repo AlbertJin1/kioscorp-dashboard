@@ -90,6 +90,11 @@ const Products = () => {
                         const res = await axios.get(`http://localhost:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, config);
                         const subCategories = res.data.filter(subCategory => subCategory.main_category === mainCategory.main_category_id);
                         setSubCategories(subCategories.sort((a, b) => a.sub_category_name.localeCompare(b.sub_category_name)));
+
+                        // Auto-select the first subcategory if it exists
+                        if (subCategories.length > 0) {
+                            setSelectedSubCategory(subCategories[0]); // Set the first subcategory
+                        }
                     } else {
                         showError('You are not authorized to view subcategories.');
                     }
@@ -125,7 +130,15 @@ const Products = () => {
                         };
                         const res = await axios.get('http://localhost:8000/api/products/', { params, headers: config.headers });
                         const products = res.data;
-                        setProducts(products); // No need for additional filtering here
+
+                        setProducts(products); // Set the products
+
+                        // Remove the auto-selection of the first product
+                        // if (products.length > 0) {
+                        //     setSelectedProduct(products[0]); // Set the first product
+                        // } else {
+                        //     setSelectedProduct(null); // Clear selected product if no products found
+                        // }
                     } else {
                         showError('You are not authorized to view products.');
                     }
@@ -138,12 +151,12 @@ const Products = () => {
                 }
             } else {
                 setProducts([]); // Clear products when no subcategory is selected
+                setSelectedProduct(null); // Clear selected product when no subcategory is selected
             }
         };
 
         fetchProducts();
     }, [selectedSubCategory, mainCategory]);
-    // Add mainCategory as a dependency
 
     const showError = (message) => {
         Swal.fire({
@@ -197,10 +210,12 @@ const Products = () => {
             setSelectedProduct(null);
             setProducts([]); // Clear products when unselecting
             setSubCategories([]); // Clear subcategories when unselecting
+            setNewProductType(''); // Clear product type when unselecting
         } else {
             setMainCategory(category);
             setSelectedSubCategory(null);
             setSelectedProduct(null);
+            setNewProductType(category.main_category_name); // Set product type based on selected main category
         }
     };
 
@@ -208,11 +223,13 @@ const Products = () => {
         // Unselect subcategory if it's already selected
         if (selectedSubCategory && subCategory.sub_category_id === selectedSubCategory.sub_category_id) {
             setSelectedSubCategory(null);
-            setSelectedProduct(null);
+            setSelectedProduct(null); // Clear selected product when unselecting
             setProducts([]); // Clear products when unselecting
         } else {
             setSelectedSubCategory(subCategory);
-            setSelectedProduct(null);
+            setSelectedProduct(null); // Clear selected product when changing subcategory
+            // Optionally, you can also fetch products here if you want to keep the logic for fetching
+            // fetchProducts(subCategory); // Uncomment if you want to fetch products immediately
         }
     };
 
@@ -635,7 +652,7 @@ const Products = () => {
     };
 
     return (
-        <div className="flex flex-col lg:flex-row h-full text-white font-bold gap-4">
+        <div className="flex flex-col lg:flex-row h-full text-white font-bold gap-4 p-4">
             {/* Left Categories Section */}
             <div className="w-full lg:w-1/3 rounded-lg flex flex-col h-full">
                 {/* Category Buttons */}
@@ -758,38 +775,46 @@ const Products = () => {
                             title="Add Product"
                             onClick={() => {
                                 if (selectedSubCategory) {
+                                    setNewProductType(mainCategory ? mainCategory.main_category_name : ''); // Set product type based on selected main category
                                     setModalOpenProduct(true);
                                 } else {
                                     showError('Please select a subcategory before adding a product.'); // Use SweetAlert2 for this alert
                                 }
-                            }} // Open modal on click
+                            }}
                         />
                     </div>
                 </div>
 
                 {/* Scrollable Products Section */}
                 <div className="flex-grow px-4 pb-2 bg-blue-900 rounded-br-lg rounded-bl-lg overflow-y-auto custom-scrollbar">
-                    {products.length > 0 ? (
-                        <ul>
-                            {products
-                                .filter(product => product.product_name.toLowerCase().includes(searchQueryProduct.toLowerCase()))
-                                .sort((a, b) => a.product_name.localeCompare(b.product_name)) // Sort alphabetically
-                                .map((product) => (
-                                    <li
-                                        key={product.product_id}
-                                        className={`rounded-full py-2 px-4 mb-1 hover:bg-yellow-500 hover:text-black cursor-pointer ${selectedProduct?.product_id === product.product_id ? 'bg-yellow-500 text-black' : 'bg-blue-700 text-white'}`}
-                                        onClick={(e) => {
-                                            if (e.target.tagName !== 'svg' && e.target.tagName !== 'path') {
-                                                handleProductClick(product);
-                                            }
-                                        }}
-                                    >
-                                        <span>{product.product_name}</span>
-                                    </li>
-                                ))}
-                        </ul>
+                    {selectedSubCategory ? ( // Check if a subcategory is selected
+                        products.length > 0 ? (
+                            <ul>
+                                {products
+                                    .filter(product => product.product_name.toLowerCase().includes(searchQueryProduct.toLowerCase()))
+                                    .sort((a, b) => a.product_name.localeCompare(b.product_name)) // Sort alphabetically
+                                    .map((product) => (
+                                        <li
+                                            key={product.product_id}
+                                            className={`rounded-full py-2 px-4 mb-1 hover:bg-yellow-500 hover:text-black cursor-pointer ${selectedProduct?.product_id === product.product_id ? 'bg-yellow-500 text-black' : 'bg-blue-700 text-white'}`}
+                                            onClick={(e) => {
+                                                if (e.target.tagName !== 'svg' && e.target.tagName !== 'path') {
+                                                    handleProductClick(product);
+                                                }
+                                            }}
+                                        >
+                                            <span>
+                                                {product.product_name}
+                                                {product.product_size ? ` (${product.product_size})` : ''} {/* Always display product size */}
+                                            </span>
+                                        </li>
+                                    ))}
+                            </ul>
+                        ) : (
+                            <p className="text-red-500 text-center py-10">No product data available</p> // Message when no products are found
+                        )
                     ) : (
-                        <p className="text-white text-center py-10">Please select a category to view products</p>
+                        <p className="text-white text-center py-10">Please select a category to view products</p> // Message when no subcategory is selected
                     )}
                 </div>
             </div>
@@ -1101,9 +1126,10 @@ const Products = () => {
                                         <input
                                             type="text"
                                             value={newProductType}
-                                            onChange={(e) => setNewProductType(e.target.value)}
+                                            onChange={(e) => setNewProductType(e.target.value)} // Optional: you can remove this line if you want to prevent any changes
                                             className="p-2 w-full rounded shadow-lg"
                                             placeholder="Enter product type"
+                                            disabled // Add this line to disable the input
                                         />
                                     </div>
                                     <div className="w-full md:w-1/2 px-4 mb-4">

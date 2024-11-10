@@ -201,7 +201,7 @@ const MyProfile = ({ setIsAuthenticated }) => {
 
 
     return (
-        <div className="flex flex-col bg-blue-900 text-white p-6 rounded-md">
+        <div className="flex flex-col bg-blue-900 text-white p-4 rounded-md h-full">
             {loading && <Loader />}
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold">Profile</h2>

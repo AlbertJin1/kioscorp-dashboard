@@ -1,28 +1,23 @@
-import React, { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faBoxesStacked, faWarehouse } from '@fortawesome/free-solid-svg-icons';
-import { MdDashboard, MdManageHistory } from "react-icons/md";
-import { TiHome } from "react-icons/ti";
-import { IoBarChart } from "react-icons/io5";
+import React, { useEffect, useState } from 'react';
+import { FaChevronLeft, FaWarehouse, FaChartBar, FaHome, FaHistory, FaCashRegister, FaSignOutAlt, FaBoxes, FaCubes } from 'react-icons/fa';
 import logo from '../img/logo/KIOSCORP LOGO.png';
-import { FaCashRegister, FaSignOutAlt } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-
+import { useNavigate } from 'react-router-dom';
+import './SidebarMain.css';
 
 const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const navigate = useNavigate(); // Initialize useNavigate
-
+    const [indicatorPosition, setIndicatorPosition] = useState({ top: 0, height: 0 });
+    const navigate = useNavigate();
 
     const toggleCollapse = () => {
         setIsCollapsed(!isCollapsed);
     };
 
-    const handlePageClick = (page) => {
+    const handlePageClick = (page, index) => {
         if (page === currentPage) {
-            setCurrentPage(''); // Temporarily set to an empty string or a different page
+            setCurrentPage('');
             setTimeout(() => {
-                setCurrentPage(page); // Reset to the original page after a short delay
+                setCurrentPage(page);
             }, 0);
         } else {
             setCurrentPage(page);
@@ -30,68 +25,73 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
     };
 
     const handlePOSAccess = () => {
-        // Redirect to the POS component
-        navigate('/pos'); // Assuming '/pos' is the route for MainComponentPOS
+        navigate('/pos');
     };
 
+    useEffect(() => {
+        const activeElement = document.querySelector(`li[data-key="${currentPage}"]`);
+        if (activeElement) {
+            const { offsetTop, offsetHeight } = activeElement;
+            const indicatorHeight = 40; // Height of the indicator
+            const topPosition = offsetTop + (offsetHeight - indicatorHeight) / 2; // Centering the indicator
+            setIndicatorPosition({ top: topPosition, height: indicatorHeight });
+        }
+    }, [currentPage]);
+
     return (
-        <div
-            className={`min-h-screen flex flex-col bg-[#033372] text-white transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}
-        >
+        <div className={`min-h-screen flex flex-col bg-[#033372] text-white transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
             <div className="flex items-center justify-between p-4">
                 {!isCollapsed && <img src={logo} alt="Kioscorp Logo" className="h-14" />}
-                <button
-                    onClick={toggleCollapse}
-                    className={`focus:outline-none flex items-center justify-center ${isCollapsed ? 'w-full' : ''}`}
-                >
-                    <FontAwesomeIcon
-                        icon={faChevronLeft}
-                        className={`text-white text-2xl transition-transform duration-300 ${isCollapsed ? 'transform rotate-180' : ''}`}
-                    />
+                <button onClick={toggleCollapse} className={`focus:outline-none flex items-center justify-center ${isCollapsed ? 'w-full' : ''}`}>
+                    <FaChevronLeft className={`text-white text-2xl transition-transform duration-300 ${isCollapsed ? 'transform rotate-180' : ''}`} />
                 </button>
             </div>
-            <ul className="flex-grow">
+            <ul className="flex-grow relative">
                 {[
-                    { icon: <MdDashboard className="text-white text-3xl" />, label: 'Menu', page: 'menu' },
-                    { icon: <TiHome className="text-white text-3xl" />, label: 'Dashboard', page: 'dashboard' },
-                    { icon: <FontAwesomeIcon icon={faBoxesStacked} className="text-3xl" style={{ color: 'white' }} />, label: 'Inventory', page: 'inventory' },
-                    { icon: <IoBarChart className="text-white text-3xl" />, label: 'Sales', page: 'sales-management' },
-                    { icon: <MdManageHistory className="text-white text-3xl" />, label: 'Order History', page: 'order-history' },
-                    { icon: <FontAwesomeIcon icon={faWarehouse} className="text-3xl" style={{ color: 'white' }} />, label: 'Products', page: 'product' },
+                    { icon: <FaCubes className="text-white" size={30} />, label: 'Menu', page: 'menu' },
+                    { icon: <FaHome className="text-white" size={30} />, label: 'Dashboard', page: 'dashboard' },
+                    { icon: <FaBoxes className="text-white" size={30} />, label: 'Inventory', page: 'inventory' },
+                    { icon: <FaChartBar className="text-white" size={30} />, label: 'Sales', page: 'sales-management' },
+                    { icon: <FaHistory className="text-white" size={30} />, label: 'Order History', page: 'order-history' },
+                    { icon: <FaWarehouse className="text-white" size={30} />, label: 'Products', page: 'product' },
                 ].map((item, index) => (
                     <li
                         key={index}
-                        className={`flex items-center p-4 cursor-pointer relative transition duration-300 ${currentPage === item.page ? 'bg-[#022a5e]' : 'hover:bg-[#022a5e]'}`}
-                        onClick={() => handlePageClick(item.page)}
+                        data-key={item.page} // Add data attribute to identify the active tab
+                        className={`flex items-center px-4 py-6 cursor-pointer relative transition duration-300 ${currentPage === item.page ? 'bg-[#022a5e]' : 'hover:bg-[#022a5e]'}`}
+                        onClick={() => handlePageClick(item.page, index)}
                     >
-                        <div className="flex justify-center items-center" style={{ minWidth: '2.5rem' }}>
+                        <div className="flex justify-center items-center">
                             {item.icon}
                         </div>
-                        {!isCollapsed && <span className="ml-3 text-lg font-semibold overflow-hidden">{item.label}</span>}
-                        {currentPage === item.page && (
-                            <div
-                                className="absolute right-0 top-0 h-full w-2 bg-white transition-all duration-300 transform scale-y-100"
-                                style={{ transitionDelay: `${currentPage === item.page ? '0.1s' : '0s'}` }}
-                            />
-                        )}
+                        {!isCollapsed && <span className="ml-2 text-lg font-semibold overflow-hidden">{item.label}</span>}
                     </li>
                 ))}
+                {/* Indicator */}
+                <div
+                    className="absolute right-0 h-full w-2 bg-white transition-all duration- 300 rounded-tl rounded-bl"
+                    style={{
+                        top: indicatorPosition.top,
+                        height: indicatorPosition.height,
+                    }}
+                />
             </ul>
 
-            {/* Add Access POS button here */}
+            {/* POS Button */}
             <button
                 onClick={handlePOSAccess}
-                className={`flex items-center p-4 bg-green-600 text-white hover:bg-green-500 transition duration-200 font-semibold text-xl`}
+                className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-start'} m-4 rounded p-2  bg-green-600 text-white hover:bg-green-500 transition duration-200 font-semibold text-xl`}
             >
-                <FaCashRegister className="mr-2" size={30} /> {/* Add the icon here */}
-                Access POS
+                <FaCashRegister size={30} className={`${isCollapsed ? '' : 'mr-2'}`} />
+                {!isCollapsed && <span>POS</span>}
             </button>
 
+            {/* Logout Button */}
             <button
                 onClick={handleLogout}
-                className="flex items-center p-4 bg-red-600 text-white hover:bg-red-500 transition duration-200 font-semibold text-xl"
+                className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-start'} mx-4 mb-4 rounded p-2  bg-red-600 text-white hover:bg-red-500 transition duration-200 font-semibold text-xl`}
             >
-                <FaSignOutAlt className="mr-2" size={30} />
+                <FaSignOutAlt size={30} className={`${isCollapsed ? '' : 'mr-2'}`} />
                 {!isCollapsed && <span>Logout</span>}
             </button>
         </div>

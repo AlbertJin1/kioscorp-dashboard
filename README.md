@@ -100,3 +100,5 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 - npm i react-cropper
 - npm i react-bootstrap
 - npm install react-transition-group
+- npm install chartjs-plugin-datalabels
+- npm i react-tooltip

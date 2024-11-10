@@ -50,14 +50,14 @@ code {
 ::-webkit-scrollbar-thumb {
   background-color: #0f3a87;
   /* Color of the scrollbar thumb */
-  border-radius: 6px;
+  border-radius: 0;
   /* Rounded corners for the scrollbar thumb */
 }
 
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
   /* Background color of the scrollbar track */
-  border-radius: 6px;
+  border-radius: 0;
   /* Rounded corners for the scrollbar track */
 }
 

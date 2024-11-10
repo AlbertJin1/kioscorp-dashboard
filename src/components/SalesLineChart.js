@@ -11,7 +11,7 @@ const SalesLineChart = ({ data }) => {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Legend verticalAlign="bottom" height={5} /> {/* Adding Legend */}
+                <Legend verticalAlign="bottom" height={15} /> {/* Adding Legend */}
                 <Line type="monotone" dataKey="sales" stroke="#8884d8" activeDot={{ r: 8 }} />
                 <Line type="monotone" dataKey="profit" stroke="#82ca9d" />
             </LineChart>

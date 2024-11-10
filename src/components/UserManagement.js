@@ -28,7 +28,7 @@ const UserManagement = () => {
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const rowsPerPage = 10; // Show 10 rows per page
+    const rowsPerPage = 15; // Show 10 rows per page
 
     // Sort state
     const [sortKey, setSortKey] = useState('id'); // Default sorting by ID
@@ -396,7 +396,7 @@ const UserManagement = () => {
     };
 
     return (
-        <div className="bg-blue-900 text-white p-6 rounded-md">
+        <div className="flex flex-col h-full bg-white p-4 rounded-md">
             <div className="flex justify-between items-center mb-2">
                 <h2 className="text-2xl font-bold">User Management</h2>
                 {(localStorage.getItem('role') === 'admin' || localStorage.getItem('role') === 'owner') && (
@@ -450,9 +450,9 @@ const UserManagement = () => {
                 </button>
             </div>
 
-            <div className="overflow-x-auto">
-                <table className="min-w-full table-auto border-collapse">
-                    <thead className="bg-blue-800 text-white">
+            <div className="overflow-auto flex-grow custom-scrollbar">
+                <table className="min-w-full text-black">
+                    <thead className="bg-[#022a5e] text-white text-lg sticky top-0 z-10">
                         <tr>
                             <th className="px-4 py-2 cursor-pointer" onClick={() => handleSort('id')}>
                                 <div className="flex items-center justify-between">
@@ -506,20 +506,23 @@ const UserManagement = () => {
                                 <td className="border-r border-gray-300 px-4 py-2 text-center">{user.gender}</td>
                                 <td className="border-r border-gray-300 px-4 py-2 text-center capitalize">{user.role}</td>
                                 {/* Actions Cell */}
-                                <td className="px-4 py-2 text-center">
+                                <td className="p-4 text-center">
                                     <div className="flex justify-center space-x-4">
                                         <FaEye
-                                            className="cursor-pointer text-yellow-500 hover:text-yellow-700 text-xl"
+                                            className="cursor-pointer text-yellow-500 hover:text-yellow-700"
                                             onClick={() => handleView(user)}
+                                            size={25}
                                         />
                                         <FaEdit
-                                            className="cursor-pointer text-green-500 hover:text-green-700 text-xl"
+                                            className="cursor-pointer text-green-500 hover:text-green-700"
                                             onClick={() => handleEdit(user)}
+                                            size={25}
                                         />
                                         {localStorage.getItem('role') !== 'admin' && (
                                             <FaTrash
-                                                className="cursor-pointer text-red-500 hover:text-red-700 text-xl"
+                                                className="cursor-pointer text-red-500 hover:text-red-700"
                                                 onClick={() => handleDelete(user.id)}
+                                                size={25}
                                             />
                                         )}
                                     </div>

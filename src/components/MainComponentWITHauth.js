@@ -87,7 +87,7 @@ const MainComponentWITHauth = ({ loggedInUser, handleLogout }) => {
                         handleLogout={handleLogout} // Pass handleLogout to TopBar if needed
                     />
                 )}
-                <div className="flex-grow p-4 overflow-y-auto">
+                <div className="overflow-y-auto custom-scrollbar">
                     {renderPage()}
                 </div>
             </div>

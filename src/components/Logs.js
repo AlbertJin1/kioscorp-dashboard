@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import moment from 'moment';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faChevronRight, faDownload, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FaChevronLeft, FaChevronRight, FaDownload, FaTrash } from 'react-icons/fa';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
@@ -12,7 +11,7 @@ const Logs = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const logsPerPage = 10;
+    const logsPerPage = 15;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filterBy, setFilterBy] = useState('all');
@@ -103,7 +102,6 @@ const Logs = () => {
             };
         });
 
-
         // Apply styles to data rows
         worksheet.eachRow((row, rowNumber) => {
             row.eachCell((cell) => {
@@ -168,64 +166,63 @@ const Logs = () => {
     const handleNextPage = () => setCurrentPage(currentPage + 1);
 
     return (
-        <div className="container mx-auto">
-            <div className="flex justify-between mb-2">
+        <div className="p-4 flex flex-col h-full bg-white rounded">
+            <div className="flex justify-between items-center mb-4">
                 <h2 className="text-3xl font-bold text-gray-800">Audit Logs</h2>
                 <div className="flex justify-between">
                     <button
-                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded flex justify-center items-center"
+                        className="bg-green-500 hover:bg-green-700 text-white font-bold p-2 rounded flex justify-center items-center"
                         title="Export Logs"
                         onClick={handleExportLogs}
                     >
-                        <FontAwesomeIcon icon={faDownload} className="text-sm" />
+                        <FaDownload size={30} />
                     </button>
                     {userRole !== 'admin' && (
                         <button
-                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded flex justify-center items-center ml-4"
+                            className="bg-red-500 hover:bg-red-700 text-white font-bold p-2 rounded flex justify-center items-center ml-4"
                             title="Clear Logs"
                             onClick={handleClearLogs}
                         >
-                            <FontAwesomeIcon icon={faTrash} className="text-sm" />
+                            <FaTrash size={30}/>
                         </button>
                     )}
                 </div>
             </div>
-            <div className="flex justify-between mb-4">
-                <div className="w-1/3">
+            <div className="flex flex-wrap mb-4 text-lg">
+                <div className="w-full md:w-1/3 mb-2 md:mb-0">
                     <input
                         type="search"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search logs..."
-                        className="w-full py-2 pl-10 text-sm text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                        className="w-full py-2 pl-3 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
                     />
                 </div>
-                <div className="w-1/6 ml-4">
+                <div className="w-full md:w-1/6 mb-2 md:mb-0 md:ml-4">
                     <select
                         value={filterBy}
                         onChange={(e) => setFilterBy(e.target.value)}
-                        className="w-full py-2 pl-10 text-sm text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                        className="w-full py-2 pl-3 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
                     >
                         <option value="all">All</option>
                         <option value="username">Username</option>
                         <option value="action">Action</option>
                     </select>
                 </div>
-                <div className="w-1/3 ml-4">
+                <div className="w-full md:w-1/3 mb-2 md:mb-0 md:ml-4">
                     <div className="flex justify-between">
                         <input
                             type="date"
                             value={dateFrom}
                             onChange={(e) => setDateFrom(e.target.value)}
-                            placeholder="Date From"
-                            className="w-1/2 py-2 pl-10 text-sm text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 mr-4"
+                            className="w-1/2 py-2 pl-3 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 mr-2"
                         />
                         <input
                             type="date"
                             value={dateTo}
                             onChange={(e) => setDateTo(e.target.value)}
-                            placeholder="Date To"
-                            className="w-1/2 py-2 pl-10 text-sm text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                            className="w-1/2 py-2 pl-3 text-gray-700 rounded-lg focus:outline-none
+                            focus:ring-2 focus:ring-gray-600"
                         />
                     </div>
                 </div>
@@ -233,19 +230,13 @@ const Logs = () => {
             {loading ? (
                 <p className="text-lg text-gray-600">Loading...</p>
             ) : (
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr className="bg-blue-900">
-                                <th className="px-6 py-2 text-sm font-semibold text-white uppercase tracking-wider text-center rounded-tl-lg">
-                                    Username
-                                </th>
-                                <th className="px-6 py-2 text-sm font-semibold text-white uppercase tracking-wider text-center">
-                                    Action
-                                </th>
-                                <th className="px-6 py-2 text-sm font-semibold text-white uppercase tracking-wider text-center rounded-tr-lg">
-                                    Timestamp
-                                </th>
+                <div className="overflow-auto flex-grow custom-scrollbar">
+                    <table className="min-w-full text-black">
+                        <thead className="bg-[#022a5e] text-white text-lg sticky top-0 z-10">
+                            <tr>
+                                <th className="px-4 py-2 w-1/5">Username</th>
+                                <th className="px-4 py-2 w-1/3">Action</th>
+                                <th className="px-4 py-2 w-1/3">Timestamp</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -267,23 +258,22 @@ const Logs = () => {
                 </div>
             )}
 
-            <div className="flex justify-between items-center mt-2">
+            <div className="flex justify-between items-center mt-4 text-xl font-semibold">
                 <button
-                    className={`p-2 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`flex items-center p-2 bg-blue-500 text-white rounded-lg transition duration-200 ease-in-out hover:bg-blue-700 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={handlePreviousPage}
                     disabled={currentPage === 1}
                 >
-                    <FontAwesomeIcon icon={faChevronLeft} className="text-xl" />
+                    <FaChevronLeft className="text-xl mr-1" size={30} />
+                    Prev
                 </button>
-                <span className="font-semibold text-gray-700">
-                    Page {currentPage} of {totalPages}
-                </span>
                 <button
-                    className={`p-2 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`flex items-center p-2 bg-blue-500 text-white rounded-lg transition duration-200 ease-in-out hover:bg-blue-700 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages}
                 >
-                    <FontAwesomeIcon icon={faChevronRight} className="text-xl" />
+                    Next
+                    <FaChevronRight className="text-xl ml-1" size={30} />
                 </button>
             </div>
 

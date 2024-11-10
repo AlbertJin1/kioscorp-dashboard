@@ -9,7 +9,7 @@ import axios from 'axios';
 
 const Inventory = () => {
     const [currentPage, setCurrentPage] = useState(1);
-    const rowsPerPage = 9;
+    const rowsPerPage = 12;
     const [searchQuery, setSearchQuery] = useState('');
     const [products, setProducts] = useState([]);
     const [mainCategories, setMainCategories] = useState([]);
@@ -378,8 +378,13 @@ const Inventory = () => {
         }
     };
 
+    const handleAddStockClick = () => {
+        setStockToAdd(''); // Ensure the input field is empty
+        setIsAddStockModalOpen(true); // Open the modal
+    };
+
     return (
-        <div className="p-4">
+        <div className="p-4 h-full flex flex-col">
             {/* Search and Action Buttons */}
             <div className="flex flex-col mb-4">
 
@@ -411,7 +416,7 @@ const Inventory = () => {
                                 Filter
                             </button>
                             {isFilterOpen && (
-                                <div ref={filterDropdownRef} className="absolute right-0 mt-2 bg-white border border-gray-300 rounded-md shadow-lg z-10 w-72 filter-dropdown">
+                                <div ref={filterDropdownRef} className="absolute right-0 mt-2 bg-white border border-gray-300 rounded-md shadow-lg z-20 w-72 filter-dropdown">
                                     <div className="p-4">
                                         <h4 className="text-lg font-bold mb-2">Category:</h4>
                                         <div className="flex flex-col">
@@ -455,7 +460,7 @@ const Inventory = () => {
                         </div>
 
                         <button
-                            onClick={() => setIsAddStockModalOpen(true)}  // Open the modal on click
+                            onClick={handleAddStockClick}  // Open the modal on click
                             disabled={!selectedRow}  // Disable if no row is selected
                             className={`px-4 py-2 flex items-center ${selectedRow ? 'bg-green-500 hover:bg-green-600 text-white shadow' : 'bg-gray-200 text-gray-500 cursor-not-allowed'} border border-gray-300 rounded-md`}
                         >
@@ -471,8 +476,8 @@ const Inventory = () => {
                                     </h2>
                                     <input
                                         type="number"
-                                        value={stockToAdd}
-                                        onChange={(e) => setStockToAdd(e.target.value)}
+                                        value={stockToAdd} // This will be empty initially
+                                        onChange={(e) => setStockToAdd(e.target.value)} // Update state on change
                                         className="p-2 mb-4 w-full border border-gray-300 rounded"
                                         placeholder="Enter stock quantity to add"
                                     />
@@ -593,8 +598,10 @@ const Inventory = () => {
                                     const workbook = new ExcelJS.Workbook();
                                     const worksheet = workbook.addWorksheet('Product Details');
 
-                                    worksheet.addRow(['Product ID', 'Product Name', 'Product Type', 'Product Size', 'Product Quantity', 'Product Color', 'Product Brand', 'Product Price', 'Product Description']);
+                                    // Add header row
+                                    worksheet.addRow(['Product ID', 'Product Name', 'Product Type', 'Product Size', 'Product Quantity', 'Product Color', 'Product Brand', 'Product Price', 'Product Description', 'Product Sold', 'Status']);
 
+                                    // Set column widths
                                     worksheet.columns = [
                                         { header: 'Product ID', key: 'product_id', width: 15 },
                                         { header: 'Product Name', key: 'product_name', width: 35 },
@@ -605,35 +612,37 @@ const Inventory = () => {
                                         { header: 'Product Brand', key: 'product_brand', width: 20 },
                                         { header: 'Product Price', key: 'product_price', width: 20 },
                                         { header: 'Product Description', key: 'product_description', width: 30 },
+                                        { header: 'Product Sold', key: 'product_sold', width: 20 },
+                                        { header: 'Status', key: 'status', width: 20 },
                                     ];
 
-                                    worksheet.addRow(['', '', '', '', '', '', '', '', '']);
+                                    // Add data rows
+                                    products.forEach((product) => {
+                                        const status = product.product_quantity > 0 ? 'Available' : 'Out of Stock'; // Determine status
+                                        worksheet.addRow([
+                                            String(product.product_id), // Convert product_id to string to prevent scientific notation
+                                            product.product_name,
+                                            product.product_type,
+                                            product.product_size,
+                                            product.product_quantity,
+                                            product.product_color,
+                                            product.product_brand,
+                                            product.product_price,
+                                            product.product_description,
+                                            product.product_sold,
+                                            status, // Include Status data
+                                        ]);
+                                    });
 
-                                    if (products.length > 0) {
-                                        products.forEach((product) => {
-                                            worksheet.addRow([
-                                                product.product_id,
-                                                product.product_name,
-                                                product.product_type,
-                                                product.product_size,
-                                                product.product_quantity,
-                                                product.product_color,
-                                                product.product_brand,
-                                                product.product_price,
-                                                product.product_description,
-                                            ]);
-                                        });
-                                    }
-
-                                    // Apply styles to the header and increase its height
-                                    worksheet.getRow(1).height = 30;  // Set header row height to 25 (adjust as needed)
+                                    // Apply styles to the header
+                                    worksheet.getRow(1).height = 30;
                                     worksheet.getRow(1).eachCell(cell => {
                                         cell.font = { bold: true };
                                         cell.alignment = { horizontal: 'center', vertical: 'middle' };
                                         cell.fill = {
                                             type: 'pattern',
                                             pattern: 'solid',
-                                            fgColor: { argb: 'FFFFF0' },  // Light fill color
+                                            fgColor: { argb: 'FFFFF0' },
                                         };
                                     });
 
@@ -677,16 +686,24 @@ const Inventory = () => {
                 {/* Pagination Controls */}
                 <div className="flex justify-between items-center">
                     <div className="flex space-x-4">
-                        <button onClick={handlePrevious} disabled={currentPage === 1} className="px-4 py-2 shadow bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300">
+                        <button
+                            onClick={handlePrevious}
+                            disabled={currentPage === 1}
+                            className={`px-4 py-2 shadow border border-gray-300 rounded-md transition duration-200 ${currentPage === 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#022a5e] text-white hover:bg-[#024b8c]'}`}
+                        >
                             <FontAwesomeIcon icon={faChevronLeft} className="mr-2" />
-                            Previous
+                            Prev
                         </button>
-                        <button onClick={handleNext} disabled={currentPage === totalPages} className="px-4 py-2 shadow bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300">
+                        <button
+                            onClick={handleNext}
+                            disabled={currentPage === totalPages}
+                            className={`px-4 py-2 shadow border border-gray-300 rounded-md transition duration-200 ${currentPage === totalPages ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#022a5e] text-white hover:bg-[#024b8c]'}`}
+                        >
                             Next
                             <FontAwesomeIcon icon={faChevronRight} className="ml-2" />
                         </button>
                     </div>
-                    <span>
+                    <span className="mr-4">
                         Page {currentPage} of {totalPages}
                     </span>
                 </div>
@@ -694,55 +711,56 @@ const Inventory = () => {
 
 
             {/* Inventory Table */}
-            <div className="overflow-x-auto">
-                <table className="min-w-full text-black border border-gray-300">
-                    <thead style={{ height: '50px' }}>
-                        <tr className="bg-[#022a5e] text-white">
-                            <th className="py-2 px-4 border-b border-gray-300 text-left" style={{ width: '400px' }}>
+            <div className="overflow-auto flex-grow custom-scrollbar">
+                <table className="min-w-full text-black">
+                    <thead className="bg-[#022a5e] text-white text-lg sticky top-0 z-10">
+                        <tr>
+                            <th className="py-2 px-4 text-left" style={{ width: '400px' }}>
                                 Product Name
                             </th>
-                            <th className="py-2 px-4 border-b border-gray-300 text-left" style={{ width: '220px' }}>
+                            <th className="py-2 px-4 text-left" style={{ width: '220px' }}>
                                 Sub-Category
                             </th>
-                            <th className="py-2 px-4 border-b border-gray-300 text-left" style={{ width: '250px' }}>
+                            <th className="py-2 px-4 text-left" style={{ width: '250px' }}>
                                 Brand
                             </th>
-                            <th className="py-2 px-4 border-b border-gray-300 text-left" style={{ width: '150px' }}>
+                            <th className="py-2 px-4 text-left" style={{ width: '150px' }}>
                                 Type
                             </th>
-                            <th className="py-2 px-4 border-b border-gray-300 text-left" style={{ width: '150px' }}>
+                            <th className="py-2 px-4 text-left" style={{ width: '150px' }}>
                                 Unit Price
                             </th>
-                            <th className="py-2 px-4 border-b border-gray-300 text-left" style={{ width: '125px' }}>
+                            <th className="py-2 px-4 text-left" style={{ width: '125px' }}>
                                 In-Stock
                             </th>
-                            <th className="py-2 px-4 border-b border-gray-300 text-left" style={{ width: '160px' }}>
+                            <th className="py-2 px-4 text-left" style={{ width: '160px' }}>
                                 Status
                             </th>
-                            <th className="py-2 px-4 border-b border-gray-300 text-left" style={{ width: '100px' }}>
+                            <th className="py-2 px-4 text-left" style={{ width: '100px' }}>
                                 Sold
                             </th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="bg-white">
                         {visibleData.map((item) => (
                             <tr
                                 key={item.product_id}
                                 className={`${selectedRow?.product_id === item.product_id ? 'bg-gray-300' : ''
-                                    } hover:bg-gray-200 h-16 transition-colors duration-200 cursor-pointer`} // Add cursor-pointer class
-                                onClick={() => handleRowClick(item)} // Select row
+                                    } hover:bg-gray-200 h-16 transition-colors duration-200 cursor-pointer`}
+                                onClick={() => handleRowClick(item)}
+                                style={{ borderBottom: '1px solid #ccc' }} // Add separator line
                             >
-                                <td className="py-2 px-4 border-b border-gray-300">{item.product_name}</td>
-                                <td className="py-2 px-4 border-b border-gray-300">
+                                <td className="py-2 px-4">{item.product_name}</td>
+                                <td className="py-2 px-4">
                                     {item.sub_category ? item.sub_category.sub_category_name : 'N/A'}
                                 </td>
-                                <td className="py-2 px-4 border-b border-gray-300">{item.product_brand}</td>
-                                <td className="py-2 px-4 border-b border-gray-300">{item.product_type}</td>
-                                <td className="py-2 px-4 border-b border-gray-300">
+                                <td className="py-2 px-4">{item.product_brand}</td>
+                                <td className="py-2 px-4">{item.product_type}</td>
+                                <td className="py-2 px-4">
                                     ₱{formatPrice(item.product_price)}
                                 </td>
-                                <td className="py-2 px-4 border-b border-gray-300">{item.product_quantity}</td>
-                                <td className="py-2 px-4 border-b border-gray-300">
+                                <td className="py-2 px-4">{item.product_quantity}</td>
+                                <td className="py-2 px-4">
                                     {item.product_quantity > 0 ? (
                                         <span className="flex items-center text-green-500">
                                             <FontAwesomeIcon icon={faCircle} className="mr-2" />
@@ -755,11 +773,10 @@ const Inventory = () => {
                                         </span>
                                     )}
                                 </td>
-                                <td className="py-2 px-4 border-b border-gray-300">{item.product_sold}</td>
+                                <td className="py-2 px-4">{item.product_sold}</td>
                             </tr>
                         ))}
                     </tbody>
-
                 </table>
             </div>
 
@@ -821,9 +838,10 @@ const Inventory = () => {
                                             type="text"
                                             name="product_type"
                                             value={formData.product_type || ''}
-                                            onChange={handleInputChange}
-                                            className="p-2 rounded bg-gray-200 text-black"
+                                            onChange={handleInputChange} // You can keep this if you want to handle changes, or remove it if you don't want any changes.
+                                            className="p-2 rounded bg-gray-200 text-black opacity-50 cursor-not-allowed" // Add opacity and cursor classes
                                             placeholder="Enter product type"
+                                            disabled // Add this attribute to disable the input
                                         />
                                     </div>
 
