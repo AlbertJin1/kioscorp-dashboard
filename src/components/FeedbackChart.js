@@ -87,7 +87,7 @@ const FeedbackChart = () => {
                 Satisfaction Ratings (Kiosk)
             </h2>
             {loading && feedbackData.labels.length === 0 ? (
-                <div className="flex justify-center items-center" style={{ height: '310px' }}>
+                <div className="flex justify-center items-center h-full">
                     <Loader />
                 </div>
             ) : (

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import MyProfile from './MyProfile';
 import UserManagement from './UserManagement';
-import Loader from './Loader';
 import Logs from './Logs';
 import ChangePassword from './ChangePassword';
 
 const Menu = ({ setIsAuthenticated }) => {
     const [activeTab, setActiveTab] = useState('profile');
-    const [loading, setLoading] = useState(false);
     const [userRole, setUserRole] = useState('');
 
     useEffect(() => {
@@ -16,14 +14,8 @@ const Menu = ({ setIsAuthenticated }) => {
     }, []);
 
     const handleTabChange = (tab) => {
-        setLoading(true);
         setActiveTab(tab);
-        setTimeout(() => {
-            setLoading(false);
-        }, 1000);
     };
-
-
 
     return (
         <div className="flex h-full overflow-hidden p-4">
@@ -72,16 +64,12 @@ const Menu = ({ setIsAuthenticated }) => {
             </div>
 
             <div className="w-full h-full flex flex-col overflow-y-auto">
-                {loading ? (
-                    <Loader />
-                ) : (
-                    <>
-                        {activeTab === 'profile' && <MyProfile setIsAuthenticated={setIsAuthenticated} />}
-                        {(activeTab === 'management' && (userRole === 'owner' || userRole === 'admin')) && <UserManagement />}
-                        {(activeTab === 'logs' && (userRole === 'owner' || userRole === 'admin')) && <Logs />}
-                        {activeTab === 'changePassword' && <ChangePassword />}
-                    </>
-                )}
+                <>
+                    {activeTab === 'profile' && <MyProfile setIsAuthenticated={setIsAuthenticated} />}
+                    {(activeTab === 'management' && (userRole === 'owner' || userRole === 'admin')) && <UserManagement />}
+                    {(activeTab === 'logs' && (userRole === 'owner' || userRole === 'admin')) && <Logs />}
+                    {activeTab === 'changePassword' && <ChangePassword />}
+                </>
             </div>
         </div>
     );

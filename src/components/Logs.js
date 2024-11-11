@@ -108,7 +108,7 @@ const Logs = () => {
                 cell.alignment = { horizontal: 'center', vertical: 'middle' };
                 cell.border = {
                     top: { style: 'thin' },
-                    left: { style: 'thin' },
+                    left: { style: ' thin' },
                     bottom: { style: 'thin' },
                     right: { style: 'thin' },
                 };
@@ -162,9 +162,6 @@ const Logs = () => {
     const currentLogs = filteredLogs.slice(indexOfFirstLog, indexOfLastLog);
     const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
 
-    const handlePreviousPage = () => setCurrentPage(currentPage - 1);
-    const handleNextPage = () => setCurrentPage(currentPage + 1);
-
     return (
         <div className="p-4 flex flex-col h-full bg-white rounded">
             <div className="flex justify-between items-center mb-4">
@@ -183,7 +180,7 @@ const Logs = () => {
                             title="Clear Logs"
                             onClick={handleClearLogs}
                         >
-                            <FaTrash size={30}/>
+                            <FaTrash size={30} />
                         </button>
                     )}
                 </div>
@@ -195,14 +192,14 @@ const Logs = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search logs..."
-                        className="w-full py-2 pl-3 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                        className="w-full py-2 pl-3 text-gray-700 border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
                     />
                 </div>
                 <div className="w-full md:w-1/6 mb-2 md:mb-0 md:ml-4">
                     <select
                         value={filterBy}
                         onChange={(e) => setFilterBy(e.target.value)}
-                        className="w-full py-2 pl-3 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                        className="w-full py-2 pl-3 text-gray-700 border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
                     >
                         <option value="all">All</option>
                         <option value="username">Username</option>
@@ -215,14 +212,13 @@ const Logs = () => {
                             type="date"
                             value={dateFrom}
                             onChange={(e) => setDateFrom(e.target.value)}
-                            className="w-1/2 py-2 pl-3 text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 mr-2"
+                            className="w-1/2 py-2 pl-3 text-gray-700 border border-black rounded-lg focus :outline-none focus:ring-2 focus:ring-gray-600 mr-2"
                         />
                         <input
                             type="date"
                             value={dateTo}
                             onChange={(e) => setDateTo(e.target.value)}
-                            className="w-1/2 py-2 pl-3 text-gray-700 rounded-lg focus:outline-none
-                            focus:ring-2 focus:ring-gray-600"
+                            className="w-1/2 py-2 pl-3 text-gray-700 border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
                         />
                     </div>
                 </div>
@@ -258,25 +254,43 @@ const Logs = () => {
                 </div>
             )}
 
-            <div className="flex justify-between items-center mt-4 text-xl font-semibold">
+            <div className="flex flex-grow justify-between items-center mt-4 text-xl font-semibold">
                 <button
-                    className={`flex items-center p-2 bg-blue-500 text-white rounded-lg transition duration-200 ease-in-out hover:bg-blue-700 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={handlePreviousPage}
-                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1 || totalPages === 0}
+                    className={`flex items-center px-4 py-2 rounded transition duration-300 ${currentPage === 1 || totalPages === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-700'}`}
                 >
                     <FaChevronLeft className="text-xl mr-1" size={30} />
                     Prev
                 </button>
+
+                {/* Selectable Page Number Buttons */}
+                <div className="flex justify-center mx-4">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+                        const pageNum = Math.max(1, currentPage - 2) + index; // Start from currentPage - 2
+                        if (pageNum > totalPages) return null; // Avoid rendering pages beyond totalPages
+
+                        return (
+                            <button
+                                key={pageNum}
+                                onClick={() => setCurrentPage(pageNum)}
+                                className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === pageNum ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                            >
+                                {pageNum}
+                            </button>
+                        );
+                    })}
+                </div>
+
                 <button
-                    className={`flex items-center p-2 bg-blue-500 text-white rounded-lg transition duration-200 ease-in-out hover:bg-blue-700 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={handleNextPage}
-                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    className={`flex items-center px-4 py-2 rounded transition duration-300 ${currentPage === totalPages || totalPages === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-700'}`}
                 >
                     Next
                     <FaChevronRight className="text-xl ml-1" size={30} />
                 </button>
             </div>
-
             {error && <p className="text-red-600 mt-4">{error}</p>}
         </div>
     );

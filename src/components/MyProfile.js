@@ -46,6 +46,8 @@ const MyProfile = ({ setIsAuthenticated }) => {
         const token = localStorage.getItem('token');
         const fetchProfilePicture = async () => {
             try {
+                setLoading(true);
+                await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5s delay
                 const response = await axios.get('http://localhost:8000/api/profile-picture/', {
                     headers: {
                         'Authorization': `Token ${token}`,
@@ -56,6 +58,8 @@ const MyProfile = ({ setIsAuthenticated }) => {
                 setProfilePicturePreview(profilePicture);
             } catch (error) {
                 console.error('Error fetching profile picture:', error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchProfilePicture();
@@ -69,6 +73,13 @@ const MyProfile = ({ setIsAuthenticated }) => {
     };
 
     const handleSave = async () => {
+        Swal.fire({
+            title: 'Processing...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            timer: 1500,
+            didOpen: () => Swal.showLoading()
+        });
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
@@ -123,6 +134,8 @@ const MyProfile = ({ setIsAuthenticated }) => {
                 icon: 'error',
                 title: 'Error',
                 text: 'Failed to update profile. Please try again later.',
+                timer: 2000,
+                showConfirmButton: false,
             });
         } finally {
             setLoading(false);
@@ -170,6 +183,14 @@ const MyProfile = ({ setIsAuthenticated }) => {
         const formData = new FormData();
         formData.append('profilePicture', profilePicture);
 
+        Swal.fire({
+            title: 'Processing...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            timer: 1500,
+            didOpen: () => Swal.showLoading()
+        });
+
         try {
             await axios.put('http://localhost:8000/api/update-profile-picture/', formData, {
                 headers: {
@@ -195,128 +216,137 @@ const MyProfile = ({ setIsAuthenticated }) => {
                 icon: 'error',
                 title: 'Error',
                 text: 'Failed to update profile picture. Please try again later.',
+                timer: 2000,
+                showConfirmButton: false,
             });
         }
     };
 
-
     return (
         <div className="flex flex-col bg-blue-900 text-white p-4 rounded-md h-full">
-            {loading && <Loader />}
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold">Profile</h2>
-                <button
-                    onClick={handleEditToggle}
-                    className="bg-blue-700 text-white p-2 rounded hover:bg-blue-800 transition duration-200"
-                >
-                    {editing ? 'Cancel' : 'Edit Profile'}
-                </button>
+                {!loading && (
+                    <button
+                        onClick={handleEditToggle}
+                        className="bg-blue-700 text-white p-2 rounded hover:bg-blue-800 transition duration-200"
+                    >
+                        {editing ? 'Cancel' : 'Edit Profile'}
+                    </button>
+                )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex flex-col items-center">
-                    {profilePicturePreview ? (
-                        <img
-                            src={profilePicturePreview}
-                            alt="Profile"
-                            className="w-72 h-72 rounded object-cover border-2 border-black shadow-lg"
-                        />
-                    ) : (
-                        <img
-                            src={imagePlaceholder} // Replace with actual profile picture URL
-                            alt="Profile"
-                            className="w-72 h-72 rounded object-cover"
-                        />
-                    )}
-                    <label className="mt-4 bg-blue-700 text-white p-2 rounded hover:bg-blue-800 transition duration-200">
-                        Upload Profile Picture
-                        <input
-                            type="file"
-                            onChange={handleProductImageChange}
-                            accept=".jpg, .jpeg, .png"
-                            className="hidden"
-                        />
-                    </label>
-                    {showSaveButton && (
-                        <button
-                            onClick={handleSaveProfilePicture}
-                            className="mt-4 p-2 bg-green-500 text-white rounded hover:bg-green-600 transition duration-200"
-                        >
-                            Save Profile Picture
-                        </button>
-                    )}
+            {/* Loader positioned above the data grid */}
+            {loading ? (
+                <div className="flex justify-center items-center h-full"> {/* Adjust height as needed */}
+                    <Loader />
                 </div>
-                <div className="col-span-2">
-                    {/* First Name */}
-                    <div className="mb-4">
-                        <label className="block text-md font-medium">First Name</label>
-                        <input
-                            type="text"
-                            value={profileData.firstName}
-                            onChange={(e) => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
-                            className={`w-full p-2 rounded-md text-white border bg-blue-700 ${editing ? 'border-green-500' : 'border-transparent'}`}
-                            readOnly={!editing}
-                        />
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div className="flex flex-col items-center">
+                        {profilePicturePreview ? (
+                            <img
+                                src={profilePicturePreview}
+                                alt="Profile"
+                                className="w-72 h-72 rounded object-cover border-2 border-black shadow-lg"
+                            />
+                        ) : (
+                            <img
+                                src={imagePlaceholder} // Replace with actual profile picture URL
+                                alt="Profile"
+                                className="w-72 h-72 rounded object-cover"
+                            />
+                        )}
+                        <label className="mt-4 bg-blue-700 text-white p-2 rounded hover:bg-blue-800 transition duration-200">
+                            Upload Profile Picture
+                            <input
+                                type="file"
+                                onChange={handleProductImageChange}
+                                accept=".jpg, .jpeg, .png"
+                                className="hidden"
+                            />
+                        </label>
+                        {showSaveButton && (
+                            <button
+                                onClick={handleSaveProfilePicture}
+                                className="mt-4 p-2 bg-green-500 text-white rounded hover:bg-green-600 transition duration-200"
+                            >
+                                Save Profile Picture
+                            </button>
+                        )}
                     </div>
+                    <div className="col-span-2">
+                        {/* First Name */}
+                        <div className="mb-4">
+                            <label className="block text-md font-medium">First Name</label>
+                            <input
+                                type="text"
+                                value={profileData.firstName}
+                                onChange={(e) => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
+                                className={`w-full p-2 rounded-md text-white border bg-blue-700 ${editing ? 'border-green-500' : 'border-transparent'}`}
+                                readOnly={!editing}
+                            />
+                        </div>
 
-                    {/* Last Name */}
-                    <div className="mb-4">
-                        <label className="block text-md font-medium">Last Name</label>
-                        <input
-                            type="text"
-                            value={profileData.lastName}
-                            onChange={(e) => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
-                            className={`w-full p-2 rounded-md text-white border bg-blue-700 ${editing ? 'border-green-500' : 'border-transparent'}`}
-                            readOnly={!editing}
-                        />
-                    </div>
+                        {/* Last Name */}
+                        <div className="mb-4">
+                            <label className="block text-md font-medium">Last Name</label>
+                            <input
+                                type="text"
+                                value={profileData.lastName}
+                                onChange={(e) => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
+                                className={`w-full p-2 rounded-md text-white border bg-blue-700 ${editing ? 'border-green-500' : 'border-transparent'}`}
+                                readOnly={!editing}
+                            />
+                        </div>
 
-                    {/* Email */}
-                    <div className="mb-4">
-                        <label className="block text-md font-medium">Email</label>
-                        <input
-                            type="email"
-                            value={profileData.email}
-                            className="w-full p-2 rounded-md text-white border border-transparent bg-blue-700"
-                            readOnly
-                        />
-                    </div>
+                        {/* Email */}
+                        <div className="mb-4">
+                            <label className="block text-md font-medium">Email</label>
+                            <input
+                                type="email"
+                                value={profileData.email}
+                                className="w-full p-2 rounded-md text-white border border-transparent bg-blue-700"
+                                readOnly
+                            />
+                        </div>
 
-                    {/* Gender */}
-                    <div className="mb-4">
-                        <label className="block text-md font-medium">Gender</label>
-                        <input
-                            type="text"
-                            value={profileData.gender}
-                            className="w-full p-2 rounded-md text-white border border-transparent bg-blue-700"
-                            readOnly
-                        />
-                    </div>
+                        {/* Gender */}
+                        <div className="mb-4">
+                            <label className="block text-md font-medium">Gender</label>
+                            <input
+                                type="text"
+                                value={profileData.gender}
+                                className="w-full p-2 rounded-md text-white border border-transparent bg-blue-700"
+                                readOnly
+                            />
+                        </div>
 
-                    {/* Phone Number */}
-                    <div className="mb-4">
-                        <label className="block text-md font-medium">Phone Number</label>
-                        <input
-                            type="text"
-                            value={profileData.phoneNumber}
-                            onChange={(e) => setProfileData(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                            className={`w-full p-2 rounded-md text-white border bg-blue-700 ${editing ? 'border-green-500' : 'border-transparent'}`}
-                            readOnly={!editing}
-                        />
-                    </div>
+                        {/* Phone Number */}
+                        <div className="mb-4">
+                            <label className="block text-md font-medium">Phone Number</label>
+                            <input
+                                type="text"
+                                value={profileData.phoneNumber}
+                                onChange={(e) => setProfileData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                                className={`w-full p-2 rounded-md text-white border bg-blue-700 ${editing ? 'border-green-500' : 'border-transparent'}`}
+                                readOnly={!editing}
+                            />
+                        </div>
 
-                    {/* Role */}
-                    <div className="mb-4">
-                        <label className="block text-md font-medium">Role</label>
-                        <input
-                            type="text"
-                            value={profileData.role ? profileData.role.charAt(0).toUpperCase() + profileData.role.slice(1) : 'N/A'}
-                            className="w-full p-2 rounded-md text-white border border-transparent bg-blue-700"
-                            readOnly
-                        />
+                        {/* Role */}
+                        <div className="mb-4">
+                            <label className="block text-md font-medium">Role</label>
+                            <input
+                                type="text"
+                                value={profileData.role ? profileData.role.charAt(0).toUpperCase() + profileData.role.slice(1) : 'N/A'}
+                                className="w-full p-2 rounded-md text-white border border-transparent bg-blue-700"
+                                readOnly
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {editing && (
                 <button

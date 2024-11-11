@@ -542,33 +542,8 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                     </div>
                 </div>
 
-                {/* Pagination Controls */}
-                <div className="flex justify-between items-center mb-4">
-                    <button
-                        onClick={handlePreviousPage}
-                        disabled={currentPage === 1}
-                        className={`flex items-center px-4 py-2 rounded transition-colors duration-200 
-                ${currentPage === 1 ? 'cursor-not-allowed bg-blue-200' : 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white'}`}
-                    >
-                        <FaChevronLeft className="mr-2" />
-                        Prev
-                    </button>
-                    <span className="text-lg font-semibold text-gray-700">
-                        Page {currentPage} of {totalPages}
-                    </span>
-                    <button
-                        onClick={handleNextPage}
-                        disabled={currentPage === totalPages}
-                        className={`flex items-center px-4 py-2 rounded transition-colors duration-200 
-                ${currentPage === totalPages ? 'cursor-not-allowed bg-blue-200' : 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white'}`}
-                    >
-                        Next
-                        <FaChevronRight className="ml-2" />
-                    </button>
-                </div>
-
                 {/* Product Grid Container */}
-                <div className="overflow-y-auto custom-scrollbar"> {/* Adjust maxHeight as needed */}
+                <div className="overflow-y-auto custom-scrollbar bg-gray-200 p-4 rounded-md"> {/* Adjust maxHeight as needed */}
                     <div className={`grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3`}>
                         {currentProducts.map(product => {
                             const isOutOfStock = product.product_quantity === 0;
@@ -577,7 +552,7 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                             return (
                                 <div
                                     key={product.product_id}
-                                    className={`relative border p-4 rounded-md shadow flex flex-col ${isOutOfStock
+                                    className={`relative bg-white border p-4 rounded-md shadow flex flex-col ${isOutOfStock
                                         ? 'bg-gray-300 border-2 border-red-500'
                                         : added
                                             ? 'bg-green-100 border-2 border-green-400' // Change background to green if added
@@ -653,6 +628,47 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                             );
                         })}
                     </div>
+                </div>
+                {/* Pagination Controls */}
+                <div className="flex justify-between items-center mt-4 text-lg font-bold">
+                    <button
+                        onClick={handlePreviousPage}
+                        disabled={currentPage === 1}
+                        className={`flex items-center px-4 py-2 rounded transition-colors duration-200 
+            ${currentPage === 1 ? 'cursor-not-allowed bg-blue-200' : 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white'}`}
+                    >
+                        <FaChevronLeft className="mr-2" />
+                        Prev
+                    </button>
+
+                    {/* Selectable Page Numbers */}
+                    <div className="flex space-x-2">
+                        {Array.from({ length: Math.min(totalPages, 4) }, (_, index) => {
+                            const pageNum = Math.max(1, currentPage - 1) + index; // Start from currentPage - 1
+                            if (pageNum > totalPages) return null; // Avoid rendering pages beyond totalPages
+
+                            return (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setCurrentPage(pageNum)} // Update the current page
+                                    className={`px-4 py-2 rounded transition-colors duration-200 
+                        ${currentPage === pageNum ? 'bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                                >
+                                    {pageNum}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <button
+                        onClick={handleNextPage}
+                        disabled={currentPage === totalPages}
+                        className={`flex items-center px-4 py-2 rounded transition-colors duration-200 
+            ${currentPage === totalPages ? 'cursor-not-allowed bg-blue-200' : 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white'}`}
+                    >
+                        Next
+                        <FaChevronRight className="ml-2" />
+                    </button>
                 </div>
             </div>
             {/* Right Section: Order Summary */}

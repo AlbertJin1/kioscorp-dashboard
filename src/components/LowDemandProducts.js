@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { FaArrowDown } from 'react-icons/fa';
+import Loader from './Loader'; // Import the Loader component
 
 const LowDemandProducts = () => {
     const [products, setProducts] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [intervalId, setIntervalId] = useState(null);
     const [fade, setFade] = useState(false); // State to manage fade effect
+    const [loading, setLoading] = useState(true); // State to manage loading
 
     useEffect(() => {
         const fetchLowDemandProducts = async () => {
@@ -18,8 +20,13 @@ const LowDemandProducts = () => {
                     },
                 });
                 setProducts(response.data);
+                // Set loading to false after a delay of 1.5 seconds
+                setTimeout(() => {
+                    setLoading(false);
+                }, 1500);
             } catch (error) {
                 console.error("Error fetching low demand products:", error);
+                setLoading(false); // Ensure loading is false even on error
             }
         };
 
@@ -59,8 +66,16 @@ const LowDemandProducts = () => {
         setIntervalId(id);
     };
 
-    if (products.length === 0) {
-        return <div>Loading...</div>; // Loading state
+    if (loading) {
+        return (
+            <div className="flex flex-col bg-white shadow-md p-4 rounded-lg h-full">
+                <h2 className="text-2xl font-bold mb-4 flex items-center">
+                    <FaArrowDown className="mr-2 text-red-500 text-3xl" />
+                    Low Demand Products
+                </h2>
+                <Loader /> {/* Show loader below the title */}
+            </div>
+        ); // Show loader while loading
     }
 
     const currentProduct = products[currentIndex];
@@ -70,7 +85,7 @@ const LowDemandProducts = () => {
             {/* Title at the Top */}
             <h2 className="text-2xl font-bold mb-4 flex items-center">
                 <FaArrowDown className="mr-2 text-red-500 text-3xl" />
-                Low Demand Products Overview
+                Low Demand Products
             </h2>
 
             {/* Left and Right Sections */}
@@ -86,10 +101,10 @@ const LowDemandProducts = () => {
 
                 {/* Right Section: Product Information */}
                 <div className={`flex flex-col w-1/2 transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}>
-                    <h2 className="text-2xl font-bold">{currentProduct.product_name}</h2>
+                    <h2 className="text-2 xl font-bold">{currentProduct.product_name}</h2>
                     <p className="text-lg text-gray-700">Size: {currentProduct.product_size}</p>
                     <p className="text-lg text-gray-700">Type: {currentProduct.product_type}</p>
-                    <p className="text-lg text-gray-700">Total Sold: {currentProduct.total_sold}</p>
+                    <p className="text-lg text-gray-700 font-bold">Total Sold: {currentProduct.total_sold}</p>
                 </div>
             </div>
 

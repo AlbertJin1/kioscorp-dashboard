@@ -80,7 +80,7 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
             {/* POS Button */}
             <button
                 onClick={handlePOSAccess}
-                className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-start'} m-4 rounded p-2  bg-green-600 text-white hover:bg-green-500 transition duration-200 font-semibold text-xl`}
+                className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-start'} m-4 rounded p-2  bg-white text-black hover:bg-blue-200 transition duration-200 font-semibold text-xl`}
             >
                 <FaCashRegister size={30} className={`${isCollapsed ? '' : 'mr-2'}`} />
                 {!isCollapsed && <span>POS</span>}
@@ -89,7 +89,7 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
             {/* Logout Button */}
             <button
                 onClick={handleLogout}
-                className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-start'} mx-4 mb-4 rounded p-2  bg-red-600 text-white hover:bg-red-500 transition duration-200 font-semibold text-xl`}
+                className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-start'} mx-4 mb-4 rounded p-2  bg-white text-black hover:bg-blue-200 transition duration-200 font-semibold text-xl`}
             >
                 <FaSignOutAlt size={30} className={`${isCollapsed ? '' : 'mr-2'}`} />
                 {!isCollapsed && <span>Logout</span>}

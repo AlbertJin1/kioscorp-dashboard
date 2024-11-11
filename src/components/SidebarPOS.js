@@ -105,7 +105,7 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount }, ref) => {
 
             <button
                 onClick={handleLogout}
-                className="flex items-center p-4 bg-red-600 text-white hover:bg-red-500 transition duration-200 font-semibold text-xl"
+                className="flex items-center m-4 px-4 py-2 rounded bg-white text-black hover:bg-blue-200 transition duration-200 font-semibold text-xl" // Updated colors
             >
                 <FaSignOutAlt className="mr-2" size={30} />
                 <span>Logout</span>
