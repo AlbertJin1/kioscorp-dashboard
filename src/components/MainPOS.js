@@ -39,12 +39,12 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
         const fetchCategories = async () => {
             const token = localStorage.getItem('token');
             try {
-                const mainCategoriesResponse = await axios.get('http://192.168.254.101:8000/api/main-categories/', {
+                const mainCategoriesResponse = await axios.get('http://localhost:8000/api/main-categories/', {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setMainCategories(mainCategoriesResponse.data);
 
-                const subCategoriesResponse = await axios.get('http://192.168.254.101:8000/api/sub-categories/', {
+                const subCategoriesResponse = await axios.get('http://localhost:8000/api/sub-categories/', {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setSubCategories(subCategoriesResponse.data);
@@ -60,7 +60,7 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
         const fetchProducts = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await axios.get('http://192.168.254.101:8000/api/products/', {
+                const response = await axios.get('http://localhost:8000/api/products/', {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setProducts(response.data);
@@ -324,7 +324,7 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
 
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.post('http://192.168.254.101:8000/api/create-order/', orderData, {
+            const response = await axios.post('http://localhost:8000/api/create-order/', orderData, {
                 headers: {
                     'Authorization': `Token ${token}`,
                     'Content-Type': 'application/json',
@@ -578,7 +578,7 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
 
                                         {/* Top: Product Image */}
                                         <img
-                                            src={product.product_image ? `http://192.168.254.101:8000${product.product_image}` : "https://via.placeholder.com/150"}
+                                            src={product.product_image ? `http://localhost:8000${product.product_image}` : "https://via.placeholder.com/150"}
                                             alt={product.product_name}
                                             className="w-auto h-48 object-cover border-2 border-black rounded mb-2" // Increased height for better visibility
                                             onError={(e) => {

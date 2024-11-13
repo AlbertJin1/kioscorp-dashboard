@@ -18,7 +18,7 @@ const CategorySales = () => {
         const fetchCategorySales = async () => {
             const token = localStorage.getItem('token'); // Retrieve token from localStorage
             try {
-                const response = await axios.get('http://192.168.254.101:8000/api/sales/category/', {
+                const response = await axios.get('http://localhost:8000/api/sales/category/', {
                     headers: {
                         Authorization: `Token ${token}`,
                     },

@@ -14,7 +14,7 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
     const fetchOrders = useCallback(async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.get('http://192.168.254.101:8000/api/orders/pending/', {
+            const response = await axios.get('http://localhost:8000/api/orders/pending/', {
                 headers: { 'Authorization': `Token ${token}` }
             });
             setOrders(response.data);

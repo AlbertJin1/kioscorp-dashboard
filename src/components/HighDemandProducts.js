@@ -14,7 +14,7 @@ const HighDemandProducts = () => {
         const fetchHighDemandProducts = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await axios.get('http://192.168.254.101:8000/api/top-selling-products/', {
+                const response = await axios.get('http://localhost:8000/api/top-selling-products/', {
                     headers: {
                         Authorization: `Token ${token}`,
                     },

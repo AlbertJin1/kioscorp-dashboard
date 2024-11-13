@@ -25,7 +25,7 @@ const MonthlySales = () => {
         const fetchSalesData = async () => {
             try {
                 const token = localStorage.getItem('token'); // Assuming you store the token in localStorage
-                const response = await axios.get('http://192.168.254.101:8000/api/sales/monthly/', {
+                const response = await axios.get('http://localhost:8000/api/sales/monthly/', {
                     headers: {
                         Authorization: `Token ${token}`,
                     },

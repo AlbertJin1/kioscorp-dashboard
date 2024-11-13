@@ -47,7 +47,7 @@ const MyProfile = ({ setIsAuthenticated }) => {
         const fetchProfilePicture = async () => {
             try {
                 setLoading(true); // Set loading state to true
-                const response = await axios.get('http://192.168.254.101:8000/api/profile-picture/', {
+                const response = await axios.get('http://localhost:8000/api/profile-picture/', {
                     headers: {
                         'Authorization': `Token ${token}`,
                     },
@@ -104,7 +104,7 @@ const MyProfile = ({ setIsAuthenticated }) => {
                 formData.append('profilePicture', profilePicture);
             }
 
-            await axios.put('http://192.168.254.101:8000/api/profile/', formData, {
+            await axios.put('http://localhost:8000/api/profile/', formData, {
                 headers: {
                     'Authorization': `Token ${token}`,
                     'Content-Type': 'multipart/form-data',
@@ -192,7 +192,7 @@ const MyProfile = ({ setIsAuthenticated }) => {
         });
 
         try {
-            await axios.put('http://192.168.254.101:8000/api/update-profile-picture/', formData, {
+            await axios.put('http://localhost:8000/api/update-profile-picture/', formData, {
                 headers: {
                     'Authorization': `Token ${token}`,
                     'Content-Type': 'multipart/form-data',

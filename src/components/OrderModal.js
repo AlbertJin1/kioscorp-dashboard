@@ -43,7 +43,7 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => { // Accept log
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.patch(`http://192.168.254.101:8000/api/orders/void/${order.order_id}/`);
+                const response = await axios.patch(`http://localhost:8000/api/orders/void/${order.order_id}/`);
                 Swal.fire({
                     position: 'top-end',
                     icon: 'success',
@@ -127,7 +127,7 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => { // Accept log
                 try {
                     // Include firstName and lastName in the API request
                     console.log("Sending payment request to the server...");
-                    const response = await axios.patch(`http://192.168.254.101:8000/api/orders/pay/${order.order_id}/`, {
+                    const response = await axios.patch(`http://localhost:8000/api/orders/pay/${order.order_id}/`, {
                         order_paid_amount: amountGiven,
                         cashier_first_name: loggedInUser.firstName, // Pass first name
                         cashier_last_name: loggedInUser.lastName  // Pass last name
@@ -197,7 +197,7 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => { // Accept log
                                         <div className="w-1/6 flex justify-center">
                                             <img
                                                 src={item.product_image
-                                                    ? `http://192.168.254.101:8000${item.product_image}`
+                                                    ? `http://localhost:8000${item.product_image}`
                                                     : "https://via.placeholder.com/150"
                                                 }
                                                 alt={item.product_name}

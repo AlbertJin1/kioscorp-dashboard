@@ -24,7 +24,7 @@ const Logs = () => {
         const fetchLogs = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get('http://192.168.254.101:8000/logs/');
+                const response = await axios.get('http://localhost:8000/logs/');
                 const data = response.data;
                 setLogs(data);
                 setLoading(false);
@@ -52,7 +52,7 @@ const Logs = () => {
             confirmButtonText: 'Yes, delete it!',
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete('http://192.168.254.101:8000/logs/')
+                axios.delete('http://localhost:8000/logs/')
                     .then(() => {
                         setLogs([]);
                         Swal.fire('Deleted!', 'Logs have been deleted.', 'success');

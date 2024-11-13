@@ -52,7 +52,7 @@ const Products = () => {
                             'Authorization': `Token ${token}`,
                         }
                     };
-                    const res = await axios.get('http://192.168.254.101:8000/api/main-categories/', config);
+                    const res = await axios.get('http://localhost:8000/api/main-categories/', config);
                     setMainCategories(res.data);
 
                     // Set "Auto Supply" as the default main category
@@ -86,7 +86,7 @@ const Products = () => {
                                 'Authorization': `Token ${token}`,
                             }
                         };
-                        const res = await axios.get(`http://192.168.254.101:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, config);
+                        const res = await axios.get(`http://localhost:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, config);
                         const subCategories = res.data.filter(subCategory => subCategory.main_category === mainCategory.main_category_id);
                         setSubCategories(subCategories.sort((a, b) => a.sub_category_name.localeCompare(b.sub_category_name)));
 
@@ -127,7 +127,7 @@ const Products = () => {
                             subcategory: selectedSubCategory.sub_category_name, // Use the subcategory name or ID based on your API design
                             include_subcategory: true, // Include subcategory details
                         };
-                        const res = await axios.get('http://192.168.254.101:8000/api/products/', { params, headers: config.headers });
+                        const res = await axios.get('http://localhost:8000/api/products/', { params, headers: config.headers });
                         const products = res.data;
 
                         setProducts(products); // Set the products
@@ -183,7 +183,7 @@ const Products = () => {
                             'Authorization': `Token ${token}`,
                         }
                     };
-                    const res = await axios.get(`http://192.168.254.101:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, config);
+                    const res = await axios.get(`http://localhost:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, config);
                     const subCategories = res.data.filter(subCategory => subCategory.main_category === mainCategory.main_category_id);
                     setSubCategories(subCategories.sort((a, b) => a.sub_category_name.localeCompare(b.sub_category_name)));
                 } else {
@@ -268,7 +268,7 @@ const Products = () => {
                         formData.append('sub_category_image', subCategoryImage, 'subcategory_image.jpg');
                     }
 
-                    const response = await axios.post('http://192.168.254.101:8000/api/sub-categories/', formData, {
+                    const response = await axios.post('http://localhost:8000/api/sub-categories/', formData, {
                         headers: {
                             'Authorization': `Token ${token}`,
                             'Content-Type': 'multipart/form-data',
@@ -450,7 +450,7 @@ const Products = () => {
                 data.append('product_image', productImage);
 
                 // Send the POST request to add the product variation
-                const response = await fetch('http://192.168.254.101:8000/api/products/', {
+                const response = await fetch('http://localhost:8000/api/products/', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Token ${localStorage.getItem('token')}`,
@@ -471,7 +471,7 @@ const Products = () => {
             setModalOpenProduct(false);
 
             // Refetch products to include the newly added one
-            const res = await fetch(`http://192.168.254.101:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, {
+            const res = await fetch(`http://localhost:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Token ${localStorage.getItem('token')}`,
@@ -531,10 +531,10 @@ const Products = () => {
                         'Authorization': `Token ${token}`,
                     }
                 };
-                const response = await axios.delete(`http://192.168.254.101:8000/api/products/${productId}/`, config);
+                const response = await axios.delete(`http://localhost:8000/api/products/${productId}/`, config);
                 if (response.status === 204) {
                     // Refetch products to exclude the deleted one
-                    const res = await fetch(`http://192.168.254.101:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, {
+                    const res = await fetch(`http://localhost:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, {
                         method: 'GET',
                         headers: {
                             'Authorization': `Token ${localStorage.getItem('token')}`,
@@ -598,11 +598,11 @@ const Products = () => {
                 }
 
                 // Make the patch request to update the subcategory
-                const response = await axios.patch(`http://192.168.254.101:8000/api/sub-categories/${editingSubCategory.sub_category_id}/`, formData, config);
+                const response = await axios.patch(`http://localhost:8000/api/sub-categories/${editingSubCategory.sub_category_id}/`, formData, config);
 
                 if (response.status === 200) {
                     // Refetch subcategories to include the updated one
-                    const res = await fetch(`http://192.168.254.101:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, {
+                    const res = await fetch(`http://localhost:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, {
                         method: 'GET',
                         headers: {
                             'Authorization': `Token ${localStorage.getItem('token')}`,
@@ -663,7 +663,7 @@ const Products = () => {
 
                 // Make delete request directly
                 const deleteResponse = await axios.delete(
-                    `http://192.168.254.101:8000/api/sub-categories/${subCategoryId}/`,
+                    `http://localhost:8000/api/sub-categories/${subCategoryId}/`,
                     config
                 );
 
@@ -943,7 +943,7 @@ const Products = () => {
                             <div className="w-full md:w-1/2 mb-4">
                                 {selectedProduct.product_image && (
                                     <img
-                                        src={`http://192.168.254.101:8000${selectedProduct.product_image}`}
+                                        src={`http://localhost:8000${selectedProduct.product_image}`}
                                         alt="Product_Image"
                                         className="border-2 border-black rounded w-64 h-64 object-cover mx-auto"
                                     />
