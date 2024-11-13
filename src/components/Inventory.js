@@ -26,6 +26,8 @@ const Inventory = () => {
     const [selectedProductId, setSelectedProductId] = useState(null);
     const [isAddStockModalOpen, setIsAddStockModalOpen] = useState(false);
     const [stockToAdd, setStockToAdd] = useState(0);
+    const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
+    const [selectedRows, setSelectedRows] = useState([]);
 
     const fetchProductsRef = useRef(null);
     const filterDropdownRef = useRef(null);
@@ -39,7 +41,7 @@ const Inventory = () => {
                     category: selectedFilters.category !== 'All' ? selectedFilters.category : undefined,
                     include_subcategory: true,
                 };
-                const response = await axios.get('http://localhost:8000/api/products/', { params });
+                const response = await axios.get('http://192.168.254.101:8000/api/products/', { params });
                 console.log("Fetched products:", response.data);
                 setProducts(response.data);
             } catch (error) {
@@ -53,7 +55,7 @@ const Inventory = () => {
             const token = localStorage.getItem('token');
             axios.defaults.headers.common['Authorization'] = `Token ${token}`;
             try {
-                const response = await axios.get('http://localhost:8000/api/main-categories/');
+                const response = await axios.get('http://192.168.254.101:8000/api/main-categories/');
                 console.log("Fetched main categories:", response.data);
                 setMainCategories(response.data);
             } catch (error) {
@@ -64,7 +66,7 @@ const Inventory = () => {
         fetchProductsRef.current();
     }, [selectedFilters.category]);
 
-    // Polling to fetch products every 5 seconds
+    // Polling to fetch products every 15 seconds
     useEffect(() => {
         const interval = setInterval(() => fetchProductsRef.current(), 15000);
         return () => clearInterval(interval); // Cleanup on unmount
@@ -122,15 +124,24 @@ const Inventory = () => {
     };
 
     const handleRowClick = (product) => {
-        if (product.product_id !== selectedProductId) {
-            setSelectedRow(product); // Set the selected product
-            setFormData({ ...product }); // Populate the form with product data
-            setProductImage(null); // Reset the image
-            setProductImagePreview(null); // Reset the image preview
-            setSelectedProductId(product.product_id);
+        if (isMultiSelectMode) {
+            // Multi-select mode
+            if (selectedRows.some(row => row.product_id === product.product_id)) {
+                setSelectedRows(selectedRows.filter(row => row.product_id !== product.product_id));
+            } else {
+                setSelectedRows([...selectedRows, product]);
+            }
         } else {
-            setSelectedRow(null); // Unselect the product
-            setSelectedProductId(null);
+            // Single-select mode
+            if (product.product_id !== selectedProductId) {
+                setSelectedRow(product);
+                setFormData({ ...product });
+                setSelectedProductId(product.product_id);
+                setSelectedRows([]); // Clear multi-select when switching back to single-select
+            } else {
+                setSelectedRow(null);
+                setSelectedProductId(null);
+            }
         }
     };
 
@@ -234,7 +245,7 @@ const Inventory = () => {
                     formDataToSend.append('product_image', productImage); // Add the new image
                 }
 
-                const response = await axios.patch(`http://localhost:8000/api/products/${updatedProduct.product_id}/`, formDataToSend, config);
+                const response = await axios.patch(`http://192.168.254.101:8000/api/products/${updatedProduct.product_id}/`, formDataToSend, config);
 
                 if (response.status === 200) {
                     Swal.fire({
@@ -249,7 +260,7 @@ const Inventory = () => {
                     });
                     setIsEditModalOpen(false); // Close modal on success
                     // Refetch products after update
-                    const res = await axios.get('http://localhost:8000/api/products/', config);
+                    const res = await axios.get('http://192.168.254.101:8000/api/products/', config);
                     setProducts(res.data);
                 } else {
                     Swal.fire('Error', 'Failed to update product.', 'error');
@@ -270,11 +281,11 @@ const Inventory = () => {
                         'Authorization': `Token ${token}`,
                     }
                 };
-                const response = await axios.delete(`http://localhost:8000/api/products/${productId}/`, config);
+                const response = await axios.delete(`http://192.168.254.101:8000/api/products/${productId}/`, config);
 
                 if (response.status === 204) {
                     // Refetch products to remove the deleted one
-                    const res = await axios.get('http://localhost:8000/api/products/', config);
+                    const res = await axios.get('http://192.168.254.101:8000/api/products/', config);
                     setProducts(res.data);
                     setSelectedRow(null); // Unselect the product after deletion
                     Swal.fire({
@@ -355,7 +366,7 @@ const Inventory = () => {
                     },
                 };
 
-                const response = await axios.patch(`http://localhost:8000/api/products/${selectedRow.product_id}/`, { product_quantity: newQuantity }, config);
+                const response = await axios.patch(`http://192.168.254.101:8000/api/products/${selectedRow.product_id}/`, { product_quantity: newQuantity }, config);
 
                 if (response.status === 200) {
                     Swal.fire({
@@ -460,9 +471,9 @@ const Inventory = () => {
                         </div>
 
                         <button
-                            onClick={handleAddStockClick}  // Open the modal on click
-                            disabled={!selectedRow}  // Disable if no row is selected
-                            className={`px-4 py-2 flex items-center ${selectedRow ? 'bg-green-500 hover:bg-green-600 text-white shadow' : 'bg-gray-200 text-gray-500 cursor-not-allowed'} border border-gray-300 rounded-md`}
+                            onClick={handleAddStockClick}
+                            disabled={!selectedRow || isMultiSelectMode} // Disable in multi-select mode
+                            className={`px-4 py-2 transition-colors duration-300 flex items-center ${(!selectedRow || isMultiSelectMode) ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 text-white shadow'} border border-gray-300 rounded-md`}
                         >
                             <FaBoxOpen className="mr-2" />  {/* Icon for stock */}
                             Add Stock
@@ -553,33 +564,54 @@ const Inventory = () => {
                         {/* Edit and Delete Buttons */}
                         <button
                             onClick={handleEditButtonClick}
-                            disabled={!selectedRow}
-                            className={`px-4 py-2 flex items-center ${selectedRow ? 'bg-yellow-500 hover:bg-yellow-600 text-white shadow' : 'bg-gray-200 text-gray-500 cursor-not-allowed'} border border-gray-300 rounded-md`}
+                            disabled={!selectedRow || isMultiSelectMode} // Disable in multi-select mode
+                            className={`px-4 py-2 transition-colors duration-300 flex items-center ${(!selectedRow || isMultiSelectMode) ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-yellow-500 hover:bg-yellow-600 text-white shadow'} border border-gray-300 rounded-md`}
                         >
                             <FaEdit className="mr-2" /> {/* Add margin to the right of the icon */}
                             Edit
                         </button>
                         <button
                             onClick={() => {
+                                const productsToDelete = isMultiSelectMode ? selectedRows : [selectedRow]; // Use selectedRows if in multi-select mode
                                 Swal.fire({
-                                    title: 'Delete Product?',
-                                    text: `Are you sure you want to delete ${selectedRow?.product_name}?`,
+                                    title: 'Delete Product(s)?',
+                                    text: `Are you sure you want to delete the selected product(s)?`,
                                     icon: 'warning',
                                     showCancelButton: true,
                                     confirmButtonColor: '#3085d6',
                                     cancelButtonColor: '#d33',
-                                    confirmButtonText: 'Yes, delete it!',
+                                    confirmButtonText: 'Yes, delete them!',
                                 }).then((result) => {
                                     if (result.isConfirmed) {
-                                        handleDeleteProduct(selectedRow?.product_id);
+                                        productsToDelete.forEach(product => handleDeleteProduct(product.product_id));
                                     }
                                 });
                             }}
-                            disabled={!selectedRow}
-                            className={`px-4 py-2 flex items-center ${selectedRow ? 'bg-red-500 hover:bg-red-600 text-white shadow' : 'bg-gray-200 text-gray-500 cursor-not-allowed'} border border-gray-300 rounded-md`}
+                            disabled={isMultiSelectMode ? selectedRows.length === 0 : !selectedRow}
+                            className={`px-4 py-2 transition-colors duration-300 flex items-center ${isMultiSelectMode ? (selectedRows.length > 0 ? 'bg-red-500 hover:bg-red-600 text-white shadow' : 'bg-gray-200 text-gray-500 cursor-not-allowed') : (!selectedRow ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600 text-white shadow')} border border-gray-300 rounded-md`}
                         >
                             <FaTrash className="mr-2" />
                             Delete
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                // Clear the selected row when switching modes
+                                if (isMultiSelectMode) {
+                                    setSelectedRows([]); // Clear selected rows when switching to single select
+                                } else {
+                                    setSelectedRow(null); // Clear selected row when switching to multi select
+                                }
+                                setIsMultiSelectMode(!isMultiSelectMode); // Toggle the mode
+                            }}
+                            className={`flex justify-between items-center px-4 py-2 border transition-colors duration-300 border-gray-300 rounded-md ${isMultiSelectMode ? 'bg-yellow-500' : 'bg-gray-200'} w-56`} // Adjust the width as needed
+                        >
+                            <span className="text-sm">{isMultiSelectMode ? 'Multi Select Mode' : 'Single Select Mode'}</span>
+                            <div className={`w-12 h-6 rounded-full ${isMultiSelectMode ? 'bg-yellow-400' : 'bg-gray-400'} flex items-center transition-colors duration-300`}>
+                                <div className={`w-6 h-6 rounded-full bg-white flex items-center justify-center transition-transform duration-300 ${isMultiSelectMode ? 'transform translate-x-6' : ''}`}>
+                                    <span className="text-xs font-bold">{isMultiSelectMode ? 'M' : 'S'}</span>
+                                </div>
+                            </div>
                         </button>
 
                         <button
@@ -592,7 +624,7 @@ const Inventory = () => {
                                             'Authorization': `Token ${token}`,
                                         }
                                     };
-                                    const res = await axios.get('http://localhost:8000/api/products/', config);
+                                    const res = await axios.get('http://192.168.254.101:8000/api/products/', config);
                                     const products = res.data;
 
                                     const workbook = new ExcelJS.Workbook();
@@ -715,19 +747,25 @@ const Inventory = () => {
                 <table className="min-w-full text-black">
                     <thead className="bg-[#022a5e] text-white text-lg sticky top-0 z-10">
                         <tr>
-                            <th className="py-2 px-4 text-left" style={{ width: '400px' }}>
+                            <th className="py-2 px-4 text-left" style={{ width: '350px' }}>
                                 Product Name
                             </th>
-                            <th className="py-2 px-4 text-left" style={{ width: '220px' }}>
+                            <th className="py-2 px-4 text-left" style={{ width: '180px' }}>
                                 Sub-Category
                             </th>
-                            <th className="py-2 px-4 text-left" style={{ width: '250px' }}>
+                            <th className="py-2 px-4 text-left" style={{ width: '200px' }}>
                                 Brand
+                            </th>
+                            <th className="py-2 px-4 text-left" style={{ width: '100px' }}>
+                                Color
+                            </th>
+                            <th className="py-2 px-4 text-left" style={{ width: '100px' }}>
+                                Size
                             </th>
                             <th className="py-2 px-4 text-left" style={{ width: '150px' }}>
                                 Type
                             </th>
-                            <th className="py-2 px-4 text-left" style={{ width: '150px' }}>
+                            <th className="py-2 px-4 text-left" style={{ width: '120px' }}>
                                 Unit Price
                             </th>
                             <th className="py-2 px-4 text-left" style={{ width: '125px' }}>
@@ -736,46 +774,57 @@ const Inventory = () => {
                             <th className="py-2 px-4 text-left" style={{ width: '160px' }}>
                                 Status
                             </th>
-                            <th className="py-2 px-4 text-left" style={{ width: '100px' }}>
+                            <th className="py-2 px-4 text-left" style={{ width: '80px' }}>
                                 Sold
                             </th>
                         </tr>
                     </thead>
                     <tbody className="bg-white">
-                        {visibleData.map((item) => (
-                            <tr
-                                key={item.product_id}
-                                className={`${selectedRow?.product_id === item.product_id ? 'bg-gray-300' : ''
-                                    } hover:bg-gray-200 h-16 transition-colors duration-200 cursor-pointer`}
-                                onClick={() => handleRowClick(item)}
-                                style={{ borderBottom: '1px solid #ccc' }} // Add separator line
-                            >
-                                <td className="py-2 px-4">{item.product_name}</td>
-                                <td className="py-2 px-4">
-                                    {item.sub_category ? item.sub_category.sub_category_name : 'N/A'}
+                        {visibleData.length === 0 ? (
+                            <tr>
+                                <td colSpan="10" className="py-4 text-center text-gray-700">
+                                    No data available
                                 </td>
-                                <td className="py-2 px-4">{item.product_brand}</td>
-                                <td className="py-2 px-4">{item.product_type}</td>
-                                <td className="py-2 px-4">
-                                    ₱{formatPrice(item.product_price)}
-                                </td>
-                                <td className="py-2 px-4">{item.product_quantity}</td>
-                                <td className="py-2 px-4">
-                                    {item.product_quantity > 0 ? (
-                                        <span className="flex items-center text-green-500">
-                                            <FontAwesomeIcon icon={faCircle} className="mr-2" />
-                                            Available
-                                        </span>
-                                    ) : (
-                                        <span className="flex items-center text-red-500">
-                                            <FontAwesomeIcon icon={faCircle} className="mr-2" />
-                                            Out of Stock
-                                        </span>
-                                    )}
-                                </td>
-                                <td className="py-2 px-4">{item.product_sold}</td>
                             </tr>
-                        ))}
+                        ) : (
+                            visibleData.map((item) => (
+                                <tr
+                                    key={item.product_id}
+                                    className={`${selectedRows.some(row => row.product_id === item.product_id) ? 'bg-gray-300' : ''} 
+                            ${selectedRow && selectedRow.product_id === item.product_id ? 'bg-blue-200' : ''} 
+                            hover:bg-gray-200 h-16 transition-colors duration-200 cursor-pointer`}
+                                    onClick={() => handleRowClick(item)}
+                                    style={{ borderBottom: '1px solid #ccc' }} // Add separator line
+                                >
+                                    <td className="py-2 px-4">{item.product_name}</td>
+                                    <td className="py-2 px-4">
+                                        {item.sub_category ? item.sub_category.sub_category_name : 'N/A'}
+                                    </td>
+                                    <td className="py-2 px-4">{item.product_brand}</td>
+                                    <td className="py-2 px-4">{item.product_color || 'N/A'}</td>
+                                    <td className="py-2 px-4">{item.product_size || 'N/A'}</td>
+                                    <td className="py-2 px-4">{item.product_type}</td>
+                                    <td className="py-2 px-4">
+                                        ₱{formatPrice(item.product_price)}
+                                    </td>
+                                    <td className="py-2 px-4">{item.product_quantity}</td>
+                                    <td className="py-2 px-4">
+                                        {item.product_quantity > 0 ? (
+                                            <span className="flex items-center text-green-500">
+                                                <FontAwesomeIcon icon={faCircle} className="mr-2" />
+                                                Available
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center text-red-500">
+                                                <FontAwesomeIcon icon={faCircle} className="mr-2" />
+                                                Out of Stock
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="py-2 px-4">{item.product_sold}</td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>

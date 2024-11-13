@@ -33,7 +33,7 @@ const MainComponentPOS = ({ loggedInUser, handleLogout }) => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
-                const response = await axios.get('http://localhost:8000/api/validate-session/', {
+                const response = await axios.get('http://192.168.254.101:8000/api/validate-session/', {
                     headers: { Authorization: `Token ${token}` }
                 });
                 if (response.status !== 200) {
@@ -57,7 +57,7 @@ const MainComponentPOS = ({ loggedInUser, handleLogout }) => {
     const fetchOrders = useCallback(async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.get('http://localhost:8000/api/orders/pending/', {
+            const response = await axios.get('http://192.168.254.101:8000/api/orders/pending/', {
                 headers: { Authorization: `Token ${token}` }
             });
             setPendingOrderCount(response.data.length); // Update the count of pending orders
@@ -80,6 +80,7 @@ const MainComponentPOS = ({ loggedInUser, handleLogout }) => {
                     setPendingOrderCount={setPendingOrderCount}
                     fetchOrders={fetchOrders} // Pass fetchOrders to SidebarPOS
                     className="fixed top-0 left-0 w-64 h-screen overflow-y-auto bg-white border-r"
+                    loggedInUser={loggedInUser}
                 />
             )}
             <div className="flex flex-col flex-grow h-screen bg-gray-100">

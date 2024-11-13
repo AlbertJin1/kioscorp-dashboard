@@ -14,19 +14,17 @@ const LowDemandProducts = () => {
         const fetchLowDemandProducts = async () => {
             const token = localStorage.getItem('token'); // Retrieve the token from local storage
             try {
-                const response = await axios.get('http://localhost:8000/api/low-selling-products/', {
+                const response = await axios.get('http://192.168.254.101:8000/api/low-selling-products/', {
                     headers: {
                         Authorization: `Token ${token}`, // Include the token in the request headers
                     },
                 });
                 setProducts(response.data);
-                // Set loading to false after a delay of 1.5 seconds
-                setTimeout(() => {
-                    setLoading(false);
-                }, 1500);
             } catch (error) {
                 console.error("Error fetching low demand products:", error);
-                setLoading(false); // Ensure loading is false even on error
+                setProducts([]); // Set products to an empty array if there's an error
+            } finally {
+                setLoading(false); // Set loading to false immediately after fetching
             }
         };
 
@@ -35,12 +33,14 @@ const LowDemandProducts = () => {
 
     useEffect(() => {
         // Start the automatic product change interval
-        const id = setInterval(() => {
-            changeProduct((prevIndex) => (prevIndex + 1) % products.length);
-        }, 5000);
-        setIntervalId(id);
+        if (products.length > 0) {
+            const id = setInterval(() => {
+                changeProduct((prevIndex) => (prevIndex + 1) % products.length);
+            }, 5000);
+            setIntervalId(id);
 
-        return () => clearInterval(id); // Cleanup on unmount
+            return () => clearInterval(id); // Cleanup on unmount
+        }
     }, [products.length]);
 
     const changeProduct = (newIndex) => {
@@ -78,6 +78,7 @@ const LowDemandProducts = () => {
         ); // Show loader while loading
     }
 
+    // Check if products array has items
     const currentProduct = products[currentIndex];
 
     return (
@@ -88,24 +89,28 @@ const LowDemandProducts = () => {
                 Low Demand Products
             </h2>
 
-            {/* Left and Right Sections */}
-            <div className="flex flex-row items-center justify-center w-full space-x-6 h-full">
-                {/* Left Section: Product Image */}
-                <div className="flex flex-col items-center w-1/2">
-                    <img
-                        src={currentProduct.product_image}
-                        alt={currentProduct.product_name}
-                        className={`w-72 rounded h-auto object-contain transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`} // Smooth transition for image
-                    />
-                </div>
+            {/* Show loader only when loading */}
+            <div className={`flex flex-row items-center justify-center w-full space-x-6 h-full ${loading ? 'hidden' : 'flex'}`}>
+                {currentProduct ? (
+                    <>
+                        <div className="flex flex-col items-center w-1/2">
+                            <img
+                                src={currentProduct.product_image}
+                                alt={currentProduct.product_name}
+                                className={`w-72 h-auto rounded object-contain transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}
+                            />
+                        </div>
 
-                {/* Right Section: Product Information */}
-                <div className={`flex flex-col w-1/2 transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}>
-                    <h2 className="text-2 xl font-bold">{currentProduct.product_name}</h2>
-                    <p className="text-lg text-gray-700">Size: {currentProduct.product_size}</p>
-                    <p className="text-lg text-gray-700">Type: {currentProduct.product_type}</p>
-                    <p className="text-lg text-gray-700 font-bold">Total Sold: {currentProduct.total_sold}</p>
-                </div>
+                        <div className={`flex flex-col w-1/2 transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}>
+                            <h2 className="text-2xl font-bold">{currentProduct.product_name}</h2>
+                            <p className="text-lg text-gray-700">Size: {currentProduct.product_size}</p>
+                            <p className="text-lg text-gray-700">Type: {currentProduct.product_type}</p>
+                            <p className="text-lg text-gray-700 font-bold">Total Sold: {currentProduct.total_sold}</p>
+                        </div>
+                    </>
+                ) : (
+                    <div className="text-lg text-gray-700">No data available</div>
+                )}
             </div>
 
             {/* Slideshow Indicators */}

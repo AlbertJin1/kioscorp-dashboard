@@ -67,52 +67,48 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
         showLoading();
 
         try {
-            const response = await axios.post('http://localhost:8000/api/login/', {
+            const response = await axios.post('http://192.168.254.101:8000/api/login/', {
                 username: formData.username,
                 password: formData.password,
             });
 
-            // Close the processing modal after 1.5 seconds
-            setTimeout(() => {
-                Swal.close();
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('firstName', response.data.firstName);
-                localStorage.setItem('lastName', response.data.lastName);
-                localStorage.setItem('email', response.data.email);
-                localStorage.setItem('gender', response.data.gender);
-                localStorage.setItem('phoneNumber', response.data.phoneNumber);
-                localStorage.setItem('role', response.data.role);
-                setIsAuthenticated(true);
-                setLoggedInUser({
-                    firstName: response.data.firstName,
-                    lastName: response.data.lastName,
-                    phoneNumber: response.data.phoneNumber,
-                    role: response.data.role,
-                });
+            // Close the processing modal immediately
+            Swal.close();
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('firstName', response.data.firstName);
+            localStorage.setItem('lastName', response.data.lastName);
+            localStorage.setItem('email', response.data.email);
+            localStorage.setItem('gender', response.data.gender);
+            localStorage.setItem('phoneNumber', response.data.phoneNumber);
+            localStorage.setItem('role', response.data.role);
+            setIsAuthenticated(true);
+            setLoggedInUser({
+                firstName: response.data.firstName,
+                lastName: response.data.lastName,
+                phoneNumber: response.data.phoneNumber,
+                role: response.data.role,
+            });
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Login Successful',
-                    text: response.data.success || response.data.message,
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
+            Swal.fire({
+                icon: 'success',
+                title: 'Login Successful',
+                text: response.data.success || response.data.message,
+                timer: 2000,
+                showConfirmButton: false,
+            });
 
-                setIsSubmitting(false);
-            }, 1500);
+            setIsSubmitting(false);
         } catch (error) {
-            // Close the processing modal after 1.5 seconds
-            setTimeout(() => {
-                Swal.close();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Login Failed',
-                    text: error.response?.data?.error || 'Something went wrong!',
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
-                setIsSubmitting(false);
-            }, 1500);
+            // Close the processing modal immediately
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Login Failed',
+                text: error.response?.data?.error || 'Something went wrong!',
+                timer: 2000,
+                showConfirmButton: false,
+            });
+            setIsSubmitting(false);
         }
     };
 
@@ -120,7 +116,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
         showLoading();
 
         try {
-            const response = await axios.post('http://localhost:8000/api/register/', {
+            const response = await axios.post('http://192.168.254.101:8000/api/register/', {
                 username: formData.username,
                 email: formData.email,
                 password: formData.password,
@@ -130,45 +126,41 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                 phoneNumber: formData.phoneNumber,
             });
 
-            // Close the processing modal after 1.5 seconds
-            setTimeout(() => {
-                Swal.close();
-                setFormData({
-                    username: '',
-                    password: '',
-                    confirmPassword: '',
-                    firstName: '',
-                    lastName: '',
-                    gender: '',
-                    phoneNumber: '',
-                    email: '',
-                    secretPasskey: '',
-                });
-                setIsLogin(true);
+            // Close the processing modal immediately
+            Swal.close();
+            setFormData({
+                username: '',
+                password: '',
+                confirmPassword: '',
+                firstName: '',
+                lastName: '',
+                gender: '',
+                phoneNumber: '',
+                email: '',
+                secretPasskey: '',
+            });
+            setIsLogin(true);
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Registration Successful',
-                    text: response.data.success || response.data.message,
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
+            Swal.fire({
+                icon: 'success',
+                title: 'Registration Successful',
+                text: response.data.success || response.data.message,
+                timer: 2000,
+                showConfirmButton: false,
+            });
 
-                setIsSubmitting(false);
-            }, 1500);
+            setIsSubmitting(false);
         } catch (error) {
-            // Close the processing modal after 1.5 seconds
-            setTimeout(() => {
-                Swal.close();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Registration Failed',
-                    text: error.response?.data?.error || 'Something went wrong!',
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
-                setIsSubmitting(false);
-            }, 1500);
+            // Close the processing modal immediately
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Registration Failed',
+                text: error.response?.data?.error || 'Something went wrong!',
+                timer: 2000,
+                showConfirmButton: false,
+            });
+            setIsSubmitting(false);
         }
     };
 
@@ -176,7 +168,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
         showLoading();
 
         try {
-            const response = await axios.post('http://localhost:8000/api/register-owner/', {
+            const response = await axios.post('http://192.168.254.101:8000/api/register-owner/', {
                 username: formData.username,
                 email: formData.email,
                 password: formData.password,
@@ -187,45 +179,41 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                 secretPasskey: formData.secretPasskey,
             });
 
-            // Close the processing modal after 1.5 seconds
-            setTimeout(() => {
-                Swal.close();
-                setFormData({
-                    username: '',
-                    password: '',
-                    confirmPassword: '',
-                    firstName: '',
-                    lastName: '',
-                    gender: '',
-                    phoneNumber: '',
-                    email: '',
-                    secretPasskey: '',
-                });
-                setIsLogin(true);
+            // Close the processing modal immediately
+            Swal.close();
+            setFormData({
+                username: '',
+                password: '',
+                confirmPassword: '',
+                firstName: '',
+                lastName: '',
+                gender: '',
+                phoneNumber: '',
+                email: '',
+                secretPasskey: '',
+            });
+            setIsLogin(true);
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Owner Registration Successful',
-                    text: response.data.success || response.data.message,
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
+            Swal.fire({
+                icon: 'success',
+                title: 'Owner Registration Successful',
+                text: response.data.success || response.data.message,
+                timer: 2000,
+                showConfirmButton: false,
+            });
 
-                setIsSubmitting(false);
-            }, 1500);
+            setIsSubmitting(false);
         } catch (error) {
-            // Close the processing modal after 1.5 seconds
-            setTimeout(() => {
-                Swal.close();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Owner Registration Failed',
-                    text: error.response?.data?.error || 'Something went wrong!',
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
-                setIsSubmitting(false);
-            }, 1500);
+            // Close the processing modal immediately
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Owner Registration Failed',
+                text: error.response?.data?.error || 'Something went wrong!',
+                timer: 2000,
+                showConfirmButton: false,
+            });
+            setIsSubmitting(false);
         }
     };
 
@@ -286,37 +274,33 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
         showLoading();
 
         try {
-            const response = await axios.post('http://localhost:8000/api/reset-password/', {
+            const response = await axios.post('http://192.168.254.101:8000/api/reset-password/', {
                 username: resetFormData.username,
                 newPassword: resetFormData.newPassword,
             });
 
-            // Close the processing modal after 1.5 seconds
-            setTimeout(() => {
-                Swal.close();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Password Reset Successful',
-                    text: response.data.success,
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
-            }, 1500);
+            // Close the processing modal immediately
+            Swal.close();
+            Swal.fire({
+                icon: 'success',
+                title: 'Password Reset Successful',
+                text: response.data.success,
+                timer: 2000,
+                showConfirmButton: false,
+            });
 
             setIsResetPassword(false);
             setIsSubmitting(false);
         } catch (error) {
-            // Close the processing modal after 1.5 seconds
-            setTimeout(() => {
-                Swal.close();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Password Reset Failed',
-                    text: error.response?.data?.error || 'Something went wrong!',
-                    timer: 2000,
-                    showConfirmButton: false,
-                });
-            }, 1500);
+            // Close the processing modal immediately
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Password Reset Failed',
+                text: error.response?.data?.error || 'Something went wrong!',
+                timer: 2000,
+                showConfirmButton: false,
+            });
             setIsSubmitting(false);
         }
     };

@@ -14,19 +14,18 @@ const HighDemandProducts = () => {
         const fetchHighDemandProducts = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await axios.get('http://localhost:8000/api/top-selling-products/', {
+                const response = await axios.get('http://192.168.254.101:8000/api/top-selling-products/', {
                     headers: {
                         Authorization: `Token ${token}`,
                     },
                 });
                 setProducts(response.data);
-                // Set loading to false after a delay of 1.5 seconds
-                setTimeout(() => {
-                    setLoading(false);
-                }, 1500);
             } catch (error) {
-                console.error("Error fetching high demand products:", error);
-                setLoading(false); // Ensure loading is false even on error
+                // Instead of logging the error, we handle it gracefully
+                setProducts([]); // Set products to an empty array if there's an error
+            } finally {
+                // Set loading to false immediately after fetching
+                setLoading(false);
             }
         };
 
@@ -76,6 +75,7 @@ const HighDemandProducts = () => {
         ); // Show loader while loading
     }
 
+    // Check if products array has items
     const currentProduct = products[currentIndex];
 
     return (
@@ -87,20 +87,26 @@ const HighDemandProducts = () => {
 
             {/* Show loader only when loading */}
             <div className={`flex flex-row items-center justify-center w-full space-x-6 h-full ${loading ? 'hidden' : 'flex'}`}>
-                <div className="flex flex-col items-center w-1/2">
-                    <img
-                        src={currentProduct.product_image}
-                        alt={currentProduct.product_name}
-                        className={`w-72 h-auto rounded object-contain transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}
-                    />
-                </div>
+                {currentProduct ? (
+                    <>
+                        <div className="flex flex-col items-center w-1/2">
+                            <img
+                                src={currentProduct.product_image}
+                                alt={currentProduct.product_name}
+                                className={`w-72 h-auto rounded object-contain transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}
+                            />
+                        </div>
 
-                <div className={`flex flex-col w-1/2 transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}>
-                    <h2 className="text-2xl font-bold">{currentProduct.product_name}</h2>
-                    <p className="text-lg text-gray-700">Size: {currentProduct.product_size}</p>
-                    <p className="text-lg text-gray-700">Type: {currentProduct.product_type}</p>
-                    <p className="text-lg text-gray-700 font-bold">Total Sold: {currentProduct.total_sold}</p>
-                </div>
+                        <div className={`flex flex-col w-1/2 transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}>
+                            <h2 className="text-2xl font-bold">{currentProduct.product_name}</h2>
+                            <p className="text-lg text-gray-700">Size: {currentProduct.product_size}</p>
+                            <p className="text-lg text-gray-700">Type: {currentProduct.product_type}</p>
+                            <p className="text-lg text-gray-700 font-bold">Total Sold: {currentProduct.total_sold}</p>
+                        </div>
+                    </>
+                ) : (
+                    <div className="text-lg text-gray-700">No data available</div>
+                )}
             </div>
 
             <div className="flex justify-center mt-4">
@@ -108,7 +114,7 @@ const HighDemandProducts = () => {
                     <div
                         key={index}
                         onClick={() => handleProductChange(index)}
-                        className={`w-3 h-3 mx-1 rounded-full cursor-pointer transition-transform duration -300 ease-in-out ${index === currentIndex ? 'bg-blue-500 transform scale-125' : 'bg-gray-300'}`}
+                        className={`w-3 h-3 mx-1 rounded-full cursor-pointer transition-transform duration-300 ease-in-out ${index === currentIndex ? 'bg-blue-500 transform scale-125' : 'bg-gray-300'}`}
                     ></div>
                 ))}
             </div>

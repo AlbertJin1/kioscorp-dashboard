@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { FaTimes, FaCheck, FaBan } from 'react-icons/fa';
-import axios from 'axios'; // Make sure to install axios
+import axios from 'axios';
 import Swal from 'sweetalert2';
 
-const OrderModal = ({ isOpen, onClose, order }) => {
+const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => { // Accept loggedInUser  as a prop
     const modalRef = useRef(null);
     const [isSweetAlertOpen, setIsSweetAlertOpen] = useState(false);
 
@@ -43,7 +43,7 @@ const OrderModal = ({ isOpen, onClose, order }) => {
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.patch(`http://localhost:8000/api/orders/void/${order.order_id}/`);
+                const response = await axios.patch(`http://192.168.254.101:8000/api/orders/void/${order.order_id}/`);
                 Swal.fire({
                     position: 'top-end',
                     icon: 'success',
@@ -70,6 +70,8 @@ const OrderModal = ({ isOpen, onClose, order }) => {
 
     const handlePayOrder = async () => {
         setIsSweetAlertOpen(true);
+        console.log("Opening payment modal...");
+
         const { value: amountGiven } = await Swal.fire({
             title: 'Payment',
             input: 'number',
@@ -88,6 +90,8 @@ const OrderModal = ({ isOpen, onClose, order }) => {
             }
         });
 
+        console.log("Amount given by customer:", amountGiven);
+
         if (amountGiven) {
             const loadingAlert = Swal.fire({
                 title: 'Processing...',
@@ -102,14 +106,15 @@ const OrderModal = ({ isOpen, onClose, order }) => {
             const totalAmount = calculateTotal();
             const change = amountGiven - totalAmount;
 
-            // Simulate processing time
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            console.log("Total amount due:", totalAmount);
+            console.log("Change to return:", change);
 
+            // Removed the artificial delay
             loadingAlert.close();
             setIsSweetAlertOpen(false);
 
-            // Check for sufficient amount before proceeding
             if (change < 0) {
+                console.log("Insufficient amount provided.");
                 Swal.fire({
                     icon: 'error',
                     title: 'Insufficient Amount',
@@ -120,10 +125,15 @@ const OrderModal = ({ isOpen, onClose, order }) => {
                 });
             } else {
                 try {
-                    // Proceed with the API call only if the amount is sufficient
-                    const response = await axios.patch(`http://localhost:8000/api/orders/pay/${order.order_id}/`, {
-                        order_paid_amount: amountGiven
+                    // Include firstName and lastName in the API request
+                    console.log("Sending payment request to the server...");
+                    const response = await axios.patch(`http://192.168.254.101:8000/api/orders/pay/${order.order_id}/`, {
+                        order_paid_amount: amountGiven,
+                        cashier_first_name: loggedInUser.firstName, // Pass first name
+                        cashier_last_name: loggedInUser.lastName  // Pass last name
                     });
+
+                    console.log("Payment response from server:", response.data);
 
                     if (response.data.success) {
                         Swal.fire({
@@ -137,6 +147,7 @@ const OrderModal = ({ isOpen, onClose, order }) => {
                         onClose(); // Close the modal after successful payment
                     }
                 } catch (error) {
+                    console.error("Error during payment processing:", error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Payment Error',
@@ -144,6 +155,8 @@ const OrderModal = ({ isOpen, onClose, order }) => {
                     });
                 }
             }
+        } else {
+            console.log("No amount given, payment cancelled.");
         }
     };
 
@@ -184,7 +197,7 @@ const OrderModal = ({ isOpen, onClose, order }) => {
                                         <div className="w-1/6 flex justify-center">
                                             <img
                                                 src={item.product_image
-                                                    ? `http://localhost:8000${item.product_image}`
+                                                    ? `http://192.168.254.101:8000${item.product_image}`
                                                     : "https://via.placeholder.com/150"
                                                 }
                                                 alt={item.product_name}
@@ -195,7 +208,7 @@ const OrderModal = ({ isOpen, onClose, order }) => {
                                                 }}
                                             />
                                         </div>
-                                        <span className="text-3xl font-bold w-1/3">{item.product_name}</ span>
+                                        <span className="text-3xl font-bold w-1/3">{item.product_name}</span>
                                         <span className="text-3xl font-bold w-1/3 text-center">{item.order_item_quantity}</span>
                                         <span className="text-3xl font-bold w-1/4 text-right mr-4">₱{Number(item.product_price).toFixed(2)}</span>
                                     </div>

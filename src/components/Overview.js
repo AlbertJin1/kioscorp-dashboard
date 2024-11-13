@@ -20,7 +20,7 @@ const Overview = () => {
     const fetchOrderCounts = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:8000/api/orders/counts/', {
+            const response = await axios.get('http://192.168.254.101:8000/api/orders/counts/', {
                 headers: { Authorization: `Token ${token}` }
             });
             setTotalPaidOrders(response.data.totalPaidOrders);
@@ -33,7 +33,7 @@ const Overview = () => {
 
     const fetchSalesData = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/api/sales/data/', {
+            const response = await axios.get('http://192.168.254.101:8000/api/sales/data/', {
                 headers: { Authorization: `Token ${localStorage.getItem('token')}` }
             });
             setAnnualSales(response.data.annual_sales);
@@ -52,10 +52,9 @@ const Overview = () => {
 
     useEffect(() => {
         const loadData = async () => {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // 1-second delay
             await fetchSalesData();
             await fetchOrderCounts();
-            setLoading(false);  // Only set loading to false once on initial load
+            setLoading(false);  // Set loading to false after fetching data
         };
         loadData();
 
@@ -91,7 +90,7 @@ const Overview = () => {
                     </div>
                     {[{
                         title: 'Paid',
-                        icon: < FaClipboardCheck className="text-green-500" />,
+                        icon: <FaClipboardCheck className="text-green-500" />,
                         value: animatedTotalPaidOrders
                     }, {
                         title: 'Daily Sales',

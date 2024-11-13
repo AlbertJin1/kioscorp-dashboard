@@ -18,7 +18,7 @@ const MainComponentWITHauth = ({ loggedInUser, handleLogout }) => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
-                const response = await axios.get('http://localhost:8000/api/validate-session/', {
+                const response = await axios.get('http://192.168.254.101:8000/api/validate-session/', {
                     headers: { Authorization: `Token ${token}` }
                 });
                 if (response.status !== 200) {

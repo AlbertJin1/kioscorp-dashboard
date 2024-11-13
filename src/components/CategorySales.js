@@ -18,7 +18,7 @@ const CategorySales = () => {
         const fetchCategorySales = async () => {
             const token = localStorage.getItem('token'); // Retrieve token from localStorage
             try {
-                const response = await axios.get('http://localhost:8000/api/sales/category/', {
+                const response = await axios.get('http://192.168.254.101:8000/api/sales/category/', {
                     headers: {
                         Authorization: `Token ${token}`,
                     },
@@ -43,15 +43,10 @@ const CategorySales = () => {
                         backgroundColor: backgroundColor,
                     }],
                 });
-
-                // Set a delay of 1.5 seconds before setting loading to false
-                setTimeout(() => {
-                    setLoading(false);
-                }, 1500);
-
             } catch (error) {
                 console.error("Error fetching category sales data:", error);
-                setLoading(false); // Ensure loading is set to false in case of error
+            } finally {
+                setLoading(false); // Ensure loading is set to false after fetching data
             }
         };
 
@@ -85,7 +80,11 @@ const CategorySales = () => {
                 </div>
             ) : (
                 <div className="flex-grow flex justify-center items-center" style={{ height: '260px' }}>
-                    <Pie data={chartData} options={chartOptions} />
+                    {chartData.labels.length === 0 ? (
+                        <p className="text-lg text-gray-700">No data available</p> // Message when no data is available
+                    ) : (
+                        <Pie data={chartData} options={chartOptions} />
+                    )}
                 </div>
             )}
         </div>

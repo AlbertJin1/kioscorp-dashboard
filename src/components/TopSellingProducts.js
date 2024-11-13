@@ -9,14 +9,23 @@ const TopSellingProducts = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const loadInitialData = async () => {
-            setTimeout(async () => {
-                await fetchTopSellingProducts();
-                setLoading(false);
-            }, 1000); // Initial 1-second delay for the loader
+        const fetchTopSellingProducts = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get('http://192.168.254.101:8000/api/top-selling-products', {
+                    headers: {
+                        Authorization: `Token ${token}`
+                    }
+                });
+                setTopSellingProducts(response.data);
+                setLoading(false); // Set loading to false after fetching data
+            } catch (error) {
+                console.error('Error fetching top-selling products:', error);
+                setLoading(false); // Ensure loading is set to false even if there's an error
+            }
         };
 
-        loadInitialData();
+        fetchTopSellingProducts(); // Fetch products immediately on mount
 
         // Set up interval refetching every 15 seconds
         const intervalId = setInterval(() => {
@@ -26,20 +35,6 @@ const TopSellingProducts = () => {
         // Clear the interval when component unmounts
         return () => clearInterval(intervalId);
     }, []);
-
-    const fetchTopSellingProducts = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:8000/api/top-selling-products', {
-                headers: {
-                    Authorization: `Token ${token}`
-                }
-            });
-            setTopSellingProducts(response.data);
-        } catch (error) {
-            console.error('Error fetching top-selling products:', error);
-        }
-    };
 
     return (
         <div className="p-4 flex flex-col bg-white rounded-lg shadow-md h-full">
@@ -60,23 +55,31 @@ const TopSellingProducts = () => {
                             </tr>
                         </thead>
                         <tbody className="custom-scrollbar text-gray-700 text-sm font-light h-auto overflow-y-auto">
-                            {topSellingProducts.map((product, index) => (
-                                <tr key={index} className="border-b border-gray-200 hover:bg-gray-50 text-lg font-semibold">
-                                    <td className="py-3 px-6 flex items-center justify-center">
-                                        <div className="relative">
-                                            <img
-                                                src={product.product_image}
-                                                alt={product.product_name}
-                                                className="w-16 h-16 rounded object-cover"
-                                                id={`product-image-${index}`} // ID for Tooltip anchor
-                                                data-tooltip-content={product.product_name} // Tooltip content
-                                            />
-                                        </div>
+                            {topSellingProducts.length === 0 ? (
+                                <tr>
+                                    <td colSpan="3" className="py-4 text-center text-gray-700">
+                                        No data available
                                     </td>
-                                    <td className="py-3 px-6 text-center">{product.top_selling_month}</td>
-                                    <td className="py-3 px-6 text-center">{product.total_sold}</td>
                                 </tr>
-                            ))}
+                            ) : (
+                                topSellingProducts.map((product, index) => (
+                                    <tr key={index} className="border-b border-gray-200 hover:bg-gray-50 text-lg font-semibold">
+                                        <td className="py-3 px-6 flex items-center justify-center">
+                                            <div className="relative">
+                                                <img
+                                                    src={product.product_image}
+                                                    alt={product.product_name}
+                                                    className="w-16 h-16 rounded object-cover"
+                                                    id={`product-image-${index}`} // ID for Tooltip anchor
+                                                    data-tooltip-content={`${product.product_name} (${product.product_color}, ${product.product_size})`} // Updated tooltip content
+                                                />
+                                            </div>
+                                        </td>
+                                        <td className="py-3 px-6 text-center">{product.top_selling_month}</td>
+                                        <td className="py-3 px-6 text-center">{product.total_sold}</td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                     <Tooltip

@@ -39,12 +39,12 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
         const fetchCategories = async () => {
             const token = localStorage.getItem('token');
             try {
-                const mainCategoriesResponse = await axios.get('http://localhost:8000/api/main-categories/', {
+                const mainCategoriesResponse = await axios.get('http://192.168.254.101:8000/api/main-categories/', {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setMainCategories(mainCategoriesResponse.data);
 
-                const subCategoriesResponse = await axios.get('http://localhost:8000/api/sub-categories/', {
+                const subCategoriesResponse = await axios.get('http://192.168.254.101:8000/api/sub-categories/', {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setSubCategories(subCategoriesResponse.data);
@@ -60,7 +60,7 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
         const fetchProducts = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await axios.get('http://localhost:8000/api/products/', {
+                const response = await axios.get('http://192.168.254.101:8000/api/products/', {
                     headers: { 'Authorization': `Token ${token}` }
                 });
                 setProducts(response.data);
@@ -324,7 +324,7 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
 
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.post('http://localhost:8000/api/create-order/', orderData, {
+            const response = await axios.post('http://192.168.254.101:8000/api/create-order/', orderData, {
                 headers: {
                     'Authorization': `Token ${token}`,
                     'Content-Type': 'application/json',
@@ -545,97 +545,101 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                 {/* Product Grid Container */}
                 <div className="overflow-y-auto custom-scrollbar bg-gray-200 p-4 rounded-md"> {/* Adjust maxHeight as needed */}
                     <div className={`grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3`}>
-                        {currentProducts.map(product => {
-                            const isOutOfStock = product.product_quantity === 0;
-                            const added = isProductAdded(product.product_id); // Check if the product is added
+                        {currentProducts.length === 0 ? (
+                            <p className="col-span-full text-center text-4xl font-semibold text-gray-600">No products available.</p>
+                        ) : (
+                            currentProducts.map(product => {
+                                const isOutOfStock = product.product_quantity === 0;
+                                const added = isProductAdded(product.product_id); // Check if the product is added
 
-                            return (
-                                <div
-                                    key={product.product_id}
-                                    className={`relative bg-white border p-4 rounded-md shadow flex flex-col ${isOutOfStock
-                                        ? 'bg-gray-300 border-2 border-red-500'
-                                        : added
-                                            ? 'bg-green-100 border-2 border-green-400' // Change background to green if added
-                                            : ''
-                                        }`}
-                                >
-                                    {/* "Out of Stock" Overlay */}
-                                    {isOutOfStock && (
-                                        <div className="absolute inset-0 bg-black rounded bg-opacity-70 flex items-center justify-center text-white font-bold text-2xl">
-                                            <span className="text-red-500">Out of Stock</span>
-                                        </div>
-                                    )}
+                                return (
+                                    <div
+                                        key={product.product_id}
+                                        className={`relative bg-white border p-4 rounded-md shadow flex flex-col ${isOutOfStock
+                                            ? 'bg-gray-300 border-2 border-red-500'
+                                            : added
+                                                ? 'bg-green-100 border-2 border-green-400' // Change background to green if added
+                                                : ''
+                                            }`}
+                                    >
+                                        {/* "Out of Stock" Overlay */}
+                                        {isOutOfStock && (
+                                            <div className="absolute inset-0 bg-black rounded bg-opacity-70 flex items-center justify-center text-white font-bold text-2xl">
+                                                <span className="text-red-500">Out of Stock</span>
+                                            </div>
+                                        )}
 
-                                    {/* "Added" Label */}
-                                    {added && (
-                                        <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-                                            Added
-                                        </div>
-                                    )}
+                                        {/* "Added" Label */}
+                                        {added && (
+                                            <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                                                Added
+                                            </div>
+                                        )}
 
-                                    {/* Top: Product Image */}
-                                    <img
-                                        src={product.product_image ? `http://localhost:8000${product.product_image}` : "https://via.placeholder.com/150"}
-                                        alt={product.product_name}
-                                        className="w-auto h-48 object-cover border-2 border-black rounded mb-2" // Increased height for better visibility
-                                        onError={(e) => {
-                                            e.target.onerror = null; // Prevents looping
-                                            e.target.src = "https://via.placeholder.com/150"; // Placeholder image
-                                        }}
-                                    />
+                                        {/* Top: Product Image */}
+                                        <img
+                                            src={product.product_image ? `http://192.168.254.101:8000${product.product_image}` : "https://via.placeholder.com/150"}
+                                            alt={product.product_name}
+                                            className="w-auto h-48 object-cover border-2 border-black rounded mb-2" // Increased height for better visibility
+                                            onError={(e) => {
+                                                e.target.onerror = null; // Prevents looping
+                                                e.target.src = "https://via.placeholder.com/150"; // Placeholder image
+                                            }}
+                                        />
 
-                                    {/* Bottom: Product Details */}
-                                    <div className="flex flex-col justify-between flex-grow">
-                                        <div>
-                                            <h3 className="text-xl font-bold">{product.product_name}</h3>
-                                            <p className="text-lg"><span className="font-semibold">Size: </span>{product.product_size}</p>
-                                            <p className="text-lg"><span className="font-semibold">Price: </span>₱{parseFloat(product.product_price).toFixed(2)}</p>
-                                        </div>
-                                        <div className="flex items-center mt-2">
-                                            {/* Quantity Controls */}
-                                            <button
-                                                onClick={() => handleQuantityChange(product.product_id, -1)}
-                                                className="p-2 text-xl bg-gray-300 text-red-600 rounded-l hover:bg-red-200 hover:text-red-700"
-                                                disabled={isOutOfStock}
-                                            >
-                                                <FaMinus />
-                                            </button>
-                                            <input
-                                                type="number"
-                                                readOnly
-                                                value={cart[product.product_id] || 0}
-                                                className="w-12 text-center text-2xl font-bold border-t border-b border-gray-300"
-                                            />
-                                            <button
-                                                onClick={() => handleQuantityChange(product.product_id, 1)}
-                                                className="p-2 text-xl bg-gray-300 text-green-600 rounded-r hover:bg-green-200 hover:text-green-700"
-                                                disabled={isOutOfStock}
-                                            >
-                                                <FaPlus />
-                                            </button>
-                                        </div>
-                                        <div className='flex items-center mt-2'>
-                                            <button
-                                                className={`bg-blue-500 text-xl font-semibold text-white rounded w-full px-4 py-1 hover:bg-blue-700 transition-colors duration-200 ${isOutOfStock || (cart[product.product_id] >= product.product_quantity) ? 'bg-gray-400 cursor-not-allowed' : ''}`}
-                                                onClick={() => handleQuantityChange(product.product_id, 1)} // This should add 1
-                                                disabled={isOutOfStock || (cart[product.product_id] >= product.product_quantity)} // Disable button if out of stock or if cart quantity is at max
-                                            >
-                                                {isOutOfStock ? 'Out of Stock' : (cart[product.product_id] >= product.product_quantity ? 'Max Quantity Reached' : 'Add')} {/* Change button text based on stock status */}
-                                            </button>
+                                        {/* Bottom: Product Details */}
+                                        <div className="flex flex-col justify-between flex-grow">
+                                            <div>
+                                                <h3 className="text-xl font-bold">{product.product_name}</h3>
+                                                <p className="text-lg"><span className="font-semibold">Size: </span>{product.product_size}</p>
+                                                <p className="text-lg"><span className="font-semibold">Price: </span>₱{parseFloat(product.product_price).toFixed(2)}</p>
+                                            </div>
+                                            <div className="flex items-center mt-2">
+                                                {/* Quantity Controls */}
+                                                <button
+                                                    onClick={() => handleQuantityChange(product.product_id, -1)}
+                                                    className="p-2 text-xl bg-gray-300 text-red-600 rounded-l hover:bg-red-200 hover:text-red-700"
+                                                    disabled={isOutOfStock}
+                                                >
+                                                    <FaMinus />
+                                                </button>
+                                                <input
+                                                    type="number"
+                                                    readOnly
+                                                    value={cart[product.product_id] || 0}
+                                                    className="w-12 text-center text-2xl font-bold border-t border-b border-gray-300"
+                                                />
+                                                <button
+                                                    onClick={() => handleQuantityChange(product.product_id, 1)}
+                                                    className="p-2 text-xl bg-gray-300 text-green-600 rounded-r hover:bg-green-200 hover:text-green-700"
+                                                    disabled={isOutOfStock}
+                                                >
+                                                    <FaPlus />
+                                                </button>
+                                            </div>
+                                            <div className='flex items-center mt-2'>
+                                                <button
+                                                    className={`bg-blue-500 text-xl font-semibold text-white rounded w-full px-4 py-1 hover:bg-blue-700 transition-colors duration-200 ${isOutOfStock || (cart[product.product_id] >= product.product_quantity) ? 'bg-gray-400 cursor-not-allowed ' : ''}`}
+                                                    onClick={() => handleQuantityChange(product.product_id, 1)} // This should add 1
+                                                    disabled={isOutOfStock || (cart[product.product_id] >= product.product_quantity)} // Disable button if out of stock or if cart quantity is at max
+                                                >
+                                                    {isOutOfStock ? 'Out of Stock' : (cart[product.product_id] >= product.product_quantity ? 'Max Quantity Reached' : 'Add')} {/* Change button text based on stock status */}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })
+                        )}
                     </div>
                 </div>
                 {/* Pagination Controls */}
                 <div className="flex justify-between items-center mt-4 text-lg font-bold">
                     <button
                         onClick={handlePreviousPage}
-                        disabled={currentPage === 1}
+                        disabled={currentPage === 1 || currentProducts.length === 0}
                         className={`flex items-center px-4 py-2 rounded transition-colors duration-200 
-            ${currentPage === 1 ? 'cursor-not-allowed bg-blue-200' : 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white'}`}
+        ${currentPage === 1 || currentProducts.length === 0 ? 'cursor-not-allowed bg-blue-200' : 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white'}`}
                     >
                         <FaChevronLeft className="mr-2" />
                         Prev
@@ -652,7 +656,7 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                                     key={pageNum}
                                     onClick={() => setCurrentPage(pageNum)} // Update the current page
                                     className={`px-4 py-2 rounded transition-colors duration-200 
-                        ${currentPage === pageNum ? 'bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                    ${currentPage === pageNum ? 'bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
                                 >
                                     {pageNum}
                                 </button>
@@ -662,9 +666,9 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
 
                     <button
                         onClick={handleNextPage}
-                        disabled={currentPage === totalPages}
+                        disabled={currentPage === totalPages || currentProducts.length === 0}
                         className={`flex items-center px-4 py-2 rounded transition-colors duration-200 
-            ${currentPage === totalPages ? 'cursor-not-allowed bg-blue-200' : 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white'}`}
+        ${currentPage === totalPages || currentProducts.length === 0 ? 'cursor-not-allowed bg-blue-200' : 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white'}`}
                     >
                         Next
                         <FaChevronRight className="ml-2" />

@@ -46,9 +46,8 @@ const MyProfile = ({ setIsAuthenticated }) => {
         const token = localStorage.getItem('token');
         const fetchProfilePicture = async () => {
             try {
-                setLoading(true);
-                await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5s delay
-                const response = await axios.get('http://localhost:8000/api/profile-picture/', {
+                setLoading(true); // Set loading state to true
+                const response = await axios.get('http://192.168.254.101:8000/api/profile-picture/', {
                     headers: {
                         'Authorization': `Token ${token}`,
                     },
@@ -57,9 +56,10 @@ const MyProfile = ({ setIsAuthenticated }) => {
                 const profilePicture = URL.createObjectURL(response.data);
                 setProfilePicturePreview(profilePicture);
             } catch (error) {
-                console.error('Error fetching profile picture:', error);
+                // Instead of logging the error, just set the profile picture to the placeholder
+                setProfilePicturePreview(imagePlaceholder); // Use the placeholder image
             } finally {
-                setLoading(false);
+                setLoading(false); // Set loading state to false
             }
         };
         fetchProfilePicture();
@@ -104,7 +104,7 @@ const MyProfile = ({ setIsAuthenticated }) => {
                 formData.append('profilePicture', profilePicture);
             }
 
-            await axios.put('http://localhost:8000/api/profile/', formData, {
+            await axios.put('http://192.168.254.101:8000/api/profile/', formData, {
                 headers: {
                     'Authorization': `Token ${token}`,
                     'Content-Type': 'multipart/form-data',
@@ -192,7 +192,7 @@ const MyProfile = ({ setIsAuthenticated }) => {
         });
 
         try {
-            await axios.put('http://localhost:8000/api/update-profile-picture/', formData, {
+            await axios.put('http://192.168.254.101:8000/api/update-profile-picture/', formData, {
                 headers: {
                     'Authorization': `Token ${token}`,
                     'Content-Type': 'multipart/form-data',

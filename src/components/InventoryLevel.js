@@ -13,33 +13,29 @@ const InventoryLevel = () => {
     const productsPerPage = 5;
 
     useEffect(() => {
-        const loadInitialData = async () => {
-            setTimeout(async () => {
-                await fetchProducts();
-                setLoading(false);
-            }, 1000); // 1-second delay for initial load
+        const fetchProducts = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get('http://192.168.254.101:8000/api/products', {
+                    headers: {
+                        Authorization: `Token ${token}`
+                    }
+                });
+                setProducts(response.data);
+                setLoading(false); // Set loading to false after fetching data
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                setLoading(false); // Ensure loading is set to false even if there's an error
+            }
         };
-        loadInitialData();
+
+        fetchProducts(); // Fetch products immediately on mount
 
         const interval = setInterval(() => {
-            fetchProducts();
-        }, 15000); // Refetch every 15 seconds without resetting loading
+            fetchProducts(); // Refetch every 15 seconds without resetting loading
+        }, 15000);
         return () => clearInterval(interval);
     }, []);
-
-    const fetchProducts = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:8000/api/products', {
-                headers: {
-                    Authorization: `Token ${token}`
-                }
-            });
-            setProducts(response.data);
-        } catch (error) {
-            console.error('Error fetching products:', error);
-        }
-    };
 
     const getStockLevel = (quantity) => {
         if (quantity === 0) return 'Out of Stock';
@@ -138,55 +134,103 @@ const InventoryLevel = () => {
                             </thead>
 
                             <tbody className="text-gray-700 text-sm font-light">
-                                {currentProducts.map((product, index) => (
-                                    <tr key={index} className="border-b border-gray-200 hover:bg-gray-50 text-lg font-semibold">
-                                        <td className="py-3 px-6 text-center relative">
-                                            <div className="flex justify-center items-center h-full relative">
-                                                <img
-                                                    src={product.product_image ? `http://localhost:8000${product.product_image}` : "https://via.placeholder.com/150"}
-                                                    alt={product.product_name}
-                                                    className="w-16 h-16 object-cover rounded mx-auto"
-                                                    onError={(e) => {
-                                                        e.target.onerror = null;
-                                                        e.target.src = "https://via.placeholder.com/150";
-                                                    }}
-                                                    id={`product-image-${index}`} // Unique ID for the image
-                                                    data-tooltip-content={product.product_name} // Tooltip content
-                                                    data-tooltip-id={`tooltip-${index}`} // Unique ID for the tooltip
-                                                />
-                                                <Tooltip
-                                                    id={`tooltip-${index}`} // Corresponding tooltip ID
-                                                    className="font-semibold z-50"
-                                                    place="right"
-                                                    style={{ fontSize: '1rem' }}
-                                                />
-                                            </div>
+                                {products.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="3" className="py-4 text-center text-gray-700">
+                                            No data available
                                         </td>
-                                        <td className="py-3 px-6 text-center">
-                                            {product.product_quantity === 0 ? 'Out of Stock' : product.product_quantity}
-                                        </td>
-                                        <td className="py-3 px-6 text-center">{getStockLevel(product.product_quantity)}</td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    currentProducts.map((product, index) => (
+                                        <tr key={index} className="border-b border-gray-200 hover:bg-gray-50 text-lg font-semibold">
+                                            <td className="py-3 px-6 text-center relative">
+                                                <div className="flex justify-center items-center h-full relative">
+                                                    <img
+                                                        src={product.product_image ? `http://192.168.254.101:8000${product.product_image}` : "https://via.placeholder.com/150"}
+                                                        alt={product.product_name}
+                                                        className="w-16 h-16 object-cover rounded mx-auto"
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = "https://via.placeholder.com/150";
+                                                        }}
+                                                        id={`product-image-${index}`} // Unique ID for the image
+                                                        data-tooltip-content={`${product.product_name} (${product.product_color}, ${product.product_size})`} // Updated tooltip content
+                                                        data-tooltip-id={`tooltip-${index}`} // Unique ID for the tooltip
+                                                    />
+                                                    <Tooltip
+                                                        id={`tooltip-${index}`} // Corresponding tooltip ID
+                                                        className="font-semibold z-50"
+                                                        place="right"
+                                                        style={{ fontSize: '1rem' }}
+                                                    />
+                                                </div>
+                                            </td>
+                                            <td className="py-3 px-6 text-center">
+                                                {product.product_quantity === 0 ? 'Out of Stock' : product.product_quantity}
+                                            </td>
+                                            <td className="py-3 px-6 text-center">{getStockLevel(product.product_quantity)}</td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
                     <div className="flex justify-between items-center mt-4">
                         <button
                             onClick={handlePrevPage}
-                            disabled={currentPage === 1}
-                            className={`flex items-center bg-blue-500 text-white px-4 py-2 rounded transition-all duration-300 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'}`}
+                            disabled={currentPage === 1 || products.length === 0}
+                            className={`flex items-center bg-blue-500 text-white px-4 py-2 rounded transition-all duration-300 ${currentPage === 1 || products.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'}`}
                         >
                             <FaChevronLeft className="mr-2" />
                             Prev
                         </button>
-                        <span className="self-center">
-                            {currentPage} of {totalPages}
-                        </span>
+
+                        {/* Page Number Buttons */}
+                        <div className="flex items-center">
+                            {totalPages > 0 && (
+                                <>
+                                    <button
+                                        onClick={() => setCurrentPage(1)}
+                                        className={`mx-1 px-3 py-1 rounded transition duration-300 ${currentPage === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                    >
+                                        1
+                                    </button>
+
+                                    {currentPage > 3 && <span className="mx-1">...</span>} {/* Show ellipsis if there are pages in between */}
+
+                                    {Array.from({ length: Math.min(3, totalPages - 2) }, (_, index) => {
+                                        const pageNum = Math.max(2, currentPage - 1) + index; // Start from currentPage - 1
+                                        if (pageNum > totalPages - 1) return null; // Avoid rendering pages beyond totalPages
+
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => setCurrentPage(pageNum)}
+                                                className={`mx-1 px-3 py-1 rounded transition duration-300 ${currentPage === pageNum ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    })}
+
+                                    {currentPage < totalPages - 2 && <span className="mx-1">...</span>} {/* Show ellipsis if there are pages in between */}
+
+                                    {totalPages > 1 && (
+                                        <button
+                                            onClick={() => setCurrentPage(totalPages)}
+                                            className={`mx-1 px-3 py-1 rounded transition duration-300 ${currentPage === totalPages ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                        >
+                                            {totalPages}
+                                        </button>
+                                    )}
+                                </>
+                            )}
+                        </div>
+
                         <button
                             onClick={handleNextPage}
-                            disabled={currentPage === totalPages}
-                            className={`flex items-center bg-blue-500 text-white px-4 py-2 rounded transition-all duration-300 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'}`}
+                            disabled={currentPage === totalPages || products.length === 0}
+                            className={`flex items-center bg-blue-500 text-white px-4 py-2 rounded transition-all duration-300 ${currentPage === totalPages || products.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'}`}
                         >
                             Next
                             <FaChevronRight className="ml-2" />

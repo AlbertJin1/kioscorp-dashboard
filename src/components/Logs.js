@@ -24,7 +24,7 @@ const Logs = () => {
         const fetchLogs = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get('http://localhost:8000/logs/');
+                const response = await axios.get('http://192.168.254.101:8000/logs/');
                 const data = response.data;
                 setLogs(data);
                 setLoading(false);
@@ -52,7 +52,7 @@ const Logs = () => {
             confirmButtonText: 'Yes, delete it!',
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete('http://localhost:8000/logs/')
+                axios.delete('http://192.168.254.101:8000/logs/')
                     .then(() => {
                         setLogs([]);
                         Swal.fire('Deleted!', 'Logs have been deleted.', 'success');
@@ -266,20 +266,40 @@ const Logs = () => {
 
                 {/* Selectable Page Number Buttons */}
                 <div className="flex justify-center mx-4">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
-                        const pageNum = Math.max(1, currentPage - 2) + index; // Start from currentPage - 2
-                        if (pageNum > totalPages) return null; // Avoid rendering pages beyond totalPages
-
-                        return (
+                    {totalPages > 0 && (
+                        <>
                             <button
-                                key={pageNum}
-                                onClick={() => setCurrentPage(pageNum)}
-                                className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === pageNum ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                onClick={() => setCurrentPage(1)}
+                                className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
                             >
-                                {pageNum}
+                                1
                             </button>
-                        );
-                    })}
+                            {currentPage > 3 && <span className="mx-2">...</span>} {/* Show ellipsis if there are pages in between */}
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+                                const pageNum = Math.max(2, currentPage - 2) + index; // Start from currentPage - 2, but ensure it's at least 2
+                                if (pageNum > totalPages - 1) return null; // Avoid rendering pages beyond totalPages
+
+                                return (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => setCurrentPage(pageNum)}
+                                        className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === pageNum ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                );
+                            })}
+                            {currentPage < totalPages - 2 && <span className="mx-2">...</span>} {/* Show ellipsis if there are pages in between */}
+                            {totalPages > 1 && (
+                                <button
+                                    onClick={() => setCurrentPage(totalPages)}
+                                    className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === totalPages ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                >
+                                    {totalPages}
+                                </button>
+                            )}
+                        </>
+                    )}
                 </div>
 
                 <button

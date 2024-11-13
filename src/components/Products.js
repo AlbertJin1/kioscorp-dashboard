@@ -14,17 +14,16 @@ const Products = () => {
     const [mainCategories, setMainCategories] = useState([]);
     const [newProductName, setNewProductName] = useState('');
     const [newProductType, setNewProductType] = useState('');
-    const [newProductSize, setNewProductSize] = useState('');
     const [newProductBrand, setNewProductBrand] = useState('');
-    const [newProductColor, setNewProductColor] = useState('');
-    const [newProductQuantity, setNewProductQuantity] = useState('');
-    const [newProductPrice, setNewProductPrice] = useState('');
     const [newProductDescription, setNewProductDescription] = useState('');
     const [productImage, setProductImage] = useState(null);
     const [modalOpenProduct, setModalOpenProduct] = useState(false);
     const [editingSubCategory, setEditingSubCategory] = useState(null);
     const [subCategoryImage, setSubCategoryImage] = useState(null);
     const [subCategoryImagePreview, setSubCategoryImagePreview] = useState(null);
+    const [productVariations, setProductVariations] = useState([
+        { color: '', size: '', quantity: '', price: '' },
+    ]);
 
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -53,7 +52,7 @@ const Products = () => {
                             'Authorization': `Token ${token}`,
                         }
                     };
-                    const res = await axios.get('http://localhost:8000/api/main-categories/', config);
+                    const res = await axios.get('http://192.168.254.101:8000/api/main-categories/', config);
                     setMainCategories(res.data);
 
                     // Set "Auto Supply" as the default main category
@@ -87,7 +86,7 @@ const Products = () => {
                                 'Authorization': `Token ${token}`,
                             }
                         };
-                        const res = await axios.get(`http://localhost:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, config);
+                        const res = await axios.get(`http://192.168.254.101:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, config);
                         const subCategories = res.data.filter(subCategory => subCategory.main_category === mainCategory.main_category_id);
                         setSubCategories(subCategories.sort((a, b) => a.sub_category_name.localeCompare(b.sub_category_name)));
 
@@ -128,7 +127,7 @@ const Products = () => {
                             subcategory: selectedSubCategory.sub_category_name, // Use the subcategory name or ID based on your API design
                             include_subcategory: true, // Include subcategory details
                         };
-                        const res = await axios.get('http://localhost:8000/api/products/', { params, headers: config.headers });
+                        const res = await axios.get('http://192.168.254.101:8000/api/products/', { params, headers: config.headers });
                         const products = res.data;
 
                         setProducts(products); // Set the products
@@ -184,7 +183,7 @@ const Products = () => {
                             'Authorization': `Token ${token}`,
                         }
                     };
-                    const res = await axios.get(`http://localhost:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, config);
+                    const res = await axios.get(`http://192.168.254.101:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, config);
                     const subCategories = res.data.filter(subCategory => subCategory.main_category === mainCategory.main_category_id);
                     setSubCategories(subCategories.sort((a, b) => a.sub_category_name.localeCompare(b.sub_category_name)));
                 } else {
@@ -269,7 +268,7 @@ const Products = () => {
                         formData.append('sub_category_image', subCategoryImage, 'subcategory_image.jpg');
                     }
 
-                    const response = await axios.post('http://localhost:8000/api/sub-categories/', formData, {
+                    const response = await axios.post('http://192.168.254.101:8000/api/sub-categories/', formData, {
                         headers: {
                             'Authorization': `Token ${token}`,
                             'Content-Type': 'multipart/form-data',
@@ -300,7 +299,24 @@ const Products = () => {
                     showError('You are not authorized to add subcategories.');
                 }
             } catch (error) {
-                if (error.response && error.response.status === 403) {
+                // Check for a 400 error and a specific detail message
+                if (error.response && error.response.status === 400 && error.response.data.detail) {
+                    // Check if the error is about duplicate subcategory name
+                    if (error.response.data.error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Duplicate Subcategory',
+                            text: error.response.data.error,
+                            position: 'top-end',
+                            toast: true,
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true,
+                        });
+                    } else {
+                        showError(error.response.data.detail);
+                    }
+                } else if (error.response && error.response.status === 403) {
                     showError('You do not have permission to add subcategories.');
                 } else {
                     showError('Error adding subcategory');
@@ -385,87 +401,126 @@ const Products = () => {
         reader.readAsDataURL(image);
     };
 
-    // Add handleAddProduct function
     const handleAddProduct = async () => {
-        try {
-            if (!selectedSubCategory) {
-                showError('Please select a subcategory before adding a product.');
-                return;
-            }
-
-            if (!newProductName || !newProductType || !newProductSize || !newProductBrand || !newProductColor || !newProductQuantity || !newProductPrice || !newProductDescription) {
-                showError('Please fill out all fields before adding a product.');
-                return;
-            }
-
-            const data = new FormData();
-            data.append('product_name', newProductName);
-            data.append('product_type', newProductType);
-            data.append('product_size', newProductSize);
-            data.append('product_brand', newProductBrand);
-            data.append('product_color', newProductColor);
-            data.append('product_quantity', newProductQuantity);
-            data.append('product_price', newProductPrice);
-            data.append('product_description', newProductDescription);
-            data.append('sub_category', selectedSubCategory.sub_category_id);
-
-            if (productImage) {
-                data.append('product_image', productImage, 'product-image.jpg');
-            }
-
-            const response = await fetch('http://localhost:8000/api/products/', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Token ${localStorage.getItem('token')}`,
-                },
-                body: data
+        // Check if required fields are filled
+        if (!newProductName || !newProductType || !newProductBrand || productVariations.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Missing Information',
+                text: 'Please fill out all required fields before adding a product.',
+                confirmButtonText: 'Okay',
+                position: 'top-end',
+                timer: 1500,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                toast: true,
             });
+            return;
+        }
 
-            if (response.ok) {
-                // Handle successful product addition
-                setModalOpenProduct(false);
-                // Refetch products to include the newly added one
-                const res = await fetch(`http://localhost:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, {
-                    method: 'GET',
+        // Check if an image is selected
+        if (!productImage) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Image Selected',
+                text: 'Please select an image before adding a product.',
+                confirmButtonText: 'Okay',
+                position: 'top-end',
+                timer: 1500,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                toast: true,
+            });
+            return;
+        }
+
+        try {
+            // Loop through variations and create a request for each
+            const promises = productVariations.map(async (variation) => {
+                const data = new FormData();
+                data.append('product_name', newProductName);
+                data.append('product_type', newProductType);
+                data.append('product_brand', newProductBrand);
+                data.append('product_color', variation.color || 'N/A'); // Default to 'N/A' if empty
+                data.append('product_size', variation.size || 'N/A');  // Default to 'N/A' if empty
+                data.append('product_quantity', variation.quantity || '0'); // Default to '0' if empty
+                data.append('product_price', variation.price || '0');   // Default to '0' if empty
+                data.append('sub_category', selectedSubCategory.sub_category_id);
+                data.append('product_description', newProductDescription || 'N/A'); // Default to 'N/A' if empty
+                data.append('product_image', productImage);
+
+                // Send the POST request to add the product variation
+                const response = await fetch('http://192.168.254.101:8000/api/products/', {
+                    method: 'POST',
                     headers: {
                         'Authorization': `Token ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    }
+                    },
+                    body: data
                 });
+
+                if (!response.ok) {
+                    const errorResponse = await response.json();
+                    throw new Error(errorResponse.detail || 'Failed to add product variation.');
+                }
+            });
+
+            // Wait for all promises to resolve
+            await Promise.all(promises);
+
+            // Handle successful product addition
+            setModalOpenProduct(false);
+
+            // Refetch products to include the newly added one
+            const res = await fetch(`http://192.168.254.101:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Token ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (res.ok) {
                 const products = await res.json();
                 const filteredProducts = products.filter(product => product.sub_category === selectedSubCategory.sub_category_id);
-                setProducts(filteredProducts);
-                // Show success alert
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Product Added!',
-                    text: 'Product added successfully.',
-                    position: 'top-end',
-                    toast: true,
-                    showConfirmButton: false,
-                    timer: 2000,
-                    timerProgressBar: true,
-                });
-                // Clear fields only if the product was added successfully
-                setNewProductName('');
-                setNewProductType('');
-                setNewProductSize('');
-                setNewProductBrand('');
-                setNewProductColor('');
-                setNewProductQuantity('');
-                setNewProductPrice('');
-                setNewProductDescription('');
-                setProductImage(null);
-                return true;
+                setProducts(filteredProducts); // Update the products state with the filtered products
             } else {
-                console.error('Failed to add product:', response.statusText);
-                return false;
+                console.error('Failed to fetch products:', res.statusText);
             }
+
+            // Show success alert
+            Swal.fire({
+                icon: 'success',
+                title: 'Products Added!',
+                text: 'All product variations added successfully.',
+                position: 'top-end',
+                toast: true,
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+            });
+
+            // Clear fields after successful addition
+            setNewProductName('');
+            setNewProductType('');
+            setNewProductBrand('');
+            setNewProductDescription('');
+            setProductVariations([{ color: '', size: '', quantity: '', price: '' }]); // Reset variations
+            setProductImage(null);
         } catch (error) {
-            console.error('Error adding product:', error);
-            return false;
+            console.error('Error adding product variations:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message,
+                position: 'top-end',
+                timer: 1500,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                toast: true,
+            });
         }
     };
+
 
     const handleDeleteProduct = async (productId) => {
         try {
@@ -476,10 +531,10 @@ const Products = () => {
                         'Authorization': `Token ${token}`,
                     }
                 };
-                const response = await axios.delete(`http://localhost:8000/api/products/${productId}/`, config);
+                const response = await axios.delete(`http://192.168.254.101:8000/api/products/${productId}/`, config);
                 if (response.status === 204) {
                     // Refetch products to exclude the deleted one
-                    const res = await fetch(`http://localhost:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, {
+                    const res = await fetch(`http://192.168.254.101:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, {
                         method: 'GET',
                         headers: {
                             'Authorization': `Token ${localStorage.getItem('token')}`,
@@ -543,11 +598,11 @@ const Products = () => {
                 }
 
                 // Make the patch request to update the subcategory
-                const response = await axios.patch(`http://localhost:8000/api/sub-categories/${editingSubCategory.sub_category_id}/`, formData, config);
+                const response = await axios.patch(`http://192.168.254.101:8000/api/sub-categories/${editingSubCategory.sub_category_id}/`, formData, config);
 
                 if (response.status === 200) {
                     // Refetch subcategories to include the updated one
-                    const res = await fetch(`http://localhost:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, {
+                    const res = await fetch(`http://192.168.254.101:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, {
                         method: 'GET',
                         headers: {
                             'Authorization': `Token ${localStorage.getItem('token')}`,
@@ -598,58 +653,62 @@ const Products = () => {
     const handleDeleteSubCategory = async (subCategoryId) => {
         try {
             const token = localStorage.getItem('token');
+
             if (token) {
                 const config = {
                     headers: {
                         'Authorization': `Token ${token}`,
                     }
                 };
-                const response = await axios.get(`http://localhost:8000/api/products/?sub_category=${subCategoryId}`, config);
-                if (response.data.length > 0) {
-                    showError('Cannot delete subcategory. It has associated products.');
-                } else {
-                    const deleteResponse = await axios.delete(`http://localhost:8000/api/sub-categories/${subCategoryId}/`, config);
-                    if (deleteResponse.status === 204) {
-                        // Refetch subcategories to exclude the deleted one
-                        const res = await fetch(`http://localhost:8000/api/sub-categories/?main_category=${mainCategory.main_category_id}`, {
-                            method: 'GET',
-                            headers: {
-                                'Authorization': `Token ${localStorage.getItem('token')}`,
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                        const subCategories = await res.json();
-                        setSubCategories(subCategories.filter(subCategory => subCategory.main_category === mainCategory.main_category_id));
-                        // Unselect the deleted subcategory
-                        if (selectedSubCategory && selectedSubCategory.sub_category_id === subCategoryId) {
-                            setSelectedSubCategory(null);
-                        }
-                        // Show success alert
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: 'Subcategory deleted successfully.',
-                            position: 'top-end',
-                            toast: true,
-                            showConfirmButton: false,
-                            timer: 2000,
-                            timerProgressBar: true,
-                        });
-                    } else {
-                        showError('Error deleting subcategory');
+
+                // Make delete request directly
+                const deleteResponse = await axios.delete(
+                    `http://192.168.254.101:8000/api/sub-categories/${subCategoryId}/`,
+                    config
+                );
+
+                if (deleteResponse.status === 204) {
+                    // Refetch subcategories to reflect the changes
+                    fetchSubCategories();
+
+                    // Unselect the deleted subcategory
+                    if (selectedSubCategory && selectedSubCategory.sub_category_id === subCategoryId) {
+                        setSelectedSubCategory(null);
                     }
+
+                    // Show success alert
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Subcategory deleted successfully.',
+                        position: 'top-end',
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                    });
                 }
             } else {
                 showError('You are not authorized to delete subcategories.');
             }
         } catch (error) {
-            if (error.response.status === 403) {
-                showError('You do not have permission to delete subcategories.');
+            // Handle errors returned by the backend
+            if (error.response) {
+                if (error.response.status === 400 && error.response.data.error) {
+                    showError(error.response.data.error); // Show specific backend error
+                } else if (error.response.status === 404) {
+                    showError('Subcategory not found.');
+                } else if (error.response.status === 403) {
+                    showError('You do not have permission to delete subcategories.');
+                } else {
+                    showError('Error deleting subcategory.');
+                }
             } else {
-                showError('Error deleting subcategory');
+                showError('An unexpected error occurred.');
             }
         }
     };
+
 
     return (
         <div className="flex flex-col lg:flex-row h-full text-white font-bold gap-4 p-4">
@@ -805,7 +864,7 @@ const Products = () => {
                                         >
                                             <span>
                                                 {product.product_name}
-                                                {product.product_size ? ` (${product.product_size})` : ''} {/* Always display product size */}
+                                                {product.product_color && product.product_size ? ` (${product.product_color}, ${product.product_size})` : ''} {/* Display color and size */}
                                             </span>
                                         </li>
                                     ))}
@@ -827,7 +886,7 @@ const Products = () => {
                     <h2>Product Details</h2>
                     <div className="flex items-center justify-end gap-x-4">
                         <FaEdit
-                            className={`text-yellow-500 cursor-pointer hover:text-yellow-300 ${selectedSubCategory ? '' : 'opacity-50 pointer-events-none'}`}
+                            className={`text-yellow-500 transition duration-200 cursor-pointer hover:text-yellow-300 ${selectedSubCategory ? '' : 'opacity-50 pointer-events-none'}`}
                             size={30}
                             title="Edit Subcategory"
                             onClick={() => {
@@ -838,7 +897,7 @@ const Products = () => {
                             }}
                         />
                         <FaTrash
-                            className={`text-red-500 cursor-pointer hover:text-red-700 ${selectedProduct || (selectedSubCategory && products.length === 0) ? '' : 'opacity-50 pointer-events-none'}`}
+                            className={`text-red-500 transition duration-200 cursor-pointer hover:text-red-700 ${selectedProduct || (selectedSubCategory && products.length === 0) ? '' : 'opacity-50 pointer-events-none'}`}
                             size={30}
                             title={selectedProduct ? 'Delete Product' : selectedSubCategory ? 'Delete Subcategory' : ''}
                             onClick={() => {
@@ -884,7 +943,7 @@ const Products = () => {
                             <div className="w-full md:w-1/2 mb-4">
                                 {selectedProduct.product_image && (
                                     <img
-                                        src={`http://localhost:8000${selectedProduct.product_image}`}
+                                        src={`http://192.168.254.101:8000${selectedProduct.product_image}`}
                                         alt="Product_Image"
                                         className="border-2 border-black rounded w-64 h-64 object-cover mx-auto"
                                     />
@@ -997,6 +1056,11 @@ const Products = () => {
                             type="text"
                             value={newSubCategoryName}
                             onChange={(e) => setNewSubCategoryName(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleAddSubCategory();
+                                }
+                            }}
                             className="p-2 mb-4 w-full rounded"
                             placeholder="Enter subcategory name"
                         />
@@ -1006,6 +1070,7 @@ const Products = () => {
                             className="p-2 mb-4 w-full rounded"
                             accept="image/*"
                         />
+                        <p className="text-sm text-gray-400 mb-2">Uploading a photo is optional.</p> {/* Optional note */}
                         <div className="mb-4">
                             {subCategoryImagePreview ? (
                                 <img
@@ -1090,7 +1155,7 @@ const Products = () => {
                                 <input
                                     type="file"
                                     onChange={(e) => handleProductImageChange(e)}
-                                    className="p-2 w-full rounded mb-2" // Added margin-bottom for spacing
+                                    className="p-2 w-full rounded mb-2"
                                 />
                                 {/* Display the image preview after selecting an image */}
                                 {productImage ? (
@@ -1101,7 +1166,7 @@ const Products = () => {
                                     />
                                 ) : (
                                     <img
-                                        src={imagePlaceholder} // Update this path to your actual placeholder image location
+                                        src={imagePlaceholder}
                                         alt="Placeholder"
                                         className="rounded border-2 border-black w-64 h-64 object-cover shadow-lg"
                                     />
@@ -1126,20 +1191,10 @@ const Products = () => {
                                         <input
                                             type="text"
                                             value={newProductType}
-                                            onChange={(e) => setNewProductType(e.target.value)} // Optional: you can remove this line if you want to prevent any changes
+                                            onChange={(e) => setNewProductType(e.target.value)}
                                             className="p-2 w-full rounded shadow-lg"
                                             placeholder="Enter product type"
-                                            disabled // Add this line to disable the input
-                                        />
-                                    </div>
-                                    <div className="w-full md:w-1/2 px-4 mb-4">
-                                        <label className="block text-white mb-2">Product Size</label>
-                                        <input
-                                            type="text"
-                                            value={newProductSize}
-                                            onChange={(e) => setNewProductSize(e.target.value)}
-                                            className="p-2 w-full rounded shadow-lg"
-                                            placeholder="Enter product size"
+                                            disabled // Input disabled as per the existing code
                                         />
                                     </div>
                                     <div className="w-full md:w-1/2 px-4 mb-4">
@@ -1153,86 +1208,130 @@ const Products = () => {
                                         />
                                     </div>
                                     <div className="w-full md:w-1/2 px-4 mb-4">
-                                        <label className="block text-white mb-2">Product Color</label>
-                                        <input
-                                            type="text"
-                                            value={newProductColor}
-                                            onChange={(e) => setNewProductColor(e.target.value)}
-                                            className="p-2 w-full rounded shadow-lg"
-                                            placeholder="Enter product color"
-                                        />
-                                    </div>
-                                    <div className="w-full md:w-1/2 px-4 mb-4">
-                                        <label className="block text-white mb-2">Product Quantity</label>
-                                        <input
-                                            type="number"
-                                            value={newProductQuantity}
-                                            onChange={(e) => setNewProductQuantity(e.target.value)}
-                                            className="p-2 w-full rounded shadow-lg"
-                                            placeholder="Enter product quantity"
-                                        />
-                                    </div>
-                                    <div className="w-full md:w-1/2 px-4 mb-4">
-                                        <label className="block text-white mb-2">Product Price</label>
-                                        <input
-                                            type="number"
-                                            value={newProductPrice}
-                                            onChange={(e) => setNewProductPrice(e.target.value)}
-                                            className="p-2 w-full rounded shadow-lg"
-                                            placeholder="Enter product price"
-                                        />
-                                    </div>
-                                    <div className="w-full md:w-1/2 px-4 mb-4">
-                                        <label className="block text-white mb-2">Product Description</label>
+                                        <label className="block text-white mb-2">Product Description (Optional)</label>
                                         <textarea
                                             value={newProductDescription}
                                             onChange={(e) => setNewProductDescription(e.target.value)}
                                             className="p-2 w-full rounded shadow-lg resize-none"
-                                            placeholder="Enter product description"
+                                            placeholder="Leave blank to save as N/A"
                                         />
                                     </div>
                                 </div>
+                                {/* Variations Section */}
+                                <div className="mb-4">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-yellow-500 text-2xl">Product Variations</h3>
+                                        <button
+                                            className="bg-yellow-500 text-black rounded px-4 py-2 transition-colors duration-200 hover:bg-yellow-600"
+                                            onClick={() => setProductVariations([...productVariations, { color: '', size: '', quantity: '', price: '' }])}
+                                        >
+                                            Add Variation
+                                        </button>
+                                    </div>
+                                    <div className="overflow-y-auto max-h-64 custom-scrollbar mb-4">
+                                        {productVariations.map((variation, index) => (
+                                            <div key={index} className="flex flex-wrap">
+                                                <div className="w-full md:w-1/4 mb-4 px-2">
+                                                    <label className="block text-white mb-2">Color (Opt)</label>
+                                                    <input
+                                                        type="text"
+                                                        value={variation.color}
+                                                        onChange={(e) => {
+                                                            const newVariations = [...productVariations];
+                                                            newVariations[index].color = e.target.value;
+                                                            setProductVariations(newVariations);
+                                                        }}
+                                                        className="p-2 w-full rounded shadow-lg"
+                                                        placeholder="Enter color"
+                                                    />
+                                                </div>
+                                                <div className="w-full md:w-1/4 px-2">
+                                                    <label className="block text-white mb-2">Size (Opt)</label>
+                                                    <input
+                                                        type="text"
+                                                        value={variation.size}
+                                                        onChange={(e) => {
+                                                            const newVariations = [...productVariations];
+                                                            newVariations[index].size = e.target.value;
+                                                            setProductVariations(newVariations);
+                                                        }}
+                                                        className="p-2 w-full rounded shadow-lg"
+                                                        placeholder="Enter size"
+                                                    />
+                                                </div>
+                                                <div className="w-full md:w-1/4 px-2">
+                                                    <label className="block text-white mb-2">Quantity</label>
+                                                    <input
+                                                        type="number"
+                                                        value={variation.quantity}
+                                                        onChange={(e) => {
+                                                            const newVariations = [...productVariations];
+                                                            newVariations[index].quantity = e.target.value;
+                                                            setProductVariations(newVariations);
+                                                        }}
+                                                        className="p-2 w-full rounded shadow-lg"
+                                                        placeholder="Enter quantity"
+                                                        min="0" // Prevents negative values
+                                                    />
+                                                </div>
+                                                <div className="w-full md:w-1/4 px-2">
+                                                    <label className="block text-white mb-2">Price</label>
+                                                    <div className="flex items-center border rounded shadow-lg bg-white">
+                                                        <span className="px-2 text-gray-500">₱</span> {/* Peso Sign */}
+                                                        <input
+                                                            type="text"
+                                                            value={variation.price}
+                                                            onChange={(e) => {
+                                                                const newVariations = [...productVariations];
+                                                                newVariations[index].price = e.target.value;
+                                                                setProductVariations(newVariations);
+                                                            }}
+                                                            className="p-2 w-full rounded-r"
+                                                            placeholder="Enter price"
+                                                            inputMode="numeric" // Allows only numeric input
+                                                            pattern="[0-9]*" // Ensures only numeric values are entered
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex justify-end">
+                                        <button
+                                            className="bg-yellow-500 text-black rounded px-4 py-2 mr-2 shadow-lg transition-colors duration-200 hover:bg-yellow-600"
+                                            onClick={async () => {
+                                                const success = await handleAddProduct();
+                                                if (success) {
+                                                    setNewProductName('');
+                                                    setNewProductType('');
+                                                    setNewProductBrand('');
+                                                    setNewProductDescription('');
+                                                    setProductVariations([{ color: '', size: '', quantity: '', price: '' }]); // Reset variations
+                                                    setProductImage(null);
+                                                }
+                                            }}
+                                        >
+                                            Add
+                                        </button>
+                                        <button
+                                            className="bg-red-500 text-white rounded px-4 py-2 shadow-lg transition-colors duration-200 hover:bg-red-600"
+                                            onClick={() => {
+                                                setModalOpenProduct(false);
+                                                setNewProductName('');
+                                                setNewProductType('');
+                                                setNewProductBrand('');
+                                                setNewProductDescription('');
+                                                setProductVariations([{ color: '', size: '', quantity: '', price: '' }]); // Reset variations
+                                                setProductImage(null);
+                                            }}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div className="flex justify-end">
-                            <button
-                                className="bg-yellow-500 text-black rounded px-4 py-2 mr-2 shadow-lg"
-                                onClick={async () => {
-                                    const success = await handleAddProduct();
-                                    if (success) {
-                                        // Clear fields only if the product was added successfully
-                                        setNewProductName('');
-                                        setNewProductType('');
-                                        setNewProductSize('');
-                                        setNewProductBrand('');
-                                        setNewProductColor('');
-                                        setNewProductQuantity('');
-                                        setNewProductPrice('');
-                                        setNewProductDescription('');
-                                        setProductImage(null);
-                                    }
-                                }}
-                            >
-                                Add
-                            </button>
-                            <button
-                                className="bg-red-500 text-white rounded px-4 py-2 shadow-lg"
-                                onClick={() => {
-                                    setModalOpenProduct(false);
-                                    // Reset fields when cancelling
-                                    setNewProductName('');
-                                    setNewProductType('');
-                                    setNewProductSize('');
-                                    setNewProductBrand('');
-                                    setNewProductColor('');
-                                    setNewProductQuantity('');
-                                    setNewProductPrice('');
-                                    setNewProductDescription('');
-                                    setProductImage(null);
-                                }}
-                            >
-                                Cancel
-                            </button>
                         </div>
                     </div>
                 </div>

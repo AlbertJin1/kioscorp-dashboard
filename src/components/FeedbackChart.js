@@ -24,7 +24,7 @@ const FeedbackChart = () => {
     const fetchSatisfactionData = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:8000/api/feedback/satisfaction/', {
+            const response = await axios.get('http://192.168.254.101:8000/api/feedback/satisfaction/', {
                 headers: {
                     Authorization: `Token ${token}`
                 }
@@ -43,21 +43,15 @@ const FeedbackChart = () => {
                     },
                 ],
             });
+            setLoading(false); // Set loading to false after fetching data
         } catch (error) {
             console.error("Error fetching satisfaction data:", error);
+            setLoading(false); // Ensure loading is set to false even if there's an error
         }
     };
 
     useEffect(() => {
-        // Delay initial load by 1 second
-        const loadInitialData = async () => {
-            setTimeout(async () => {
-                await fetchSatisfactionData();
-                setLoading(false); // Hide loader after initial load
-            }, 1000);
-        };
-
-        loadInitialData();
+        fetchSatisfactionData(); // Fetch data immediately on mount
 
         // Refetch every 15 seconds without showing loader
         const intervalId = setInterval(fetchSatisfactionData, 15000);
@@ -86,9 +80,13 @@ const FeedbackChart = () => {
                 <FaStar className="mr-2 text-yellow-500 text-3xl" />
                 Satisfaction Ratings (Kiosk)
             </h2>
-            {loading && feedbackData.labels.length === 0 ? (
+            {loading ? (
                 <div className="flex justify-center items-center h-full">
                     <Loader />
+                </div>
+            ) : feedbackData.labels.length === 0 ? (
+                <div className="flex justify-center items-center h-full text-gray-700">
+                    No data available
                 </div>
             ) : (
                 <div className="flex-grow relative" style={{ height: '310px' }}>

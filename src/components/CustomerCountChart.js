@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -18,13 +18,13 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ChartD
 
 const CustomerCountChart = () => {
     const [chartData, setChartData] = useState({
-        labels: [], // Will be populated dynamically
+        labels: [],
         datasets: [
             {
                 label: 'Customers Count',
-                data: [], // Will be populated dynamically
+                data: [],
                 backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                hoverBackgroundColor: 'rgba(75, 192, 192, 0.9)',
+                hoverBackgroundColor: 'rgba(75, 192, 0.9)',
                 borderWidth: 1,
                 hoverBorderWidth: 2,
             },
@@ -32,50 +32,38 @@ const CustomerCountChart = () => {
     });
     const [loading, setLoading] = useState(true);
 
-    const fetchCustomerData = useCallback(async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:8000/api/customers/counts/month/', {
-                headers: {
-                    Authorization: `Token ${token}`
-                }
-            });
-
-            // Get current month
-            const currentMonth = new Date().getMonth() + 1; // Months are 0-based in JS Date
-            const labels = Array.from({ length: currentMonth }, (_, i) => new Date(0, i).toLocaleString('default', { month: 'long' }));
-            const data = Object.values(response.data).slice(0, currentMonth); // Only take data for the current month and before
-
-            setChartData({
-                labels: labels,
-                datasets: [
-                    {
-                        ...chartData.datasets[0],
-                        data: data,
-                    },
-                ],
-            });
-        } catch (error) {
-            console.error("Error fetching customer count data:", error);
-        }
-    }, [chartData.datasets]);
-
     useEffect(() => {
-        // Set a 1-second delay for the initial loading
-        const loadInitialData = async () => {
-            setTimeout(async () => {
-                await fetchCustomerData();
-                setLoading(false); // Hide loader after initial load
-            }, 1000);
+        const fetchCustomerData = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get('http://192.168.254.101:8000/api/customers/counts/month/', {
+                    headers: {
+                        Authorization: `Token ${token}`
+                    }
+                });
+
+                const currentMonth = new Date().getMonth() + 1;
+                const labels = Array.from({ length: currentMonth }, (_, i) => new Date(0, i).toLocaleString('default', { month: 'long' }));
+                const data = Object.values(response.data).slice(0, currentMonth);
+
+                setChartData(prevChartData => ({
+                    labels: labels,
+                    datasets: [
+                        {
+                            ...prevChartData.datasets[0],
+                            data: data,
+                        },
+                    ],
+                }));
+            } catch (error) {
+                console.error("Error fetching customer count data:", error);
+            } finally {
+                setLoading(false);
+            }
         };
 
-        loadInitialData();
-
-        // Refetch every 15 seconds without showing the loader
-        const intervalId = setInterval(fetchCustomerData, 15000);
-
-        return () => clearInterval(intervalId);
-    }, [fetchCustomerData]); // Include fetchCustomerData in the dependency array
+        fetchCustomerData(); // Fetch data immediately on mount
+    }, []); // Empty dependency array ensures this effect runs only once
 
     const chartOptions = {
         responsive: true,
@@ -112,7 +100,7 @@ const CustomerCountChart = () => {
             {loading ? (
                 <Loader />
             ) : (
-                <div className="w-full flex-grow h-48"> {/* Use flex-grow to fill available space */}
+                <div className="w-full flex-grow h-48">
                     <Bar data={chartData} options={chartOptions} />
                 </div>
             )}

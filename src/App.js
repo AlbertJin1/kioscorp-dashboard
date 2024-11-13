@@ -20,7 +20,7 @@ const App = () => {
     if (token) {
       const validateSession = async () => {
         try {
-          const response = await axios.get('http://localhost:8000/api/validate-session/', {
+          const response = await axios.get('http://192.168.254.101:8000/api/validate-session/', {
             headers: { Authorization: `Token ${token}` }
           });
           if (response.status === 200) {
@@ -55,7 +55,7 @@ const App = () => {
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
     try {
-      await axios.post('http://localhost:8000/api/logout/', {}, {
+      await axios.post('http://192.168.254.101:8000/api/logout/', {}, {
         headers: { Authorization: `Token ${token}` }
       });
 

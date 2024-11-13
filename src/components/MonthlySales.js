@@ -23,22 +23,19 @@ const MonthlySales = () => {
 
     useEffect(() => {
         const fetchSalesData = async () => {
-            // Simulate a loading delay of 1.5 seconds
-            setTimeout(async () => {
-                try {
-                    const token = localStorage.getItem('token'); // Assuming you store the token in localStorage
-                    const response = await axios.get('http://localhost:8000/api/sales/monthly/', {
-                        headers: {
-                            Authorization: `Token ${token}`,
-                        },
-                    });
-                    setSalesData(response.data);
-                } catch (error) {
-                    console.error('Error fetching sales data:', error);
-                } finally {
-                    setLoading(false); // Set loading to false after data is fetched
-                }
-            }, 1500); // 1500 milliseconds = 1.5 seconds
+            try {
+                const token = localStorage.getItem('token'); // Assuming you store the token in localStorage
+                const response = await axios.get('http://192.168.254.101:8000/api/sales/monthly/', {
+                    headers: {
+                        Authorization: `Token ${token}`,
+                    },
+                });
+                setSalesData(response.data);
+            } catch (error) {
+                console.error('Error fetching sales data:', error);
+            } finally {
+                setLoading(false); // Set loading to false after data is fetched
+            }
         };
 
         fetchSalesData();
