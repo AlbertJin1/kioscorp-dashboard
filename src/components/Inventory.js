@@ -41,7 +41,7 @@ const Inventory = () => {
                     category: selectedFilters.category !== 'All' ? selectedFilters.category : undefined,
                     include_subcategory: true,
                 };
-                const response = await axios.get('http://localhost:8000/api/products/', { params });
+                const response = await axios.get('http://192.168.254.101:8000/api/products/', { params });
                 console.log("Fetched products:", response.data);
                 setProducts(response.data);
             } catch (error) {
@@ -55,7 +55,7 @@ const Inventory = () => {
             const token = localStorage.getItem('token');
             axios.defaults.headers.common['Authorization'] = `Token ${token}`;
             try {
-                const response = await axios.get('http://localhost:8000/api/main-categories/');
+                const response = await axios.get('http://192.168.254.101:8000/api/main-categories/');
                 console.log("Fetched main categories:", response.data);
                 setMainCategories(response.data);
             } catch (error) {
@@ -135,7 +135,7 @@ const Inventory = () => {
             // Single-select mode
             if (product.product_id !== selectedProductId) {
                 setSelectedRow(product);
-                setFormData({ ...product });
+                setFormData({ ...product }); // This includes product_description
                 setSelectedProductId(product.product_id);
                 setSelectedRows([]); // Clear multi-select when switching back to single-select
             } else {
@@ -166,6 +166,7 @@ const Inventory = () => {
             ...prev,
             [e.target.name]: e.target.value,
         }));
+        setCurrentPage(1); // Reset current page to 1 when filter changes
     };
 
     const handleProductImageChange = (e) => {
@@ -231,6 +232,11 @@ const Inventory = () => {
 
                 const updatedProduct = { ...formData }; // Collect form data
 
+                // Check for empty fields and set to "N/A" if they are empty
+                updatedProduct.product_size = updatedProduct.product_size || "N/A";
+                updatedProduct.product_color = updatedProduct.product_color || "N/A";
+                updatedProduct.product_description = updatedProduct.product_description || "N/A";
+
                 const formDataToSend = new FormData();
                 formDataToSend.append('product_name', updatedProduct.product_name);
                 formDataToSend.append('product_type', updatedProduct.product_type);
@@ -245,7 +251,7 @@ const Inventory = () => {
                     formDataToSend.append('product_image', productImage); // Add the new image
                 }
 
-                const response = await axios.patch(`http://localhost:8000/api/products/${updatedProduct.product_id}/`, formDataToSend, config);
+                const response = await axios.patch(`http://192.168.254.101:8000/api/products/${updatedProduct.product_id}/`, formDataToSend, config);
 
                 if (response.status === 200) {
                     Swal.fire({
@@ -260,7 +266,7 @@ const Inventory = () => {
                     });
                     setIsEditModalOpen(false); // Close modal on success
                     // Refetch products after update
-                    const res = await axios.get('http://localhost:8000/api/products/', config);
+                    const res = await axios.get('http://192.168.254.101:8000/api/products/', config);
                     setProducts(res.data);
                 } else {
                     Swal.fire('Error', 'Failed to update product.', 'error');
@@ -281,11 +287,11 @@ const Inventory = () => {
                         'Authorization': `Token ${token}`,
                     }
                 };
-                const response = await axios.delete(`http://localhost:8000/api/products/${productId}/`, config);
+                const response = await axios.delete(`http://192.168.254.101:8000/api/products/${productId}/`, config);
 
                 if (response.status === 204) {
                     // Refetch products to remove the deleted one
-                    const res = await axios.get('http://localhost:8000/api/products/', config);
+                    const res = await axios.get('http://192.168.254.101:8000/api/products/', config);
                     setProducts(res.data);
                     setSelectedRow(null); // Unselect the product after deletion
                     Swal.fire({
@@ -366,7 +372,7 @@ const Inventory = () => {
                     },
                 };
 
-                const response = await axios.patch(`http://localhost:8000/api/products/${selectedRow.product_id}/`, { product_quantity: newQuantity }, config);
+                const response = await axios.patch(`http://192.168.254.101:8000/api/products/${selectedRow.product_id}/`, { product_quantity: newQuantity }, config);
 
                 if (response.status === 200) {
                     Swal.fire({
@@ -489,19 +495,59 @@ const Inventory = () => {
                                         type="number"
                                         value={stockToAdd} // This will be empty initially
                                         onChange={(e) => setStockToAdd(e.target.value)} // Update state on change
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                // Check if the stockToAdd field is empty or invalid
+                                                if (!stockToAdd || stockToAdd <= 0) {
+                                                    Swal.fire({
+                                                        icon: 'warning',
+                                                        title: 'Oops...',
+                                                        text: 'Please enter a valid stock quantity greater than 0!',
+                                                        position: 'top-end', // Set position to top-end
+                                                        timer: 2000,
+                                                        showConfirmButton: false,
+                                                        timerProgressBar: true,
+                                                    });
+                                                    return;
+                                                }
+
+                                                // Add stock function
+                                                handleAddStock();
+
+                                                // Reset state
+                                                setStockToAdd('');
+
+                                                // Fully unselect the row
+                                                setSelectedRow(null);
+
+                                                // Close the modal after success
+                                                setIsAddStockModalOpen(false);
+
+                                                // Success notification at top-end
+                                                Swal.fire({
+                                                    icon: 'success',
+                                                    title: 'Stock added!',
+                                                    text: 'The stock was successfully added.',
+                                                    position: 'top-end', // Set position to top-end
+                                                    timer: 2000,
+                                                    showConfirmButton: false,
+                                                    timerProgressBar: true,
+                                                });
+                                            }
+                                        }}
                                         className="p-2 mb-4 w-full border border-gray-300 rounded"
                                         placeholder="Enter stock quantity to add"
                                     />
                                     <div className="flex justify-end">
                                         <button
-                                            className="bg-green-500 text-white rounded px-4 py-2 mr-2"
+                                            className="bg-green-500 text-white rounded font-bold px-4 py-2 mr-2"
                                             onClick={() => {
                                                 // Check if the stockToAdd field is empty or invalid
                                                 if (!stockToAdd || stockToAdd <= 0) {
                                                     Swal.fire({
                                                         icon: 'warning',
                                                         title: 'Oops...',
-                                                        text: 'Please enter a valid stock quantity!',
+                                                        text: 'Please enter a valid stock quantity greater than 0!',
                                                         position: 'top-end', // Set position to top-end
                                                         timer: 2000,
                                                         showConfirmButton: false,
@@ -537,7 +583,7 @@ const Inventory = () => {
                                             Add Stock
                                         </button>
                                         <button
-                                            className="bg-red-500 text-white rounded px-4 py-2"
+                                            className="bg-red-500 text-white rounded font-bold px-4 py-2"
                                             onClick={() => {
                                                 // Close the modal
                                                 setIsAddStockModalOpen(false);
@@ -624,7 +670,7 @@ const Inventory = () => {
                                             'Authorization': `Token ${token}`,
                                         }
                                     };
-                                    const res = await axios.get('http://localhost:8000/api/products/', config);
+                                    const res = await axios.get('http://192.168.254.101:8000/api/products/', config);
                                     const products = res.data;
 
                                     const workbook = new ExcelJS.Workbook();
@@ -863,7 +909,6 @@ const Inventory = () => {
                                         </div>
                                     )}
                                 </div>
-
                             </div>
 
                             {/* Data Fields Section */}
