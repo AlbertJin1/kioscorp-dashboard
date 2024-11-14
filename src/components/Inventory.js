@@ -135,7 +135,7 @@ const Inventory = () => {
             // Single-select mode
             if (product.product_id !== selectedProductId) {
                 setSelectedRow(product);
-                setFormData({ ...product });
+                setFormData({ ...product }); // This includes product_description
                 setSelectedProductId(product.product_id);
                 setSelectedRows([]); // Clear multi-select when switching back to single-select
             } else {
@@ -166,6 +166,7 @@ const Inventory = () => {
             ...prev,
             [e.target.name]: e.target.value,
         }));
+        setCurrentPage(1); // Reset current page to 1 when filter changes
     };
 
     const handleProductImageChange = (e) => {
@@ -230,6 +231,11 @@ const Inventory = () => {
                 };
 
                 const updatedProduct = { ...formData }; // Collect form data
+
+                // Check for empty fields and set to "N/A" if they are empty
+                updatedProduct.product_size = updatedProduct.product_size || "N/A";
+                updatedProduct.product_color = updatedProduct.product_color || "N/A";
+                updatedProduct.product_description = updatedProduct.product_description || "N/A";
 
                 const formDataToSend = new FormData();
                 formDataToSend.append('product_name', updatedProduct.product_name);
@@ -489,19 +495,59 @@ const Inventory = () => {
                                         type="number"
                                         value={stockToAdd} // This will be empty initially
                                         onChange={(e) => setStockToAdd(e.target.value)} // Update state on change
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                // Check if the stockToAdd field is empty or invalid
+                                                if (!stockToAdd || stockToAdd <= 0) {
+                                                    Swal.fire({
+                                                        icon: 'warning',
+                                                        title: 'Oops...',
+                                                        text: 'Please enter a valid stock quantity greater than 0!',
+                                                        position: 'top-end', // Set position to top-end
+                                                        timer: 2000,
+                                                        showConfirmButton: false,
+                                                        timerProgressBar: true,
+                                                    });
+                                                    return;
+                                                }
+
+                                                // Add stock function
+                                                handleAddStock();
+
+                                                // Reset state
+                                                setStockToAdd('');
+
+                                                // Fully unselect the row
+                                                setSelectedRow(null);
+
+                                                // Close the modal after success
+                                                setIsAddStockModalOpen(false);
+
+                                                // Success notification at top-end
+                                                Swal.fire({
+                                                    icon: 'success',
+                                                    title: 'Stock added!',
+                                                    text: 'The stock was successfully added.',
+                                                    position: 'top-end', // Set position to top-end
+                                                    timer: 2000,
+                                                    showConfirmButton: false,
+                                                    timerProgressBar: true,
+                                                });
+                                            }
+                                        }}
                                         className="p-2 mb-4 w-full border border-gray-300 rounded"
                                         placeholder="Enter stock quantity to add"
                                     />
                                     <div className="flex justify-end">
                                         <button
-                                            className="bg-green-500 text-white rounded px-4 py-2 mr-2"
+                                            className="bg-green-500 text-white rounded font-bold px-4 py-2 mr-2"
                                             onClick={() => {
                                                 // Check if the stockToAdd field is empty or invalid
                                                 if (!stockToAdd || stockToAdd <= 0) {
                                                     Swal.fire({
                                                         icon: 'warning',
                                                         title: 'Oops...',
-                                                        text: 'Please enter a valid stock quantity!',
+                                                        text: 'Please enter a valid stock quantity greater than 0!',
                                                         position: 'top-end', // Set position to top-end
                                                         timer: 2000,
                                                         showConfirmButton: false,
@@ -537,7 +583,7 @@ const Inventory = () => {
                                             Add Stock
                                         </button>
                                         <button
-                                            className="bg-red-500 text-white rounded px-4 py-2"
+                                            className="bg-red-500 text-white rounded font-bold px-4 py-2"
                                             onClick={() => {
                                                 // Close the modal
                                                 setIsAddStockModalOpen(false);
@@ -863,7 +909,6 @@ const Inventory = () => {
                                         </div>
                                     )}
                                 </div>
-
                             </div>
 
                             {/* Data Fields Section */}

@@ -401,9 +401,59 @@ const Products = () => {
         reader.readAsDataURL(image);
     };
 
+    // Add this function to handle adding variations
+    const handleVariationChange = (index, field, value) => {
+        const newVariations = [...productVariations];
+        newVariations[index][field] = value;
+        setProductVariations(newVariations);
+    };
+
+    const handleAddVariation = () => {
+        setProductVariations([...productVariations, { color: '', size: '', quantity: '', price: '' }]);
+    };
+
+    const handleRemoveVariation = (index) => {
+        const newVariations = productVariations.filter((_, i) => i !== index);
+        setProductVariations(newVariations);
+    };
+
+    const fetchProducts = async () => {
+        if (selectedSubCategory) {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    const config = {
+                        headers: {
+                            'Authorization': `Token ${token}`,
+                        }
+                    };
+                    const params = {
+                        subcategory: selectedSubCategory.sub_category_name, // Use the subcategory name or ID based on your API design
+                        include_subcategory: true, // Include subcategory details
+                    };
+                    const res = await axios.get('http://192.168.254.101:8000/api/products/', { params, headers: config.headers });
+                    const products = res.data;
+
+                    setProducts(products); // Set the products
+                } else {
+                    showError('You are not authorized to view products.');
+                }
+            } catch (error) {
+                if (error.response.status === 403) {
+                    showError('You do not have permission to view products.');
+                } else {
+                    showError('Error fetching products');
+                }
+            }
+        } else {
+            setProducts([]); // Clear products when no subcategory is selected
+            setSelectedProduct(null); // Clear selected product when no subcategory is selected
+        }
+    };
+
     const handleAddProduct = async () => {
         // Check if required fields are filled
-        if (!newProductName || !newProductType || !newProductBrand || productVariations.length === 0) {
+        if (!newProductName || !newProductType || !newProductBrand || productVariations.length === 0 || !selectedSubCategory) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Missing Information',
@@ -435,22 +485,27 @@ const Products = () => {
         }
 
         try {
-            // Loop through variations and create a request for each
-            const promises = productVariations.map(async (variation) => {
+            // Loop through each variation and add the product
+            for (const variation of productVariations) {
                 const data = new FormData();
+                // Append common product details
                 data.append('product_name', newProductName);
                 data.append('product_type', newProductType);
                 data.append('product_brand', newProductBrand);
-                data.append('product_color', variation.color || 'N/A'); // Default to 'N/A' if empty
-                data.append('product_size', variation.size || 'N/A');  // Default to 'N/A' if empty
-                data.append('product_quantity', variation.quantity || '0'); // Default to '0' if empty
-                data.append('product_price', variation.price || '0');   // Default to '0' if empty
-                data.append('sub_category', selectedSubCategory.sub_category_id);
-                data.append('product_description', newProductDescription || 'N/A'); // Default to 'N/A' if empty
-                data.append('product_image', productImage);
+                data.append('sub_category', selectedSubCategory.sub_category_id); // Use the ID from selectedSubCategory
 
-                // Send the POST request to add the product variation
-                const response = await fetch('http://192.168.254.101:8000/api/products/', {
+                // Set optional fields to "N/A" if they are empty
+                data.append('product_description', newProductDescription || 'N/A'); // Default to 'N/A' if empty
+                data.append('product_color', variation.color || 'N/A'); // Default to 'N/A' if empty
+                data.append('product_size', variation.size || 'N/A'); // Default to 'N/A' if empty
+                data.append('product_quantity', variation.quantity || '0'); // Default to '0' if empty
+                data.append('product_price', variation.price || '0'); // Default to '0' if empty
+
+                // Append the original image file for each variation
+                data.append('product_image', productImage); // Use the original image
+
+                // Make the request to add the product variation
+                const productResponse = await fetch('http://192.168.254.101:8000/api/products/', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Token ${localStorage.getItem('token')}`,
@@ -458,35 +513,15 @@ const Products = () => {
                     body: data
                 });
 
-                if (!response.ok) {
-                    const errorResponse = await response.json();
-                    throw new Error(errorResponse.detail || 'Failed to add product variation.');
+                if (!productResponse.ok) {
+                    const errorMessage = await productResponse.text();
+                    console.error('Error adding product variation:', errorMessage);
+                    throw new Error(errorMessage || 'Failed to add product variation.');
                 }
-            });
-
-            // Wait for all promises to resolve
-            await Promise.all(promises);
+            }
 
             // Handle successful product addition
             setModalOpenProduct(false);
-
-            // Refetch products to include the newly added one
-            const res = await fetch(`http://192.168.254.101:8000/api/products/?sub_category=${selectedSubCategory.sub_category_id}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Token ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (res.ok) {
-                const products = await res.json();
-                const filteredProducts = products.filter(product => product.sub_category === selectedSubCategory.sub_category_id);
-                setProducts(filteredProducts); // Update the products state with the filtered products
-            } else {
-                console.error('Failed to fetch products:', res.statusText);
-            }
-
             // Show success alert
             Swal.fire({
                 icon: 'success',
@@ -506,6 +541,10 @@ const Products = () => {
             setNewProductDescription('');
             setProductVariations([{ color: '', size: '', quantity: '', price: '' }]); // Reset variations
             setProductImage(null);
+
+            // Refetch products to show the newly added ones
+            fetchProducts(); // Call fetchProducts to refresh the product list
+
         } catch (error) {
             console.error('Error adding product variations:', error);
             Swal.fire({
@@ -520,7 +559,6 @@ const Products = () => {
             });
         }
     };
-
 
     const handleDeleteProduct = async (productId) => {
         try {
@@ -1117,6 +1155,12 @@ const Products = () => {
                             type="text"
                             value={newSubCategoryName}
                             onChange={(e) => setNewSubCategoryName(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleEditSubCategory(); // Call the function when Enter is pressed
+                                    setEditingSubCategory(null); // Close the modal after saving
+                                }
+                            }}
                             className="p-2 mb-4 w-full rounded"
                             placeholder="Enter new subcategory name"
                         />
@@ -1182,6 +1226,11 @@ const Products = () => {
                                             type="text"
                                             value={newProductName}
                                             onChange={(e) => setNewProductName(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    handleAddProduct(); // Call the function when Enter is pressed
+                                                }
+                                            }}
                                             className="p-2 w-full rounded shadow-lg"
                                             placeholder="Enter product name"
                                         />
@@ -1192,6 +1241,11 @@ const Products = () => {
                                             type="text"
                                             value={newProductType}
                                             onChange={(e) => setNewProductType(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    handleAddProduct(); // Call the function when Enter is pressed
+                                                }
+                                            }}
                                             className="p-2 w-full rounded shadow-lg"
                                             placeholder="Enter product type"
                                             disabled // Input disabled as per the existing code
@@ -1203,6 +1257,11 @@ const Products = () => {
                                             type="text"
                                             value={newProductBrand}
                                             onChange={(e) => setNewProductBrand(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    handleAddProduct(); // Call the function when Enter is pressed
+                                                }
+                                            }}
                                             className="p-2 w-full rounded shadow-lg"
                                             placeholder="Enter product brand"
                                         />
@@ -1212,6 +1271,11 @@ const Products = () => {
                                         <textarea
                                             value={newProductDescription}
                                             onChange={(e) => setNewProductDescription(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    handleAddProduct(); // Call the function when Enter is pressed
+                                                }
+                                            }}
                                             className="p-2 w-full rounded shadow-lg resize-none"
                                             placeholder="Leave blank to save as N/A"
                                         />
@@ -1223,77 +1287,89 @@ const Products = () => {
                                         <h3 className="text-yellow-500 text-2xl">Product Variations</h3>
                                         <button
                                             className="bg-yellow-500 text-black rounded px-4 py-2 transition-colors duration-200 hover:bg-yellow-600"
-                                            onClick={() => setProductVariations([...productVariations, { color: '', size: '', quantity: '', price: '' }])}
+                                            onClick={handleAddVariation}
                                         >
                                             Add Variation
                                         </button>
                                     </div>
                                     <div className="overflow-y-auto max-h-64 custom-scrollbar mb-4">
                                         {productVariations.map((variation, index) => (
-                                            <div key={index} className="flex flex-wrap">
+                                            <div key={index} className="flex flex-wrap mb-2">
                                                 <div className="w-full md:w-1/4 mb-4 px-2">
                                                     <label className="block text-white mb-2">Color (Opt)</label>
                                                     <input
                                                         type="text"
                                                         value={variation.color}
-                                                        onChange={(e) => {
-                                                            const newVariations = [...productVariations];
-                                                            newVariations[index].color = e.target.value;
-                                                            setProductVariations(newVariations);
+                                                        onChange={(e) => handleVariationChange(index, 'color', e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                handleAddProduct(); // Call the function when Enter is pressed
+                                                            }
                                                         }}
                                                         className="p-2 w-full rounded shadow-lg"
                                                         placeholder="Enter color"
                                                     />
                                                 </div>
-                                                <div className="w-full md:w-1/4 px-2">
+                                                <div className="w-full md:w-1/4 mb-4 px-2">
                                                     <label className="block text-white mb-2">Size (Opt)</label>
                                                     <input
                                                         type="text"
                                                         value={variation.size}
-                                                        onChange={(e) => {
-                                                            const newVariations = [...productVariations];
-                                                            newVariations[index].size = e.target.value;
-                                                            setProductVariations(newVariations);
+                                                        onChange={(e) => handleVariationChange(index, 'size', e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                handleAddProduct(); // Call the function when Enter is pressed
+                                                            }
                                                         }}
                                                         className="p-2 w-full rounded shadow-lg"
                                                         placeholder="Enter size"
                                                     />
                                                 </div>
-                                                <div className="w-full md:w-1/4 px-2">
+                                                <div className="w-full md:w-1/4 mb-4 px-2">
                                                     <label className="block text-white mb-2">Quantity</label>
                                                     <input
                                                         type="number"
                                                         value={variation.quantity}
-                                                        onChange={(e) => {
-                                                            const newVariations = [...productVariations];
-                                                            newVariations[index].quantity = e.target.value;
-                                                            setProductVariations(newVariations);
+                                                        onChange={(e) => handleVariationChange(index, 'quantity', e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                handleAddProduct(); // Call the function when Enter is pressed
+                                                            }
                                                         }}
                                                         className="p-2 w-full rounded shadow-lg"
                                                         placeholder="Enter quantity"
-                                                        min="0" // Prevents negative values
+                                                        min="0"
                                                     />
                                                 </div>
-                                                <div className="w-full md:w-1/4 px-2">
+                                                <div className="w-full md:w-1/4 mb-4 px-2">
                                                     <label className="block text-white mb-2">Price</label>
                                                     <div className="flex items-center border rounded shadow-lg bg-white">
-                                                        <span className="px-2 text-gray-500">₱</span> {/* Peso Sign */}
+                                                        <span className="px-2 text-gray-500">₱</span>
                                                         <input
                                                             type="text"
                                                             value={variation.price}
-                                                            onChange={(e) => {
-                                                                const newVariations = [...productVariations];
-                                                                newVariations[index].price = e.target.value;
-                                                                setProductVariations(newVariations);
+                                                            onChange={(e) => handleVariationChange(index, 'price', e.target.value)}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleAddProduct(); // Call the function when Enter is pressed
+                                                                }
                                                             }}
                                                             className="p-2 w-full rounded-r"
                                                             placeholder="Enter price"
-                                                            inputMode="numeric" // Allows only numeric input
-                                                            pattern="[0-9]*" // Ensures only numeric values are entered
+                                                            inputMode="numeric"
+                                                            pattern="[0-9]*"
                                                         />
                                                     </div>
                                                 </div>
-
+                                                {/* Render the Remove button only if it's not the first variation */}
+                                                {index > 0 && (
+                                                    <button
+                                                        className="bg-red-500 text-white rounded px-2 py-1 ml-2"
+                                                        onClick={() => handleRemoveVariation(index)}
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
