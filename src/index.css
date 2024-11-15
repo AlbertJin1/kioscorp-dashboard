@@ -67,6 +67,20 @@ code {
   /* Darker color on hover */
 }
 
+/* CSS for increasing the clear icon size */
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  height: 30px;
+  /* Adjust height as needed */
+  width: 30px;
+  /* Adjust width as needed */
+  background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="%23000"%3E%3Cpath d="M12 10.586L5.707 4.293 4.293 5.707 10.586 12l-6.293 6.293 1.414 1.414L12 13.414l6.293 6.293 1.414-1.414L13.414 12l6.293-6.293-1.414-1.414L12 10.586z"/%3E%3C/svg%3E');
+  background-size: contain;
+  /* Scale the icon to fit the button size */
+  cursor: pointer;
+}
+
+
 
 @tailwind base;
 @tailwind components;

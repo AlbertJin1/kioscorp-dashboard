@@ -52,7 +52,7 @@ const MainComponentWITHauth = ({ loggedInUser, handleLogout }) => {
     const renderPage = () => {
         switch (currentPage) {
             case 'menu':
-                return <Menu setIsAuthenticated={setIsAuthenticated} loggedInUser={loggedInUser} />;
+                return <Menu setIsAuthenticated={setIsAuthenticated} loggedInUser={loggedInUser} handleLogout={handleLogout} />;
             case 'dashboard':
                 return <Dashboard />;
             case 'inventory':

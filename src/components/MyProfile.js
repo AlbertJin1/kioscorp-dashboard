@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import Loader from './Loader'; // Import the Loader component
 import imagePlaceholder from '../img/logo/placeholder-image.png';
 
-const MyProfile = ({ setIsAuthenticated }) => {
+const MyProfile = ({ setIsAuthenticated, handleLogout }) => {
     const [profileData, setProfileData] = useState({
         firstName: '',
         lastName: '',
@@ -119,14 +119,9 @@ const MyProfile = ({ setIsAuthenticated }) => {
                 showConfirmButton: false,
             });
 
-            // Delay before logging out
+            // Call handleLogout instead of manually clearing local storage
             setTimeout(() => {
-                localStorage.removeItem('token');
-                localStorage.removeItem('firstName');
-                localStorage.removeItem('lastName');
-                localStorage.removeItem('phoneNumber');
-                localStorage.removeItem('role');
-                setIsAuthenticated(false); // Set authentication state to false
+                handleLogout(); // Use the handleLogout function
             }, 2000); // Delay of 2 seconds
         } catch (error) {
             console.error('Error saving profile data:', error);

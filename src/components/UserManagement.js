@@ -403,18 +403,20 @@ const UserManagement = () => {
                     <div className="flex justify-between">
                         <div className="flex justify-between">
                             <button
-                                className="bg-green-500 hover:bg-green-700 text-white font-bold p-2 px-4 rounded flex justify-center items-center transition duration-200 ease-in-out transform"
+                                className="bg-green-500 hover:bg-green-700 text-white font-bold p-2 px-3 rounded flex justify-center items-center transition duration-200 ease-in-out transform"
                                 title="Export Users"
                                 onClick={handleExportUsers}
                             >
-                                <FaDownload size={25} />
+                                <FaDownload className="mr-2" size={25} />
+                                Export Users
                             </button>
                             <button
-                                className="bg-green-500 hover:bg-green-700 text-white font-bold p-2 px-4 rounded flex justify-center items-center ml-2 transition duration-200 ease-in-out transform"
+                                className="bg-green-500 hover:bg-green-700 text-white font-bold p-2 px-3 rounded flex justify-center items-center ml-2 transition duration-200 ease-in-out transform"
                                 title="Add New User"
                                 onClick={() => setAddModalOpen(true)} // Open add user modal
                             >
-                                <FaPlus size={25} />
+                                <FaPlus className="mr-2" size={25} />
+                                Add User
                             </button>
                         </div>
                     </div>
@@ -509,18 +511,18 @@ const UserManagement = () => {
                                 <td className="p-4 text-center">
                                     <div className="flex justify-center space-x-4">
                                         <FaEye
-                                            className="cursor-pointer text-yellow-500 hover:text-yellow-700"
+                                            className="cursor-pointer text-yellow-500 hover:text-yellow-700 transition-colors duration-300"
                                             onClick={() => handleView(user)}
                                             size={25}
                                         />
                                         <FaEdit
-                                            className="cursor-pointer text-green-500 hover:text-green-700"
+                                            className="cursor-pointer text-green-500 hover:text-green-700 transition-colors duration-300"
                                             onClick={() => handleEdit(user)}
                                             size={25}
                                         />
                                         {localStorage.getItem('role') !== 'admin' && (
                                             <FaTrash
-                                                className="cursor-pointer text-red-500 hover:text-red-700"
+                                                className="cursor-pointer text-red-500 hover:text-red-700 transition-colors duration-300"
                                                 onClick={() => handleDelete(user.id)}
                                                 size={25}
                                             />

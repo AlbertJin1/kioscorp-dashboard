@@ -22,8 +22,9 @@ const Products = () => {
     const [subCategoryImage, setSubCategoryImage] = useState(null);
     const [subCategoryImagePreview, setSubCategoryImagePreview] = useState(null);
     const [productVariations, setProductVariations] = useState([
-        { color: '', size: '', quantity: '', price: '' },
+        { color: '', size: '', quantity: '', price: '', image: null },
     ]);
+    const [userRole, setUserRole] = useState('');
 
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -375,6 +376,7 @@ const Products = () => {
                 const height = img.height;
                 const aspectRatio = width / height;
                 let newWidth, newHeight;
+
                 // Resize logic based on aspect ratio
                 if (aspectRatio > 1) {
                     newWidth = height;
@@ -393,13 +395,25 @@ const Products = () => {
                         type: blob.type,
                         lastModified: Date.now(),
                     });
+
+                    // Set the product image and also set it as the first variation's image
                     setProductImage(compressedImage);
+                    setProductVariations((prevVariations) => {
+                        const newVariations = [...prevVariations];
+                        newVariations[0].image = compressedImage; // Set the first variation's image
+                        return newVariations;
+                    });
                 }, 'image/jpeg', 0.5); // Compress the image to 50% quality
             };
             img.src = event.target.result;
         };
         reader.readAsDataURL(image);
     };
+
+    useEffect(() => {
+        const role = localStorage.getItem('role'); // Retrieve the user role from local storage
+        setUserRole(role); // Set the user role state
+    }, []);
 
     // Add this function to handle adding variations
     const handleVariationChange = (index, field, value) => {
@@ -454,39 +468,23 @@ const Products = () => {
     const handleAddProduct = async () => {
         // Check if required fields are filled
         if (!newProductName || !newProductType || !newProductBrand || productVariations.length === 0 || !selectedSubCategory) {
+            // Show warning message
             Swal.fire({
                 icon: 'warning',
-                title: 'Missing Information',
-                text: 'Please fill out all required fields before adding a product.',
-                confirmButtonText: 'Okay',
+                title: 'Input Required',
+                text: 'Please fill in all required fields.',
                 position: 'top-end',
-                timer: 1500,
-                timerProgressBar: true,
-                showConfirmButton: false,
                 toast: true,
-            });
-            return;
-        }
-
-        // Check if an image is selected
-        if (!productImage) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'No Image Selected',
-                text: 'Please select an image before adding a product.',
-                confirmButtonText: 'Okay',
-                position: 'top-end',
-                timer: 1500,
-                timerProgressBar: true,
                 showConfirmButton: false,
-                toast: true,
+                timer: 2000,
+                timerProgressBar: true,
             });
             return;
         }
 
         try {
             // Loop through each variation and add the product
-            for (const variation of productVariations) {
+            for (const [index, variation] of productVariations.entries()) {
                 const data = new FormData();
                 // Append common product details
                 data.append('product_name', newProductName);
@@ -495,14 +493,24 @@ const Products = () => {
                 data.append('sub_category', selectedSubCategory.sub_category_id); // Use the ID from selectedSubCategory
 
                 // Set optional fields to "N/A" if they are empty
-                data.append('product_description', newProductDescription || 'N/A'); // Default to 'N/A' if empty
-                data.append('product_color', variation.color || 'N/A'); // Default to 'N/A' if empty
-                data.append('product_size', variation.size || 'N/A'); // Default to 'N/A' if empty
-                data.append('product_quantity', variation.quantity || '0'); // Default to '0' if empty
-                data.append('product_price', variation.price || '0'); // Default to '0' if empty
+                data.append('product_description', newProductDescription || 'N/A');
+                data.append('product_color', variation.color || 'N/A');
+                data.append('product_size', variation.size || 'N/A');
+                data.append('product_quantity', variation.quantity || '0');
+                data.append('product_price', variation.price || '0');
 
-                // Append the original image file for each variation
-                data.append('product_image', productImage); // Use the original image
+                // Append the image file for each variation
+                if (index === 0) {
+                    // For the first variation, use the main product image
+                    if (productImage) {
+                        data.append('product_image', productImage);
+                    }
+                } else {
+                    // For subsequent variations, use their own images
+                    if (variation.image) {
+                        data.append('product_image', variation.image);
+                    }
+                }
 
                 // Make the request to add the product variation
                 const productResponse = await fetch('http://192.168.254.101:8000/api/products/', {
@@ -539,7 +547,7 @@ const Products = () => {
             setNewProductType('');
             setNewProductBrand('');
             setNewProductDescription('');
-            setProductVariations([{ color: '', size: '', quantity: '', price: '' }]); // Reset variations
+            setProductVariations([{ color: '', size: '', quantity: '', price: '', image: null }]); // Reset variations
             setProductImage(null);
 
             // Refetch products to show the newly added ones
@@ -765,46 +773,99 @@ const Products = () => {
                     ))}
                 </div>
 
-                <div className='text-yellow-500 p-4 bg-blue-900 rounded-tl-lg rounded-tr-lg flex justify-between items-center'>
-                    <h2 className='text-2xl'>Categories</h2>
+                <div className='text-yellow-500 p-4 bg-blue-900 rounded-tl-lg rounded-tr-lg flex flex-col'>
+                    <div className='flex items-center justify-between'>
+                        <h2 className='text-2xl'>Categories</h2>
 
-                    <div className={`flex items-center transition-all duration-500 ease-in-out ${searchOpen ? 'w-1/2 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
-                        <div className="flex items-center w-full px-2">
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="p-1 rounded text-md text-black font-semibold w-full transition-width duration-500 ease-in-out"
-                                placeholder="Search"
+                        <div className='flex items-center gap-2'>
+                            {userRole === 'owner' && ( // Only show the delete button if the user is an owner
+                                <FaTrash
+                                    className={`text-red-500 transition duration-200 cursor-pointer hover:text-red-700 ${selectedProduct || (selectedSubCategory && products.length === 0) ? '' : 'opacity-50 pointer-events-none'}`}
+                                    size={30}
+                                    title={selectedProduct ? 'Delete Product' : selectedSubCategory ? 'Delete Subcategory' : ''}
+                                    onClick={() => {
+                                        if (selectedProduct) {
+                                            Swal.fire({
+                                                title: 'Delete Product?',
+                                                text: `Are you sure you want to delete ${selectedProduct.product_name}?`,
+                                                icon: 'warning',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#3085d6',
+                                                cancelButtonColor: '#d33',
+                                                confirmButtonText: 'Yes, delete it!'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    handleDeleteProduct(selectedProduct.product_id);
+                                                }
+                                            });
+                                        } else if (selectedSubCategory) {
+                                            Swal.fire({
+                                                title: 'Delete Subcategory?',
+                                                text: `Are you sure you want to delete ${selectedSubCategory.sub_category_name}?`,
+                                                icon: 'warning',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#3085d6',
+                                                cancelButtonColor: '#d33',
+                                                confirmButtonText: 'Yes, delete it!'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    handleDeleteSubCategory(selectedSubCategory.sub_category_id);
+                                                }
+                                            });
+                                        }
+                                    }}
+                                />
+                            )}
+
+                            <FaEdit
+                                className={`text-yellow-500 transition duration-200 cursor-pointer hover:text-yellow-300 ${selectedSubCategory ? '' : 'opacity-50 pointer-events-none'}`}
+                                size={30}
+                                title="Edit Subcategory"
+                                onClick={() => {
+                                    if (selectedSubCategory) {
+                                        setEditingSubCategory(selectedSubCategory);
+                                        setNewSubCategoryName(selectedSubCategory.sub_category_name);
+                                    }
+                                }}
+                            />
+
+                            <div className="flex items-center cursor-pointer" onClick={() => {
+                                setSearchOpen(!searchOpen);
+                                if (searchOpen) {
+                                    setSearchQuery('');
+                                }
+                            }}>
+                                {searchOpen ? (
+                                    <FaTimes className="text-yellow-500 hover:text-yellow-300" size={32} title="Close Search Bar" />
+                                ) : (
+                                    <FaSearch className="text-yellow-500 hover:text-yellow-300" size={30} title="Open Search Bar" />
+                                )}
+                            </div>
+
+                            <FaPlusCircle
+                                className={`text-yellow-500 cursor-pointer hover:text-yellow-300 ${!mainCategory ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                size={30}
+                                title="Add New Sub-Category"
+                                onClick={() => {
+                                    if (mainCategory) {
+                                        setModalOpen(true);
+                                    } else {
+                                        showError('Please select a main category before adding a subcategory.');
+                                    }
+                                }}
+                                disabled={!mainCategory} // Disable if no main category is selected
                             />
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-end gap-x-2">
-                        <div className="flex items-center cursor-pointer" onClick={() => {
-                            setSearchOpen(!searchOpen);
-                            if (searchOpen) {
-                                setSearchQuery('');
-                            }
-                        }}>
-                            {searchOpen ? (
-                                <FaTimes className="text-yellow-500 hover:text-yellow-300" size={32} title="Close Search Bar" />
-                            ) : (
-                                <FaSearch className="text-yellow-500 hover:text-yellow-300" size={30} title="Open Search Bar" />
-                            )}
-                        </div>
-
-                        <FaPlusCircle
-                            className="text-yellow-500 cursor-pointer hover:text-yellow-300"
-                            size={30}
-                            title="Add New Sub-Category"
-                            onClick={() => {
-                                if (mainCategory) {
-                                    setModalOpen(true);
-                                } else {
-                                    showError('Please select a main category before adding a subcategory.');
-                                }
-                            }}
+                    {/* Conditionally render the search input with sliding effect */}
+                    <div className={`flex items-center mt-2 transition-all duration-500 ease-in-out ${searchOpen ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="p-2 rounded text-md text-black font-semibold w-full transition-width duration-500 ease-in-out"
+                            placeholder="Search"
                         />
                     </div>
                 </div>
@@ -840,7 +901,7 @@ const Products = () => {
                 <div className="text-2xl text-yellow-500 p-4 bg-blue-900 rounded-tl-lg rounded-tr-lg flex justify-between items-center">
                     <h2>Products</h2>
                     {/* Search Input */}
-                    <div className={`flex items-center transition-all duration-500 ease-in-out ${searchOpenProduct ? 'w-1/2 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
+                    <div className={`flex items-center transition-all duration-500 ease-in-out mx-4 ${searchOpenProduct ? 'w-full opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
                         <div className="flex items-center w-full px-2">
                             <input
                                 type="text"
@@ -867,7 +928,7 @@ const Products = () => {
                         </div>
                         {/* Add Product Icon */}
                         <FaPlusCircle
-                            className="text-yellow-500 cursor-pointer hover:text-yellow-300"
+                            className={`text-yellow-500 cursor-pointer hover:text-yellow-300 ${!selectedSubCategory ? 'opacity-50 cursor-not-allowed' : ''}`}
                             size={30}
                             title="Add Product"
                             onClick={() => {
@@ -875,9 +936,10 @@ const Products = () => {
                                     setNewProductType(mainCategory ? mainCategory.main_category_name : ''); // Set product type based on selected main category
                                     setModalOpenProduct(true);
                                 } else {
-                                    showError('Please select a subcategory before adding a product.'); // Use SweetAlert2 for this alert
+                                    showError('Please select a subcategory before adding a product.');
                                 }
                             }}
+                            disabled={!selectedSubCategory} // Disable if no subcategory is selected
                         />
                     </div>
                 </div>
@@ -922,55 +984,6 @@ const Products = () => {
                 {/* Title for Product Details */}
                 <div className="text-2xl text-yellow-500 p-4 bg-blue-900 rounded-tl-lg rounded-tr-lg flex justify-between items-center">
                     <h2>Product Details</h2>
-                    <div className="flex items-center justify-end gap-x-4">
-                        <FaEdit
-                            className={`text-yellow-500 transition duration-200 cursor-pointer hover:text-yellow-300 ${selectedSubCategory ? '' : 'opacity-50 pointer-events-none'}`}
-                            size={30}
-                            title="Edit Subcategory"
-                            onClick={() => {
-                                if (selectedSubCategory) {
-                                    setEditingSubCategory(selectedSubCategory);
-                                    setNewSubCategoryName(selectedSubCategory.sub_category_name);
-                                }
-                            }}
-                        />
-                        <FaTrash
-                            className={`text-red-500 transition duration-200 cursor-pointer hover:text-red-700 ${selectedProduct || (selectedSubCategory && products.length === 0) ? '' : 'opacity-50 pointer-events-none'}`}
-                            size={30}
-                            title={selectedProduct ? 'Delete Product' : selectedSubCategory ? 'Delete Subcategory' : ''}
-                            onClick={() => {
-                                if (selectedProduct) {
-                                    Swal.fire({
-                                        title: 'Delete Product?',
-                                        text: `Are you sure you want to delete ${selectedProduct.product_name}?`,
-                                        icon: 'warning',
-                                        showCancelButton: true,
-                                        confirmButtonColor: '#3085d6',
-                                        cancelButtonColor: '#d33',
-                                        confirmButtonText: 'Yes, delete it!'
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            handleDeleteProduct(selectedProduct.product_id);
-                                        }
-                                    });
-                                } else if (selectedSubCategory) {
-                                    Swal.fire({
-                                        title: 'Delete Subcategory?',
-                                        text: `Are you sure you want to delete ${selectedSubCategory.sub_category_name}?`,
-                                        icon: 'warning',
-                                        showCancelButton: true,
-                                        confirmButtonColor: '#3085d6',
-                                        cancelButtonColor: '#d33',
-                                        confirmButtonText: 'Yes, delete it!'
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            handleDeleteSubCategory(selectedSubCategory.sub_category_id);
-                                        }
-                                    });
-                                }
-                            }}
-                        />
-                    </div>
                 </div>
 
                 {/* Product Details */}
@@ -1187,227 +1200,198 @@ const Products = () => {
                 </div>
             )}
 
-            {/* Modal for Adding Product */}
             {modalOpenProduct && (
                 <div className="bg-black bg-opacity-50 backdrop-blur-sm fixed inset-0 flex justify-center items-center z-50">
                     <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-3/4 lg:w-2/3 xl:w-1/2">
                         <h2 className="text-2xl mb-4 text-yellow-500">Add Product</h2>
-                        <div className="flex flex-wrap">
-                            {/* Product Image Section */}
-                            <div className="w-full md:w-1/3 px-4 mb-4 flex flex-col items-center">
-                                <label className="block text-white mb-2">Product Image</label>
+                        <div className="flex flex-col md:flex-row">
+                            {/* Left Column: Product Image */}
+                            <div className="w-full md:w-1/4 px-4 mb-4 flex flex-col items-center">
+                                <label className="block text-white mb-2">Main Product Image</label>
                                 <input
                                     type="file"
                                     onChange={(e) => handleProductImageChange(e)}
                                     className="p-2 w-full rounded mb-2"
                                 />
-                                {/* Display the image preview after selecting an image */}
+                                {/* Image preview for the main product image */}
                                 {productImage ? (
                                     <img
                                         src={URL.createObjectURL(productImage)}
                                         alt="Selected product"
-                                        className="rounded border-2 border-black w-64 h-64 object-cover shadow-lg"
+                                        className="rounded border-2 border-black w-48 h-48 object-cover shadow-lg"
                                     />
                                 ) : (
                                     <img
                                         src={imagePlaceholder}
                                         alt="Placeholder"
-                                        className="rounded border-2 border-black w-64 h-64 object-cover shadow-lg"
+                                        className="rounded border-2 border-black w-48 h-48 object-cover shadow-lg"
                                     />
                                 )}
                             </div>
 
-                            {/* Input Fields Section */}
-                            <div className="w-full md:w-2/3 px-4 mb-4">
-                                <div className="flex flex-wrap -mx-4">
-                                    <div className="w-full md:w-1/2 px-4 mb-4">
+                            {/* Right Column: Product Details */}
+                            <div className="w-full md:w-3/4 px-4 mb-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
                                         <label className="block text-white mb-2">Product Name</label>
                                         <input
                                             type="text"
                                             value={newProductName}
                                             onChange={(e) => setNewProductName(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    handleAddProduct(); // Call the function when Enter is pressed
-                                                }
-                                            }}
                                             className="p-2 w-full rounded shadow-lg"
                                             placeholder="Enter product name"
                                         />
                                     </div>
-                                    <div className="w-full md:w-1/2 px-4 mb-4">
+                                    <div>
                                         <label className="block text-white mb-2">Product Type</label>
                                         <input
                                             type="text"
                                             value={newProductType}
                                             onChange={(e) => setNewProductType(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    handleAddProduct(); // Call the function when Enter is pressed
-                                                }
-                                            }}
                                             className="p-2 w-full rounded shadow-lg"
                                             placeholder="Enter product type"
-                                            disabled // Input disabled as per the existing code
+                                            disabled
                                         />
                                     </div>
-                                    <div className="w-full md:w-1/2 px-4 mb-4">
+                                    <div>
                                         <label className="block text-white mb-2">Product Brand</label>
                                         <input
                                             type="text"
                                             value={newProductBrand}
                                             onChange={(e) => setNewProductBrand(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    handleAddProduct(); // Call the function when Enter is pressed
-                                                }
-                                            }}
                                             className="p-2 w-full rounded shadow-lg"
                                             placeholder="Enter product brand"
                                         />
                                     </div>
-                                    <div className="w-full md:w-1/2 px-4 mb-4">
+                                    <div>
                                         <label className="block text-white mb-2">Product Description (Optional)</label>
                                         <textarea
                                             value={newProductDescription}
                                             onChange={(e) => setNewProductDescription(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    handleAddProduct(); // Call the function when Enter is pressed
-                                                }
-                                            }}
                                             className="p-2 w-full rounded shadow-lg resize-none"
                                             placeholder="Leave blank to save as N/A"
                                         />
                                     </div>
                                 </div>
-                                {/* Variations Section */}
-                                <div className="mb-4">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h3 className="text-yellow-500 text-2xl">Product Variations</h3>
-                                        <button
-                                            className="bg-yellow-500 text-black rounded px-4 py-2 transition-colors duration-200 hover:bg-yellow-600"
-                                            onClick={handleAddVariation}
-                                        >
-                                            Add Variation
-                                        </button>
-                                    </div>
-                                    <div className="overflow-y-auto max-h-64 custom-scrollbar mb-4">
-                                        {productVariations.map((variation, index) => (
-                                            <div key={index} className="flex flex-wrap mb-2">
-                                                <div className="w-full md:w-1/4 mb-4 px-2">
-                                                    <label className="block text-white mb-2">Color (Opt)</label>
-                                                    <input
-                                                        type="text"
-                                                        value={variation.color}
-                                                        onChange={(e) => handleVariationChange(index, 'color', e.target.value)}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') {
-                                                                handleAddProduct(); // Call the function when Enter is pressed
-                                                            }
-                                                        }}
-                                                        className="p-2 w-full rounded shadow-lg"
-                                                        placeholder="Enter color"
+                            </div>
+                        </div>
+
+                        {/* Product Variations Section */}
+                        <div className="mb-4">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-yellow-500 text-2xl">Product Variations</h3>
+                                <button
+                                    className="bg-yellow-500 text-black rounded px-4 py-2 transition-colors duration-200 hover:bg-yellow-600"
+                                    onClick={handleAddVariation}
+                                >
+                                    Add Variation
+                                </button>
+                            </div>
+
+                            {/* Scrollable Variations List */}
+                            <div className="overflow-y-auto max-h-64 custom-scrollbar mb-4">
+                                {productVariations.map((variation, index) => (
+                                    <div key={index} className="flex items-center mb-4">
+                                        {/* Variation Image for 2nd and subsequent variations */}
+                                        {index > 0 && (
+                                            <div className="w-1/2 pr-4">
+                                                <label className="block text-white mb-2">Variation Image</label>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => {
+                                                        const image = e.target.files[0];
+                                                        const newVariations = [...productVariations];
+                                                        newVariations[index].image = image;
+                                                        setProductVariations(newVariations);
+                                                    }}
+                                                    className="p-2 w-full rounded mb-2"
+                                                />
+                                                {/* Image preview for variation */}
+                                                {variation.image && (
+                                                    <img
+                                                        src={URL.createObjectURL(variation.image)}
+                                                        alt={`Variation ${index + 1}`}
+                                                        className="rounded border-2 border-black w-48 h-48 object-cover shadow-lg"
                                                     />
-                                                </div>
-                                                <div className="w-full md:w-1/4 mb-4 px-2">
-                                                    <label className="block text-white mb-2">Size (Opt)</label>
-                                                    <input
-                                                        type="text"
-                                                        value={variation.size}
-                                                        onChange={(e) => handleVariationChange(index, 'size', e.target.value)}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') {
-                                                                handleAddProduct(); // Call the function when Enter is pressed
-                                                            }
-                                                        }}
-                                                        className="p-2 w-full rounded shadow-lg"
-                                                        placeholder="Enter size"
-                                                    />
-                                                </div>
-                                                <div className="w-full md:w-1/4 mb-4 px-2">
-                                                    <label className="block text-white mb-2">Quantity</label>
-                                                    <input
-                                                        type="number"
-                                                        value={variation.quantity}
-                                                        onChange={(e) => handleVariationChange(index, 'quantity', e.target.value)}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') {
-                                                                handleAddProduct(); // Call the function when Enter is pressed
-                                                            }
-                                                        }}
-                                                        className="p-2 w-full rounded shadow-lg"
-                                                        placeholder="Enter quantity"
-                                                        min="0"
-                                                    />
-                                                </div>
-                                                <div className="w-full md:w-1/4 mb-4 px-2">
-                                                    <label className="block text-white mb-2">Price</label>
-                                                    <div className="flex items-center border rounded shadow-lg bg-white">
-                                                        <span className="px-2 text-gray-500">₱</span>
-                                                        <input
-                                                            type="text"
-                                                            value={variation.price}
-                                                            onChange={(e) => handleVariationChange(index, 'price', e.target.value)}
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === 'Enter') {
-                                                                    handleAddProduct(); // Call the function when Enter is pressed
-                                                                }
-                                                            }}
-                                                            className="p-2 w-full rounded-r"
-                                                            placeholder="Enter price"
-                                                            inputMode="numeric"
-                                                            pattern="[0-9]*"
-                                                        />
-                                                    </div>
-                                                </div>
-                                                {/* Render the Remove button only if it's not the first variation */}
-                                                {index > 0 && (
-                                                    <button
-                                                        className="bg-red-500 text-white rounded px-2 py-1 ml-2"
-                                                        onClick={() => handleRemoveVariation(index)}
-                                                    >
-                                                        Remove
-                                                    </button>
                                                 )}
                                             </div>
-                                        ))}
-                                    </div>
+                                        )}
 
-                                    <div className="flex justify-end">
-                                        <button
-                                            className="bg-yellow-500 text-black rounded px-4 py-2 mr-2 shadow-lg transition-colors duration-200 hover:bg-yellow-600"
-                                            onClick={async () => {
-                                                const success = await handleAddProduct();
-                                                if (success) {
-                                                    setNewProductName('');
-                                                    setNewProductType('');
-                                                    setNewProductBrand('');
-                                                    setNewProductDescription('');
-                                                    setProductVariations([{ color: '', size: '', quantity: '', price: '' }]); // Reset variations
-                                                    setProductImage(null);
-                                                }
-                                            }}
-                                        >
-                                            Add
-                                        </button>
-                                        <button
-                                            className="bg-red-500 text-white rounded px-4 py-2 shadow-lg transition-colors duration-200 hover:bg-red-600"
-                                            onClick={() => {
-                                                setModalOpenProduct(false);
-                                                setNewProductName('');
-                                                setNewProductType('');
-                                                setNewProductBrand('');
-                                                setNewProductDescription('');
-                                                setProductVariations([{ color: '', size: '', quantity: '', price: '' }]); // Reset variations
-                                                setProductImage(null);
-                                            }}
-                                        >
-                                            Cancel
-                                        </button>
+                                        {/* Variation Fields (Right Side) */}
+                                        <div className="w-full mx-4 grid grid-cols-2 gap-4">
+                                            <div className="mb-4">
+                                                <label className="block text-white mb-2">Color</label>
+                                                <input
+                                                    type="text"
+                                                    value={variation.color}
+                                                    onChange={(e) => handleVariationChange(index, 'color', e.target.value)}
+                                                    className="p-2 w-full rounded shadow-lg"
+                                                    placeholder="Enter color"
+                                                />
+                                            </div>
+                                            <div className="mb-4">
+                                                <label className="block text-white mb-2">Size</label>
+                                                <input
+                                                    type="text"
+                                                    value={variation.size}
+                                                    onChange={(e) => handleVariationChange(index, 'size', e.target.value)}
+                                                    className="p-2 w-full rounded shadow-lg"
+                                                    placeholder="Enter size"
+                                                />
+                                            </div>
+                                            <div className="mb-4">
+                                                <label className="block text-white mb-2">Quantity</label>
+                                                <input
+                                                    type="number"
+                                                    value={variation.quantity}
+                                                    onChange={(e) => handleVariationChange(index, 'quantity', e.target.value)}
+                                                    className="p-2 w-full rounded shadow-lg"
+                                                    placeholder="Enter quantity"
+                                                />
+                                            </div>
+                                            <div className="mb-4">
+                                                <label className="block text-white mb-2">Price (₱)</label>
+                                                <input
+                                                    type="number"
+                                                    value={variation.price}
+                                                    onChange={(e) => handleVariationChange(index, 'price', e.target.value)}
+                                                    className="p-2 w-full rounded shadow-lg"
+                                                    placeholder="Enter price"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Remove Variation Button for variations other than the first one */}
+                                        {index > 0 && (
+                                            <div className="justify-end items-center mx-4">
+                                                <button
+                                                    className="bg-red-500 text-white rounded px-4 py-2 text-xl"
+                                                    onClick={() => handleRemoveVariation(index)}
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
+                                ))}
                             </div>
+
+                        </div>
+
+                        <div className="flex justify-end">
+                            <button
+                                className="bg-red-500 text-white rounded px-4 py-2 mr-2 transition-colors duration-200 hover:bg-red-600"
+                                onClick={() => setModalOpenProduct(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="bg-green-500 text-white rounded px-4 py-2 transition-colors duration-200 hover:bg-green-600"
+                                onClick={handleAddProduct}
+                            >
+                                Add Product
+                            </button>
                         </div>
                     </div>
                 </div>

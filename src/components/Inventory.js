@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faFilter, faFileExport, faCircle, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faFilter, faFileExport, faCircle } from '@fortawesome/free-solid-svg-icons';
 import { FaSortAlphaUp, FaSortAlphaDown, FaSortAmountDownAlt, FaSortAmountUp, FaBoxes, FaBox, FaEdit, FaTrash, FaBoxOpen, FaUpload } from 'react-icons/fa';
 import Swal from 'sweetalert2'; // Import SweetAlert2
 import ExcelJS from 'exceljs';
@@ -142,18 +142,6 @@ const Inventory = () => {
                 setSelectedRow(null);
                 setSelectedProductId(null);
             }
-        }
-    };
-
-    const handlePrevious = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
-
-    const handleNext = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
         }
     };
 
@@ -406,7 +394,7 @@ const Inventory = () => {
             <div className="flex flex-col mb-4">
 
                 {/* Search Box */}
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center">
                     <div className="relative">
                         <FontAwesomeIcon
                             icon={faSearch}
@@ -650,10 +638,10 @@ const Inventory = () => {
                                 }
                                 setIsMultiSelectMode(!isMultiSelectMode); // Toggle the mode
                             }}
-                            className={`flex justify-between items-center px-4 py-2 border transition-colors duration-300 border-gray-300 rounded-md ${isMultiSelectMode ? 'bg-yellow-500' : 'bg-gray-200'} w-56`} // Adjust the width as needed
+                            className={`flex justify-between items-center px-4 py-2 border transition-colors duration-300 border-gray-300 rounded-md ${isMultiSelectMode ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-200 hover:bg-gray-300'} w-56`} // Adjust the width as needed
                         >
                             <span className="text-sm">{isMultiSelectMode ? 'Multi Select Mode' : 'Single Select Mode'}</span>
-                            <div className={`w-12 h-6 rounded-full ${isMultiSelectMode ? 'bg-yellow-400' : 'bg-gray-400'} flex items-center transition-colors duration-300`}>
+                            <div className={`w-12 h-6 rounded-full ${isMultiSelectMode ? 'bg-yellow-400 hover:bg-yellow-500' : 'bg-gray-400 hover:bg-gray-500'} flex items-center transition-colors duration-300`}>
                                 <div className={`w-6 h-6 rounded-full bg-white flex items-center justify-center transition-transform duration-300 ${isMultiSelectMode ? 'transform translate-x-6' : ''}`}>
                                     <span className="text-xs font-bold">{isMultiSelectMode ? 'M' : 'S'}</span>
                                 </div>
@@ -661,7 +649,7 @@ const Inventory = () => {
                         </button>
 
                         <button
-                            className="flex items-center px-4 py-2 bg-[#022a5e] border border-gray-300 text-white shadow hover:bg-[#024b8c] rounded-md"
+                            className="flex items-center px-4 py-2 bg-[#022a5e] border border-gray-300 text-white shadow hover:bg-[#024b8c] transition-colors duration-300 rounded-md"
                             onClick={async () => {
                                 const token = localStorage.getItem('token');
                                 if (token) {
@@ -760,31 +748,6 @@ const Inventory = () => {
                         </button>
                     </div>
                 </div>
-
-                {/* Pagination Controls */}
-                <div className="flex justify-between items-center">
-                    <div className="flex space-x-4">
-                        <button
-                            onClick={handlePrevious}
-                            disabled={currentPage === 1}
-                            className={`px-4 py-2 shadow border border-gray-300 rounded-md transition duration-200 ${currentPage === 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#022a5e] text-white hover:bg-[#024b8c]'}`}
-                        >
-                            <FontAwesomeIcon icon={faChevronLeft} className="mr-2" />
-                            Prev
-                        </button>
-                        <button
-                            onClick={handleNext}
-                            disabled={currentPage === totalPages}
-                            className={`px-4 py-2 shadow border border-gray-300 rounded-md transition duration-200 ${currentPage === totalPages ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#022a5e] text-white hover:bg-[#024b8c]'}`}
-                        >
-                            Next
-                            <FontAwesomeIcon icon={faChevronRight} className="ml-2" />
-                        </button>
-                    </div>
-                    <span className="mr-4">
-                        Page {currentPage} of {totalPages}
-                    </span>
-                </div>
             </div>
 
 
@@ -874,6 +837,45 @@ const Inventory = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination Controls */}
+            <div className="flex justify-center mt-4">
+                {totalPages > 0 && (
+                    <>
+                        <button
+                            onClick={() => setCurrentPage(1)}
+                            className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === 1 ? 'bg-[#022a5e] text-white' : 'bg-gray-200 text-gray-600 hover:bg-[#022a5e] hover:text-white'}`}
+                        >
+                            1
+                        </button>
+                        {currentPage > 3 && <span className="mx-2">...</span>} {/* Show ellipsis if there are pages in between */}
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+                            const pageNum = Math.max(2, currentPage - 2) + index; // Start from currentPage - 2, but ensure it's at least 2
+                            if (pageNum > totalPages - 1) return null; // Avoid rendering pages beyond totalPages
+
+                            return (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setCurrentPage(pageNum)}
+                                    className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === pageNum ? 'bg-[#022a5e] text-white' : 'bg-gray-200 text-gray-600 hover:bg-[#022a5e] hover:text-white'}`}
+                                >
+                                    {pageNum}
+                                </button>
+                            );
+                        })}
+                        {currentPage < totalPages - 2 && <span className="mx-2">...</span>} {/* Show ellipsis if there are pages in between */}
+                        {totalPages > 1 && (
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === totalPages ? 'bg-[#022a5e] text-white' : 'bg-gray-200 text-gray-600 hover:bg-[#022a5e] hover:text-white'}`}
+                            >
+                                {totalPages}
+                            </button>
+                        )}
+                    </>
+                )}
+            </div>
+
 
             {/* Edit Product Modal */}
             {isEditModalOpen && selectedRow && (
