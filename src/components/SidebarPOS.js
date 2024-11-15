@@ -63,15 +63,20 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
                                 classNames="order-container"
                             >
                                 <div ref={orderRefs[index]} className={`p-4 rounded shadow-md m-4 transition duration-200 cursor-pointer 
-                                ${selectedOrder && selectedOrder.order_id === order.order_id ? 'bg-gray-300' : 'bg-white text-black'}`}
+            ${selectedOrder && selectedOrder.order_id === order.order_id ? 'bg-gray-300' : 'bg-white text-black'}`}
                                     onClick={() => handleOrderClick(order)}>
 
                                     <h3 className="text-lg font-bold">Order ID: {order.order_id}</h3>
                                     <div className="mb-2">
                                         {order.order_items.filter(item => item.order_item_quantity > 0).map(item => (
-                                            <div key={item.order_item_id} className="flex justify-between">
-                                                <span>{item.product_name}</span>
-                                                <span>x{item.order_item_quantity}</span>
+                                            <div key={item.order_item_id} className="flex flex-col">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-md font-bold">{item.product_name}</span>
+                                                    <span>x{item.order_item_quantity}</span>
+                                                </div>
+                                                <span className="text-sm text-gray-600 font-semibold">
+                                                    ({item.product_color}, {item.product_size})
+                                                </span>
                                             </div>
                                         ))}
                                     </div>
@@ -100,7 +105,7 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
                     isOpen={isOpenModal}
                     onClose={handleCloseModal}
                     order={selectedOrder}
-                    loggedInUser ={loggedInUser}
+                    loggedInUser={loggedInUser}
                 />
             )}
 

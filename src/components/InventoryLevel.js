@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Tooltip } from 'react-tooltip';
-import { FaArrowUp, FaBoxes, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaArrowUp, FaBoxes } from 'react-icons/fa';
 import Loader from './Loader';
 
 const InventoryLevel = () => {
@@ -62,18 +62,6 @@ const InventoryLevel = () => {
     const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
 
     const totalPages = Math.ceil(products.length / productsPerPage);
-
-    const handleNextPage = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
-        }
-    };
-
-    const handlePrevPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
 
     const handleSort = (key) => {
         if (sortKey === key) {
@@ -175,67 +163,48 @@ const InventoryLevel = () => {
                             </tbody>
                         </table>
                     </div>
-                    <div className="flex justify-between items-center mt-4">
-                        <button
-                            onClick={handlePrevPage}
-                            disabled={currentPage === 1 || products.length === 0}
-                            className={`flex items-center bg-blue-500 text-white px-4 py-2 rounded transition-all duration-300 ${currentPage === 1 || products.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'}`}
-                        >
-                            <FaChevronLeft className="mr-2" />
-                            Prev
-                        </button>
-
+                    <div className="flex justify-center items-center mt-4">
                         {/* Page Number Buttons */}
-                        <div className="flex items-center">
-                            {totalPages > 0 && (
-                                <>
-                                    <button
-                                        onClick={() => setCurrentPage(1)}
-                                        className={`mx-1 px-3 py-1 rounded transition duration-300 ${currentPage === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
-                                    >
-                                        1
-                                    </button>
+                        {totalPages > 0 && (
+                            <>
+                                <button
+                                    onClick={() => setCurrentPage(1)}
+                                    className={`mx-1 px-3 py-1 rounded transition duration-300 ${currentPage === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                >
+                                    1
+                                </button>
 
-                                    {currentPage > 3 && <span className="mx-1">...</span>} {/* Show ellipsis if there are pages in between */}
+                                {currentPage > 3 && <span className="mx-1">...</span>} {/* Show ellipsis if there are pages in between */}
 
-                                    {Array.from({ length: Math.min(3, totalPages - 2) }, (_, index) => {
-                                        const pageNum = Math.max(2, currentPage - 1) + index; // Start from currentPage - 1
-                                        if (pageNum > totalPages - 1) return null; // Avoid rendering pages beyond totalPages
+                                {Array.from({ length: Math.min(3, totalPages - 2) }, (_, index) => {
+                                    const pageNum = Math.max(2, currentPage - 1) + index; // Start from currentPage - 1
+                                    if (pageNum > totalPages - 1) return null; // Avoid rendering pages beyond totalPages
 
-                                        return (
-                                            <button
-                                                key={pageNum}
-                                                onClick={() => setCurrentPage(pageNum)}
-                                                className={`mx-1 px-3 py-1 rounded transition duration-300 ${currentPage === pageNum ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
-                                            >
-                                                {pageNum}
-                                            </button>
-                                        );
-                                    })}
-
-                                    {currentPage < totalPages - 2 && <span className="mx-1">...</span>} {/* Show ellipsis if there are pages in between */}
-
-                                    {totalPages > 1 && (
+                                    return (
                                         <button
-                                            onClick={() => setCurrentPage(totalPages)}
-                                            className={`mx-1 px-3 py-1 rounded transition duration-300 ${currentPage === totalPages ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                            key={pageNum}
+                                            onClick={() => setCurrentPage(pageNum)}
+                                            className={`mx-1 px-3 py-1 rounded transition duration-300 ${currentPage === pageNum ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
                                         >
-                                            {totalPages}
+                                            {pageNum}
                                         </button>
-                                    )}
-                                </>
-                            )}
-                        </div>
+                                    );
+                                })}
 
-                        <button
-                            onClick={handleNextPage}
-                            disabled={currentPage === totalPages || products.length === 0}
-                            className={`flex items-center bg-blue-500 text-white px-4 py-2 rounded transition-all duration-300 ${currentPage === totalPages || products.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'}`}
-                        >
-                            Next
-                            <FaChevronRight className="ml-2" />
-                        </button>
+                                {currentPage < totalPages - 2 && <span className="mx-1">...</span>} {/* Show ellipsis if there are pages in between */}
+
+                                {totalPages > 1 && (
+                                    <button
+                                        onClick={() => setCurrentPage(totalPages)}
+                                        className={`mx-1 px-3 py-1 rounded transition duration-300 ${currentPage === totalPages ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                    >
+                                        {totalPages}
+                                    </button>
+                                )}
+                            </>
+                        )}
                     </div>
+
                 </div>
             )}
         </div>

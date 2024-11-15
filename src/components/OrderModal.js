@@ -72,23 +72,49 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => { // Accept log
         setIsSweetAlertOpen(true);
         console.log("Opening payment modal...");
 
+        // Replace the SweetAlert prompt inside handlePayOrder with this code:
+
         const { value: amountGiven } = await Swal.fire({
-            title: 'Payment',
-            input: 'number',
-            inputLabel: 'How much money did the customer give?',
-            inputPlaceholder: 'Enter amount',
+            title: '💵 How much money did the customer give?',
+            html: `
+            <input id="swal-input1" class="swal2-input border border-gray-300 rounded-lg p-2" type="number" placeholder="Enter amount" />
+            <div id="quick-amount-buttons" class="mt-4 flex flex-wrap justify-center gap-2">
+                <button type="button" data-value="50" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱50</button>
+                <button type="button" data-value="100" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱100</button>
+                <button type="button" data-value="150" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱150</button>
+                <button type="button" data-value="200" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱200</button>
+                <button type="button" data-value="300" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱300</button>
+                <button type="button" data-value="500" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱500</button>
+                <button type="button" data-value="1000" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱1000</button>
+            </div>
+            `,
+            focusConfirm: false,
             showCancelButton: true,
-            confirmButtonText: 'Calculate Change',
+            confirmButtonText: 'Confirm',
             cancelButtonText: 'Cancel',
-            inputValidator: (value) => {
-                if (!value) {
-                    return 'You need to enter an amount!';
+            customClass: {
+                confirmButton: 'bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300', // Tailwind styles for confirm button
+                cancelButton: 'bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 transition-colors duration-300', // Tailwind styles for cancel button
+            },
+            didOpen: () => {
+                // Add event listeners to quick amount buttons
+                const buttons = Swal.getPopup().querySelectorAll('#quick-amount-buttons button');
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const value = button.getAttribute('data-value');
+                        Swal.getPopup().querySelector('#swal-input1').value = value; // Set the input value
+                    });
+                });
+            },
+            preConfirm: () => {
+                const input = Swal.getPopup().querySelector('#swal-input1').value;
+                if (!input || isNaN(input)) {
+                    Swal.showValidationMessage(`Please enter a valid amount`);
                 }
-                if (isNaN(value) || value <= 0) {
-                    return 'Please enter a valid amount!';
-                }
+                return parseFloat(input);
             }
         });
+
 
         console.log("Amount given by customer:", amountGiven);
 
@@ -208,7 +234,12 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => { // Accept log
                                                 }}
                                             />
                                         </div>
-                                        <span className="text-3xl font-bold w-1/3">{item.product_name}</span>
+                                        <div className="w-1/3">
+                                            <span className="text-3xl font-bold">{item.product_name}</span>
+                                            <div className="text-xl text-gray-600 font-semibold"> {/* Optional styling for color and size */}
+                                                {item.product_color}, {item.product_size}
+                                            </div>
+                                        </div>
                                         <span className="text-3xl font-bold w-1/3 text-center">{item.order_item_quantity}</span>
                                         <span className="text-3xl font-bold w-1/4 text-right mr-4">₱{Number(item.product_price).toFixed(2)}</span>
                                     </div>

@@ -591,6 +591,7 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                                         <div className="flex flex-col justify-between flex-grow">
                                             <div>
                                                 <h3 className="text-xl font-bold">{product.product_name}</h3>
+                                                <p className="text-lg"><span className="font-semibold">Color: </span>{product.product_color}</p>
                                                 <p className="text-lg"><span className="font-semibold">Size: </span>{product.product_size}</p>
                                                 <p className="text-lg"><span className="font-semibold">Price: </span>₱{parseFloat(product.product_price).toFixed(2)}</p>
                                             </div>

@@ -97,7 +97,7 @@ const LowDemandProducts = () => {
                             <img
                                 src={currentProduct.product_image}
                                 alt={currentProduct.product_name}
-                                className={`w-72 h-auto rounded object-contain transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}
+                                className={`w-72 h-72 rounded object-cover transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}
                             />
                         </div>
 

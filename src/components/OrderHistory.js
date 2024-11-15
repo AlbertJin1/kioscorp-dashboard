@@ -203,7 +203,7 @@ const OrderHistory = () => {
                         ) : orders.length === 0 ? (
                             <tr>
                                 <td colSpan="6" className="text-center py-4 text-xl">
-                                    No Products Found
+                                    No order history found
                                 </td>
                             </tr>
                         ) : (
@@ -233,9 +233,9 @@ const OrderHistory = () => {
                                         <tr key={`${order.order_id}-${index}`} className="border-b">
                                             <td className="py-2 px-4 flex items-center">
                                                 {item.product_image ? (
-                                                    <img src={item.product_image} alt={item.product_name} className="w-20 h-20 mr-4 rounded" />
+                                                    <img src={item.product_image} alt={item.product_name} className="w-20 h-20 mr-4 object-cover rounded" />
                                                 ) : (
-                                                    <img src="https://via.placeholder.com/150" alt="Placeholder" className="w-20 h-20 mr-4 rounded" />
+                                                    <img src="https://via.placeholder.com/150" alt="Placeholder" className="w-20 h-20 mr-4 object-cover rounded" />
                                                 )}
                                                 {`${item.product_name} (${item.product_size})`}
                                             </td>

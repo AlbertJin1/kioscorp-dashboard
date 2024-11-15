@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import moment from 'moment';
-import { FaChevronLeft, FaChevronRight, FaDownload, FaTrash } from 'react-icons/fa';
+import { FaDownload, FaTrash } from 'react-icons/fa';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import Loader from './Loader'; // Import the Loader component
 
 const Logs = () => {
     const [logs, setLogs] = useState([]);
@@ -27,10 +28,10 @@ const Logs = () => {
                 const response = await axios.get('http://localhost:8000/logs/');
                 const data = response.data;
                 setLogs(data);
-                setLoading(false);
             } catch (error) {
                 setError(error.message);
-                setLoading(false);
+            } finally {
+                setLoading(false); // Ensure loading is set to false after the request completes
             }
         };
         fetchLogs();
@@ -136,12 +137,19 @@ const Logs = () => {
     const indexOfLastLog = currentPage * logsPerPage;
     const indexOfFirstLog = indexOfLastLog - logsPerPage;
     const filteredLogs = logs.filter((log) => {
+        const logTimestamp = moment(log.timestamp).format('MMMM D, YYYY h:mm:ss A'); // Format timestamp for searching
+        const lowerCaseQuery = searchQuery.toLowerCase(); // Store lowercased search query for efficiency
+
         if (filterBy === 'all') {
-            return true;
+            return (
+                log.username.toLowerCase().includes(lowerCaseQuery) ||
+                log.action.toLowerCase().includes(lowerCaseQuery) ||
+                logTimestamp.includes(lowerCaseQuery) // Check if the timestamp contains the search query
+            );
         } else if (filterBy === 'username') {
-            return log.username.toLowerCase().includes(searchQuery.toLowerCase());
+            return log.username.toLowerCase().includes(lowerCaseQuery);
         } else if (filterBy === 'action') {
-            return log.action.toLowerCase().includes(searchQuery.toLowerCase());
+            return log.action.toLowerCase().includes(lowerCaseQuery);
         } else {
             return false;
         }
@@ -168,11 +176,12 @@ const Logs = () => {
                 <h2 className="text-3xl font-bold text-gray-800">Audit Logs</h2>
                 <div className="flex justify-between">
                     <button
-                        className="bg-green-500 hover:bg-green-700 text-white font-bold p-2 rounded flex justify-center items-center"
+                        className="bg-green-500 hover:bg-green-700 transition-colors duration-300 text-white font-bold p-2 rounded flex justify-center items-center"
                         title="Export Logs"
                         onClick={handleExportLogs}
                     >
-                        <FaDownload size={30} />
+                        <FaDownload className="mr-2" size={30} />
+                        Export
                     </button>
                     {userRole !== 'admin' && (
                         <button
@@ -180,7 +189,8 @@ const Logs = () => {
                             title="Clear Logs"
                             onClick={handleClearLogs}
                         >
-                            <FaTrash size={30} />
+                            <FaTrash className="mr-2" size={30} />
+                            Delete
                         </button>
                     )}
                 </div>
@@ -206,13 +216,13 @@ const Logs = () => {
                         <option value="action">Action</option>
                     </select>
                 </div>
-                <div className="w-full md:w-1/3 mb-2 md:mb-0 md:ml-4">
+                < div className="w-full md:w-1/3 mb-2 md:mb-0 md:ml-4">
                     <div className="flex justify-between">
                         <input
                             type="date"
                             value={dateFrom}
                             onChange={(e) => setDateFrom(e.target.value)}
-                            className="w-1/2 py-2 pl-3 text-gray-700 border border-black rounded-lg focus :outline-none focus:ring-2 focus:ring-gray-600 mr-2"
+                            className="w-1/2 py-2 pl-3 text-gray-700 border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600 mr-2"
                         />
                         <input
                             type="date"
@@ -223,20 +233,30 @@ const Logs = () => {
                     </div>
                 </div>
             </div>
-            {loading ? (
-                <p className="text-lg text-gray-600">Loading...</p>
-            ) : (
-                <div className="overflow-auto flex-grow custom-scrollbar">
-                    <table className="min-w-full text-black">
-                        <thead className="bg-[#022a5e] text-white text-lg sticky top-0 z-10">
+            <div className="overflow-auto flex-grow custom-scrollbar">
+                <table className="min-w-full text-black">
+                    <thead className="bg-[#022a5e] text-white text-lg sticky top-0 z-10">
+                        <tr>
+                            <th className="px-4 py-2 w-1/5">Username</th>
+                            <th className="px-4 py-2 w-1/3">Action</th>
+                            <th className="px-4 py-2 w-1/3">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {loading ? (
                             <tr>
-                                <th className="px-4 py-2 w-1/5">Username</th>
-                                <th className="px-4 py-2 w-1/3">Action</th>
-                                <th className="px-4 py-2 w-1/3">Timestamp</th>
+                                <td colSpan="3" className="text-center py-4">
+                                    <Loader /> {/* Display the Loader component */}
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {currentLogs.map((log, index) => (
+                        ) : currentLogs.length === 0 ? (
+                            <tr>
+                                <td colSpan="3" className="text-center py-4">
+                                    <p className="text-lg text-gray-600">No logs available.</p>
+                                </td>
+                            </tr>
+                        ) : (
+                            currentLogs.map((log, index) => (
                                 <tr key={index} className="hover:bg-gray-100">
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-center">
                                         {log.username}
@@ -248,69 +268,52 @@ const Logs = () => {
                                         {moment(log.timestamp).format('MMMM D, YYYY h:mm:ss A')}
                                     </td>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
-            <div className="flex flex-grow justify-between items-center mt-4 text-xl font-semibold">
-                <button
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1 || totalPages === 0}
-                    className={`flex items-center px-4 py-2 rounded transition duration-300 ${currentPage === 1 || totalPages === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-700'}`}
-                >
-                    <FaChevronLeft className="text-xl mr-1" size={30} />
-                    Prev
-                </button>
-
-                {/* Selectable Page Number Buttons */}
-                <div className="flex justify-center mx-4">
-                    {totalPages > 0 && (
-                        <>
-                            <button
-                                onClick={() => setCurrentPage(1)}
-                                className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
-                            >
-                                1
-                            </button>
-                            {currentPage > 3 && <span className="mx-2">...</span>} {/* Show ellipsis if there are pages in between */}
-                            {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
-                                const pageNum = Math.max(2, currentPage - 2) + index; // Start from currentPage - 2, but ensure it's at least 2
-                                if (pageNum > totalPages - 1) return null; // Avoid rendering pages beyond totalPages
-
-                                return (
-                                    <button
-                                        key={pageNum}
-                                        onClick={() => setCurrentPage(pageNum)}
-                                        className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === pageNum ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
-                                    >
-                                        {pageNum}
-                                    </button>
-                                );
-                            })}
-                            {currentPage < totalPages - 2 && <span className="mx-2">...</span>} {/* Show ellipsis if there are pages in between */}
-                            {totalPages > 1 && (
-                                <button
-                                    onClick={() => setCurrentPage(totalPages)}
-                                    className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === totalPages ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
-                                >
-                                    {totalPages}
-                                </button>
-                            )}
-                        </>
-                    )}
-                </div>
-
-                <button
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages || totalPages === 0}
-                    className={`flex items-center px-4 py-2 rounded transition duration-300 ${currentPage === totalPages || totalPages === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-700'}`}
-                >
-                    Next
-                    <FaChevronRight className="text-xl ml-1" size={30} />
-                </button>
+                            ))
+                        )}
+                    </tbody>
+                </table>
             </div>
+
+            <div className="flex justify-center items-center mt-4 text-xl font-semibold">
+                {totalPages > 0 && (
+                    <>
+                        <button
+                            onClick={() => setCurrentPage(1)}
+                            className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                        >
+                            1
+                        </button>
+                        {currentPage > 3 && <span className="mx-2">...</span>}
+
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+                            const pageNum = Math.max(2, currentPage - 2) + index;
+                            if (pageNum > totalPages - 1) return null;
+
+                            return (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setCurrentPage(pageNum)}
+                                    className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === pageNum ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                >
+                                    {pageNum}
+                                </button>
+                            );
+                        })}
+
+                        {currentPage < totalPages - 2 && <span className="mx-2">...</span>}
+
+                        {totalPages > 1 && (
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === totalPages ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                            >
+                                {totalPages}
+                            </button>
+                        )}
+                    </>
+                )}
+            </div>
+
             {error && <p className="text-red-600 mt-4">{error}</p>}
         </div>
     );

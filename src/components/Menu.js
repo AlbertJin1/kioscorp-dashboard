@@ -3,8 +3,9 @@ import MyProfile from './MyProfile';
 import UserManagement from './UserManagement';
 import Logs from './Logs';
 import ChangePassword from './ChangePassword';
+import ClearSalesData from './ClearSalesData'; // Import the new component
 
-const Menu = ({ setIsAuthenticated }) => {
+const Menu = ({ setIsAuthenticated, handleLogout }) => {
     const [activeTab, setActiveTab] = useState('profile');
     const [userRole, setUserRole] = useState('');
 
@@ -59,16 +60,27 @@ const Menu = ({ setIsAuthenticated }) => {
                                 Change Password
                             </button>
                         </li>
+                        {userRole === 'owner' && ( // Only show for owner role
+                            <li>
+                                <button
+                                    onClick={() => handleTabChange('clearSalesData')}
+                                    className={`w-full text-left p-2 rounded-md ${activeTab === 'clearSalesData' ? 'bg-blue-700' : 'hover:bg-blue-800'}`}
+                                >
+                                    Clear Sales Data
+                                </button>
+                            </li>
+                        )}
                     </ul>
                 </div>
             </div>
 
             <div className="w-full h-full flex flex-col overflow-y-auto">
                 <>
-                    {activeTab === 'profile' && <MyProfile setIsAuthenticated={setIsAuthenticated} />}
+                    {activeTab === 'profile' && <MyProfile setIsAuthenticated={setIsAuthenticated} handleLogout={handleLogout} />}
                     {(activeTab === 'management' && (userRole === 'owner' || userRole === 'admin')) && <UserManagement />}
                     {(activeTab === 'logs' && (userRole === 'owner' || userRole === 'admin')) && <Logs />}
                     {activeTab === 'changePassword' && <ChangePassword />}
+                    {activeTab === 'clearSalesData' && userRole === 'owner' && <ClearSalesData handleLogout={handleLogout} />} {/* Only render if owner */}
                 </>
             </div>
         </div>
