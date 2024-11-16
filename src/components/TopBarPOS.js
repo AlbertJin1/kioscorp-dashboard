@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import logo from '../img/logo/point-of-sale.png'; // Adjust the path as needed
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; // Import FontAwesomeIcon
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'; // Import the arrow left icon
 
 const TopBarPOS = ({ loggedInUser, pendingOrderCount, handleLogout }) => {
     const [currentTime, setCurrentTime] = useState('');
     const [currentDate, setCurrentDate] = useState('');
-    const navigate = useNavigate(); // Initialize useNavigate
-
     useEffect(() => {
         const updateTime = () => {
             const now = new Date();
@@ -22,11 +17,6 @@ const TopBarPOS = ({ loggedInUser, pendingOrderCount, handleLogout }) => {
 
         return () => clearInterval(intervalId);
     }, []);
-
-    // Function to handle the go back action
-    const handleGoBack = () => {
-        navigate(-1); // Go back to the previous page
-    };
 
     return (
         <div className="bg-white shadow pt-2 pb-2 pl-4 pr-4 items-center">
@@ -47,17 +37,7 @@ const TopBarPOS = ({ loggedInUser, pendingOrderCount, handleLogout }) => {
                 </div>
             </div>
 
-            <div className="flex w-full justify-between items-center mt-2">
-                {/* Go Back Button: only show for admin or owner */}
-                {(loggedInUser.role === 'admin' || loggedInUser.role === 'owner') && (
-                    <button
-                        onClick={handleGoBack}
-                        className="bg-[#0f3a87] text-white font-bold py-2 px-4 rounded flex items-center hover:bg-blue-700 hover:text-[#FFBD59] transition-colors duration-200"
-                    >
-                        <FontAwesomeIcon icon={faArrowLeft} className="mr-2" /> {/* Add the icon */}
-                        Go Back
-                    </button>
-                )}
+            <div className="flex w-full justify-center items-center mt-2">
 
                 {/* Current Orders Counter */}
                 <div className={`pl-2 pr-2 pt-1 pb-1 rounded-full ${loggedInUser.role === 'admin' || loggedInUser.role === 'owner' ? 'ml-4' : 'mx-auto'}`} style={{ backgroundColor: '#033372' }}>

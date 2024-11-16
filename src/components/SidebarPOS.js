@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, forwardRef } from 'react';
-import { FaSignOutAlt } from 'react-icons/fa';
+import { FaArrowLeft, FaSignOutAlt } from 'react-icons/fa';
 import logo from '../img/logo/KIOSCORP LOGO.png'; // Adjust the path as needed
 import axios from 'axios';
 import OrderModal from './OrderModal';
 import { CSSTransition, TransitionGroup } from 'react-transition-group'; // Import CSSTransition and TransitionGroup
 import './SidebarPOSStyles.css';
 
-const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUser }, ref) => {
+const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUser, handleGoBack }, ref) => {
     const [orders, setOrders] = useState([]); // State to hold all pending orders
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -46,7 +46,7 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
     const orderRefs = orders.map(() => React.createRef());
 
     return (
-        <div ref={ref} className="min-h-screen flex flex-col bg-[#033372] text-white transition-all duration-300 w-90">
+        <div ref={ref} className="min-h-screen flex flex-col bg-[#033372] text-white transition-all duration-300 min-w-80">
             <div className="flex items-center justify-between p-4">
                 <img src={logo} alt="Kioscorp Logo" className="h-auto w-72" />
             </div>
@@ -63,24 +63,26 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
                                 classNames="order-container"
                             >
                                 <div ref={orderRefs[index]} className={`p-4 rounded shadow-md m-4 transition duration-200 cursor-pointer 
-            ${selectedOrder && selectedOrder.order_id === order.order_id ? 'bg-gray-300' : 'bg-white text-black'}`}
+                ${selectedOrder && selectedOrder.order_id === order.order_id ? 'bg-gray-300' : 'bg-white text-black'}`}
                                     onClick={() => handleOrderClick(order)}>
 
-                                    <h3 className="text-lg font-bold">Order ID: {order.order_id}</h3>
+                                    <h3 className="text-xl font-bold">Order ID: {order.order_id}</h3>
+                                    {/* Display Queue Number */}
+                                    <p className="text-md text-gray-600 font-semibold">Queue Number: {orders.length - index}</p>
                                     <div className="mb-2">
                                         {order.order_items.filter(item => item.order_item_quantity > 0).map(item => (
-                                            <div key={item.order_item_id} className="flex flex-col">
+                                            <div key={item.order_item_id} className="flex flex-col text-lg">
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-md font-bold">{item.product_name}</span>
                                                     <span>x{item.order_item_quantity}</span>
                                                 </div>
-                                                <span className="text-sm text-gray-600 font-semibold">
+                                                <span className="text-md text-gray-600 font-semibold">
                                                     ({item.product_color}, {item.product_size})
                                                 </span>
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="flex justify-between font-bold">
+                                    <div className="flex text-xl justify-between font-bold">
                                         <span>Total:</span>
                                         <span>₱{Number(order.order_amount).toFixed(2)}</span>
                                     </div>
@@ -100,6 +102,7 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
                     )}
                 </TransitionGroup>
             </div>
+
             {isOpenModal && (
                 <OrderModal
                     isOpen={isOpenModal}
@@ -109,13 +112,24 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
                 />
             )}
 
-            <button
-                onClick={handleLogout}
-                className="flex items-center m-4 px-4 py-2 rounded bg-white text-black hover:bg-blue-200 transition duration-200 font-semibold text-xl" // Updated colors
-            >
-                <FaSignOutAlt className="mr-2" size={30} />
-                <span>Logout</span>
-            </button>
+            <div className="flex flex-col justify-center m-4 space-y-4">
+                <button
+                    onClick={handleGoBack}
+                    className="flex items-center p-2 rounded bg-white text-black hover:bg-blue-200 transition duration-200 font-semibold text-xl"
+                >
+                    <FaArrowLeft className="mr-2" size={30} />
+                    Go Back
+                </button>
+
+                <button
+                    onClick={handleLogout}
+                    className="flex items-center p-2 rounded bg-white text-black hover:bg-blue-200 transition duration-200 font-semibold text-xl"
+                >
+                    <FaSignOutAlt className="mr-2" size={30} />
+                    <span>Logout</span>
+                </button>
+            </div>
+
         </div>
     );
 });

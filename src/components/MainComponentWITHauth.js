@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
@@ -13,6 +13,19 @@ import Products from './Products';
 const MainComponentWITHauth = ({ loggedInUser, handleLogout }) => {
     const [currentPage, setCurrentPage] = useState('dashboard');
     const [isAuthenticated, setIsAuthenticated] = useState(true); // Assume true since this component is for authenticated users
+
+    const pageTitleMapping = useMemo(() => ({
+        dashboard: 'Dashboard',
+        menu: 'Menu',
+        inventory: 'Inventory',
+        'sales-management': 'Sales',
+        'order-history': 'Order History',
+        product: 'Products',
+    }), []);
+
+    useEffect(() => {
+        document.title = `Kioscorp | ${pageTitleMapping[currentPage] || 'Dashboard'}`;
+    }, [currentPage, pageTitleMapping]);
 
     const checkSessionValidity = useCallback(async () => {
         const token = localStorage.getItem('token');

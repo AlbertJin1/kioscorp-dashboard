@@ -1202,11 +1202,11 @@ const Products = () => {
 
             {modalOpenProduct && (
                 <div className="bg-black bg-opacity-50 backdrop-blur-sm fixed inset-0 flex justify-center items-center z-50">
-                    <div className="bg-blue-800 p-6 rounded-lg shadow-lg text-black w-full md:w-3/4 lg:w-2/3 xl:w-1/2">
+                    <div className="bg-blue-800 p-4 rounded-lg shadow-lg text-black w-full md:w-3/4 lg:w-2/3 xl:w-1/2 max-h-[90vh] overflow-y-auto">
                         <h2 className="text-2xl mb-4 text-yellow-500">Add Product</h2>
                         <div className="flex flex-col md:flex-row">
                             {/* Left Column: Product Image */}
-                            <div className="w-full md:w-1/4 px-4 mb-4 flex flex-col items-center">
+                            <div className="w-full md:w-1/4 px-2 mb-4 flex flex-col items-center">
                                 <label className="block text-white mb-2">Main Product Image</label>
                                 <input
                                     type="file"
@@ -1218,20 +1218,20 @@ const Products = () => {
                                     <img
                                         src={URL.createObjectURL(productImage)}
                                         alt="Selected product"
-                                        className="rounded border-2 border-black w-48 h-48 object-cover shadow-lg"
+                                        className="rounded border-2 border-black w-40 h-40 object-cover shadow-lg"
                                     />
                                 ) : (
                                     <img
                                         src={imagePlaceholder}
                                         alt="Placeholder"
-                                        className="rounded border-2 border-black w-48 h-48 object-cover shadow-lg"
+                                        className="rounded border-2 border-black w-40 h-40 object-cover shadow-lg"
                                     />
                                 )}
                             </div>
 
                             {/* Right Column: Product Details */}
-                            <div className="w-full md:w-3/4 px-4 mb-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="w-full md:w-3/4 px-2 mb-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                     <div>
                                         <label className="block text-white mb-2">Product Name</label>
                                         <input
@@ -1281,7 +1281,7 @@ const Products = () => {
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-yellow-500 text-2xl">Product Variations</h3>
                                 <button
-                                    className="bg-yellow-500 text-black rounded px-4 py-2 transition-colors duration-200 hover:bg-yellow-600"
+                                    className="bg-yellow-500 text-lg text-black rounded px-4 py-2 transition-colors duration-200 hover:bg-yellow-600"
                                     onClick={handleAddVariation}
                                 >
                                     Add Variation
@@ -1289,12 +1289,12 @@ const Products = () => {
                             </div>
 
                             {/* Scrollable Variations List */}
-                            <div className="overflow-y-auto max-h-64 custom-scrollbar mb-4">
+                            <div className="overflow-y-auto max-h-72 custom-scrollbar mb-4">
                                 {productVariations.map((variation, index) => (
-                                    <div key={index} className="flex items-center mb-4">
+                                    <div key={index} className="flex items-center mb-4 ">
                                         {/* Variation Image for 2nd and subsequent variations */}
                                         {index > 0 && (
-                                            <div className="w-1/2 pr-4">
+                                            <div className="w-1/2 pr-2">
                                                 <label className="block text-white mb-2">Variation Image</label>
                                                 <input
                                                     type="file"
@@ -1308,27 +1308,38 @@ const Products = () => {
                                                     className="p-2 w-full rounded mb-2"
                                                 />
                                                 {/* Image preview for variation */}
-                                                {variation.image && (
+                                                {variation.image ? (
                                                     <img
                                                         src={URL.createObjectURL(variation.image)}
                                                         alt={`Variation ${index + 1}`}
-                                                        className="rounded border-2 border-black w-48 h-48 object-cover shadow-lg"
+                                                        className="rounded border-2 mx-auto border-black w-40 h-40 object-cover shadow-lg"
+                                                    />
+                                                ) : (
+                                                    <img
+                                                        src={imagePlaceholder}
+                                                        alt={`Variation ${index + 1}`}
+                                                        className="rounded border-2 mx-auto border-black w-40 h-40 object-cover shadow-lg"
                                                     />
                                                 )}
                                             </div>
                                         )}
 
                                         {/* Variation Fields (Right Side) */}
-                                        <div className="w-full mx-4 grid grid-cols-2 gap-4">
+                                        <div className="w-full mx-2 grid grid-cols-2 gap-2">
                                             <div className="mb-4">
                                                 <label className="block text-white mb-2">Color</label>
-                                                <input
-                                                    type="text"
+                                                <select
                                                     value={variation.color}
                                                     onChange={(e) => handleVariationChange(index, 'color', e.target.value)}
                                                     className="p-2 w-full rounded shadow-lg"
-                                                    placeholder="Enter color"
-                                                />
+                                                >
+                                                    <option value="" disabled>Select a color</option>
+                                                    {['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Purple', 'Orange'].map((color) => (
+                                                        <option key={color} value={color}>
+                                                            {color}
+                                                        </option>
+                                                    ))}
+                                                </select>
                                             </div>
                                             <div className="mb-4">
                                                 <label className="block text-white mb-2">Size</label>
@@ -1345,7 +1356,10 @@ const Products = () => {
                                                 <input
                                                     type="number"
                                                     value={variation.quantity}
-                                                    onChange={(e) => handleVariationChange(index, 'quantity', e.target.value)}
+                                                    onChange={(e) => {
+                                                        const newValue = Math.max(0, e.target.value);
+                                                        handleVariationChange(index, 'quantity', newValue);
+                                                    }}
                                                     className="p-2 w-full rounded shadow-lg"
                                                     placeholder="Enter quantity"
                                                 />
@@ -1355,7 +1369,10 @@ const Products = () => {
                                                 <input
                                                     type="number"
                                                     value={variation.price}
-                                                    onChange={(e) => handleVariationChange(index, 'price', e.target.value)}
+                                                    onChange={(e) => {
+                                                        const newValue = Math.max(0, e.target.value);
+                                                        handleVariationChange(index, 'price', newValue);
+                                                    }}
                                                     className="p-2 w-full rounded shadow-lg"
                                                     placeholder="Enter price"
                                                 />
@@ -1364,9 +1381,9 @@ const Products = () => {
 
                                         {/* Remove Variation Button for variations other than the first one */}
                                         {index > 0 && (
-                                            <div className="justify-end items-center mx-4">
+                                            <div className="justify-end items-center mx-2">
                                                 <button
-                                                    className="bg-red-500 text-white rounded px-4 py-2 text-xl"
+                                                    className="bg-red-500 hover:bg-red-600 transition-colors duration-200 text-white rounded px-2 py-1 text-xl"
                                                     onClick={() => handleRemoveVariation(index)}
                                                 >
                                                     Remove
@@ -1376,18 +1393,17 @@ const Products = () => {
                                     </div>
                                 ))}
                             </div>
-
                         </div>
 
                         <div className="flex justify-end">
                             <button
-                                className="bg-red-500 text-white rounded px-4 py-2 mr-2 transition-colors duration-200 hover:bg-red-600"
+                                className="bg-red-500 text-lg text-white rounded px-4 py-2 mr-2 transition-colors duration-200 hover:bg-red-600"
                                 onClick={() => setModalOpenProduct(false)}
                             >
                                 Cancel
                             </button>
                             <button
-                                className="bg-green-500 text-white rounded px-4 py-2 transition-colors duration-200 hover:bg-green-600"
+                                className="bg-green-500 text-lg text-white rounded px-4 py-2 transition-colors duration-200 hover:bg-green-600"
                                 onClick={handleAddProduct}
                             >
                                 Add Product

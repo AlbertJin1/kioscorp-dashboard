@@ -71,6 +71,11 @@ const MainComponentPOS = ({ loggedInUser, handleLogout }) => {
         fetchOrders(); // Fetch orders when the component mounts
     }, [checkSessionValidity, fetchOrders]);
 
+    // Function to handle the go back action
+    const handleGoBack = () => {
+        navigate(-1); // Go back to the previous page
+    };
+
     return (
         <div className="flex h-screen relative"> {/* Make the container relative */}
             {isAuthenticated && (
@@ -81,6 +86,7 @@ const MainComponentPOS = ({ loggedInUser, handleLogout }) => {
                     fetchOrders={fetchOrders} // Pass fetchOrders to SidebarPOS
                     className="fixed top-0 left-0 w-64 h-screen overflow-y-auto bg-white border-r"
                     loggedInUser={loggedInUser}
+                    handleGoBack={handleGoBack}
                 />
             )}
             <div className="flex flex-col flex-grow h-screen bg-gray-100">
