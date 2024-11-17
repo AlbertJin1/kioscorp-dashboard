@@ -102,3 +102,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 - npm install react-transition-group
 - npm install chartjs-plugin-datalabels
 - npm i react-tooltip
+
+# FOR DESKTOP APP IMPLEMENTATION
+- npm install electron --save-dev
+- npm install electron-builder --save-dev

@@ -761,7 +761,7 @@ const Products = () => {
             {/* Left Categories Section */}
             <div className="w-full lg:w-1/3 rounded-lg flex flex-col h-full">
                 {/* Category Buttons */}
-                <div className="flex justify-center mb-4 gap-10 bg-blue-900 py-3 rounded-lg">
+                <div className="flex justify-between mb-4 bg-blue-900 py-3 px-4 rounded-lg">
                     {mainCategories.map((category, index) => (
                         <button
                             key={index}
