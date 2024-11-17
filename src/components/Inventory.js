@@ -411,7 +411,7 @@ const Inventory = () => {
                     </div>
 
                     {/* Filter, Edit, and Delete Buttons */}
-                    <div className="flex space-x-4">
+                    <div className="flex items-center space-x-4">
                         <div className="relative">
                             <button
                                 className={`flex items-center px-4 py-2 border border-gray-300 rounded-md text-white shadow transition-colors duration-200 ${isFilterOpen ? 'bg-[#024b8c]' : 'bg-[#022a5e] hover:bg-[#024b8c]'}`}

@@ -1,7 +1,8 @@
 {
   "name": "kioscorp-dashboard",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "main": "main.js",
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
@@ -30,7 +31,6 @@
     "react-modal": "^3.16.1",
     "react-phone-number-input": "^3.4.8",
     "react-router-dom": "^6.26.1",
-    "react-scripts": "5.0.1",
     "react-select": "^5.8.1",
     "react-spinners": "^0.14.1",
     "react-tooltip": "^5.28.0",
@@ -49,8 +49,34 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "electron": "electron .",
+    "electron-start": "npm run build && electron .",
+    "package": "electron-builder"
+  },
+  "build": {
+    "appId": "com.kioscorp.dashboard",
+    "productName": "KiosCorp Dashboard",
+    "mac": {
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "files": [
+      "build/**/*",
+      "main.js",
+      "kioscorp-icon.ico"
+    ],
+    "extraResources": [
+      {
+        "from": "assets/",
+        "to": "assets/",
+        "filter": ["**/*"]
+      }
+    ]
   },
   "eslintConfig": {
     "extends": [
@@ -73,6 +99,8 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "autoprefixer": "^10.4.20",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
     "postcss": "^8.4.42",
     "tailwindcss": "^3.4.10"
   }
