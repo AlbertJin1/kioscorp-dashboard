@@ -106,3 +106,6 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 # FOR DESKTOP APP IMPLEMENTATION
 - npm install electron --save-dev
 - npm install electron-builder --save-dev
+- npm install electron-is-dev --save
+- npm install cross-env --save-dev
+- npm install wait-on --save-dev

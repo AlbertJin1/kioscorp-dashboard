@@ -217,7 +217,7 @@ const OrderHistory = () => {
                                             ) : (
                                                 <span>No Image</span>
                                             )}
-                                            {order.items[0] ? `${order.items[0].product_name} (${order.items[0].product_size})` : 'No Product'}
+                                            {order.items[0] ? `${order.items[0].product_name} (${order.items[0].product_color}, ${order.items[0].product_size})` : 'No Product'}
                                         </td>
 
                                         <td className="py-2 px-4 text-center">{order.items[0] ? new Date(order.items[0].date_created).toLocaleString() : '-'}</td>
@@ -237,7 +237,7 @@ const OrderHistory = () => {
                                                 ) : (
                                                     <img src="https://via.placeholder.com/150" alt="Placeholder" className="w-20 h-20 mr-4 object-cover rounded" />
                                                 )}
-                                                {`${item.product_name} (${item.product_size})`}
+                                                {`${item.product_name} (${item.product_color}, ${item.product_size})`}
                                             </td>
 
                                             <td className="py-2 px-4 text-center">{new Date(item.date_created).toLocaleString()}</td>

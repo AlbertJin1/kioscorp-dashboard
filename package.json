@@ -1,6 +1,6 @@
 {
   "name": "kioscorp-dashboard",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
@@ -13,6 +13,7 @@
     "browserify-zlib": "^0.2.0",
     "chart.js": "^4.4.6",
     "chartjs-plugin-datalabels": "^2.2.0",
+    "electron-is-dev": "^3.0.1",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "https-browserify": "^1.0.0",
@@ -47,10 +48,13 @@
     "xlsx-style": "^0.8.13"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "cross-env BROWSER=none react-scripts start",
+    "electron": "electron ./public/electron.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "package": "npm run build && electron-builder",
+    "dev": "start /B npm start && timeout /t 8 && npm run electron"
   },
   "eslintConfig": {
     "extends": [
@@ -73,7 +77,35 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "autoprefixer": "^10.4.20",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
     "postcss": "^8.4.42",
-    "tailwindcss": "^3.4.10"
+    "tailwindcss": "^3.4.10",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.kioscorp.dashboard",
+    "productName": "KiosCorp Dashboard",
+    "copyright": "© 2024 KiosCorp. All rights reserved.",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "public/electron.js",
+      "kioscorp-icon.ico"
+    ],
+    "win": {
+      "icon": "kioscorp-icon.ico",
+      "target": [
+        "nsis"
+      ]
+    },
+    "mac": {
+      "icon": "kioscorp-icon.ico"
+    },
+    "linux": {
+      "icon": "kioscorp-icon.ico"
+    }
   }
 }
