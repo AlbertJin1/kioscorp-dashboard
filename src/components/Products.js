@@ -362,7 +362,7 @@ const Products = () => {
         reader.readAsDataURL(image);
     };
 
-    const handleProductImageChange = (e) => {
+    const handleProductImageChange = (e, variationIndex) => {
         const image = e.target.files[0];
         if (!image) return; // Ensure an image is selected
 
@@ -396,13 +396,21 @@ const Products = () => {
                         lastModified: Date.now(),
                     });
 
-                    // Set the product image and also set it as the first variation's image
-                    setProductImage(compressedImage);
-                    setProductVariations((prevVariations) => {
-                        const newVariations = [...prevVariations];
-                        newVariations[0].image = compressedImage; // Set the first variation's image
-                        return newVariations;
-                    });
+                    // Set the product image and also set it as the specified variation's image
+                    if (variationIndex === undefined) {
+                        setProductImage(compressedImage);
+                        setProductVariations((prevVariations) => {
+                            const newVariations = [...prevVariations];
+                            newVariations[0].image = compressedImage; // Set the first variation's image
+                            return newVariations;
+                        });
+                    } else {
+                        setProductVariations((prevVariations) => {
+                            const newVariations = [...prevVariations];
+                            newVariations[variationIndex].image = compressedImage; // Set the specified variation's image
+                            return newVariations;
+                        });
+                    }
                 }, 'image/jpeg', 0.5); // Compress the image to 50% quality
             };
             img.src = event.target.result;
@@ -1299,12 +1307,7 @@ const Products = () => {
                                                 <input
                                                     type="file"
                                                     accept="image/*"
-                                                    onChange={(e) => {
-                                                        const image = e.target.files[0];
-                                                        const newVariations = [...productVariations];
-                                                        newVariations[index].image = image;
-                                                        setProductVariations(newVariations);
-                                                    }}
+                                                    onChange={(e) => handleProductImageChange(e, index)} // Pass the index to handleProductImageChange
                                                     className="p-2 w-full rounded mb-2"
                                                 />
                                                 {/* Image preview for variation */}
