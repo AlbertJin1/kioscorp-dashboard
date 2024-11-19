@@ -213,7 +213,7 @@ const OrderHistory = () => {
                                         <td className="py-2 px-4" rowSpan={order.items.length || 1}>{order.order_id}</td>
                                         <td className="py-2 px-4 flex items-center">
                                             {order.items[0] && order.items[0].product_image ? (
-                                                <img src={order.items[0].product_image} alt={order.items[0].product_name} className="w-20 h-20 mr-4 rounded" />
+                                                <img src={order.items[0].product_image} alt={order.items[0].product_name} className="w-20 h-20 mr-4 object-cover rounded" />
                                             ) : (
                                                 <span>No Image</span>
                                             )}
