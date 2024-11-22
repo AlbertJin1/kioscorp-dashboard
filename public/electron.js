@@ -3,12 +3,12 @@ const path = require('path');
 
 let mainWindow;
 
-function createWindow(isDev) {
+function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 1600,
-        height: 900,
-        minWidth: 1600,
-        minHeight: 900,
+        width: 1280,
+        height: 800,
+        minWidth: 1366,
+        minHeight: 768,
         autoHideMenuBar: true,
         webPreferences: {
             nodeIntegration: false,  // Disables nodeIntegration for better security
@@ -21,23 +21,16 @@ function createWindow(isDev) {
     // Maximize the window
     mainWindow.maximize();
 
-    // Load the correct URL based on environment (dev or production)
-    const indexPath = isDev ? 'http://localhost:3000' : path.join(__dirname, 'build', 'index.html');
+    // Load the server URL for both development and production
+    const indexPath = 'http://192.168.254.101:3010'; // Always load from the server
     mainWindow.loadURL(indexPath);
 
-    // Add a menu with an About option and a DevTools toggle
+    // Add a menu with an About option but without DevTools toggle and View menu
     const menuTemplate = [
         {
             label: 'File',
             submenu: [
                 { role: 'quit' }
-            ]
-        },
-        {
-            label: 'View',
-            submenu: [
-                { role: 'reload' },
-                { role: 'togglefullscreen' }
             ]
         },
         {
@@ -55,13 +48,6 @@ function createWindow(isDev) {
                             icon: path.join(__dirname, 'kioscorp-icon.ico')
                         });
                     }
-                },
-                {
-                    label: 'Toggle DevTools',
-                    accelerator: 'F12',  // Optional: you can use a keyboard shortcut to open DevTools
-                    click: () => {
-                        mainWindow.webContents.toggleDevTools(); // Toggle DevTools
-                    }
                 }
             ]
         }
@@ -76,20 +62,14 @@ function createWindow(isDev) {
     });
 }
 
-app.whenReady().then(async () => {
-    try {
-        // Dynamically import 'electron-is-dev' and create the window after it's available
-        const { default: isDev } = await import('electron-is-dev');
-        createWindow(isDev);  // Call createWindow after loading isDev
-    } catch (err) {
-        console.error("Error loading electron-is-dev:", err);
-    }
+app.whenReady().then(() => {
+    createWindow();  // Call createWindow without checking isDev, as we always use the server URL
+});
 
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow(true); // Ensure a window is created when there are no open windows
-        }
-    });
+app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow(); // Ensure a window is created when there are no open windows
+    }
 });
 
 app.on('window-all-closed', () => {
