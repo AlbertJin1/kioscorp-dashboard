@@ -385,7 +385,7 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
     return (
         <div className="flex h-full">
             {/* Left Section: Products */}
-            <div className={`flex-grow p-4 flex flex-col`}>
+            <div className={`w-96 flex-grow p-4 flex flex-col`}>
                 <h2 className="text-2xl font-bold mb-2">Products </h2>
 
                 {/* Search Box */}
@@ -415,6 +415,8 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                                             className="p-2 hover:bg-gray-200 cursor-pointer text-2xl"
                                         >
                                             {highlightMatch(suggestion.product_name, searchTerm)}
+                                            {/* Display color and size */}
+                                            <span className="text-gray-600"> ({suggestion.product_color}, {suggestion.product_size})</span>
                                         </li>
                                     ))}
                                 </ul>
@@ -543,7 +545,7 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                 </div>
 
                 {/* Product Grid Container */}
-                <div className="overflow-y-auto custom-scrollbar bg-gray-200 p-4 rounded-md"> {/* Adjust maxHeight as needed */}
+                <div className="overflow-y-auto custom-scrollbar bg-gray-200 p-4 rounded-md w-full"> {/* Adjust maxHeight as needed */}
                     <div className={`grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3`}>
                         {currentProducts.length === 0 ? (
                             <p className="col-span-full text-center text-4xl font-semibold text-gray-600">No products available.</p>
@@ -647,10 +649,24 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                     </button>
 
                     {/* Selectable Page Numbers */}
-                    <div className="flex space-x-2">
-                        {Array.from({ length: Math.min(totalPages, 4) }, (_, index) => {
-                            const pageNum = Math.max(1, currentPage - 1) + index; // Start from currentPage - 1
-                            if (pageNum > totalPages) return null; // Avoid rendering pages beyond totalPages
+                    <div className="flex items-center space-x-2">
+                        {/* Always show the first page button */}
+                        <button
+                            onClick={() => setCurrentPage(1)}
+                            className={`px-4 py-2 rounded transition-colors duration-200 
+            ${currentPage === 1 ? 'bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                            style={{ width: '60px', height: '40px' }} // Fixed width and height
+                        >
+                            1
+                        </button>
+
+                        {/* Show ellipsis if there are pages between the first page and the current page */}
+                        {currentPage > 3 && <span className="text-gray-600">...</span>}
+
+                        {/* Display the range of pages around the current page */}
+                        {Array.from({ length: Math.min(3, totalPages) }, (_, index) => {
+                            const pageNum = currentPage - 1 + index; // Show currentPage - 1, currentPage, currentPage + 1
+                            if (pageNum < 2 || pageNum >= totalPages) return null; // Skip if out of range
 
                             return (
                                 <button
@@ -658,11 +674,27 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                                     onClick={() => setCurrentPage(pageNum)} // Update the current page
                                     className={`px-4 py-2 rounded transition-colors duration-200 
                     ${currentPage === pageNum ? 'bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                                    style={{ width: '60px', height: '40px' }} // Fixed width and height
                                 >
                                     {pageNum}
                                 </button>
                             );
                         })}
+
+                        {/* Show ellipsis if there are pages between the current page and the last page */}
+                        {currentPage < totalPages - 2 && <span className="text-gray-600">...</span>}
+
+                        {/* Always show the last page button, ensure it's not duplicated */}
+                        {totalPages > 1 && (
+                            <button
+                                onClick={() => setCurrentPage(totalPages)}
+                                className={`px-4 py-2 rounded transition-colors duration-200 
+                ${currentPage === totalPages ? 'bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                                style={{ width: '60px', height: '40px' }} // Fixed width and height
+                            >
+                                {totalPages}
+                            </button>
+                        )}
                     </div>
 
                     <button
@@ -676,6 +708,7 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                     </button>
                 </div>
             </div>
+
             {/* Right Section: Order Summary */}
             <div className="w-1/4 p-4 border-l flex flex-col justify-between">
                 <h2 className="text-2xl font-bold mb-4">Over the Counter Order</h2>
@@ -683,11 +716,11 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                 <div className="flex-grow overflow-y-auto mb-4">
                     {Object.keys(cart).some(productId => cart[productId] > 0) ? (
                         <table className="w-full text-left">
-                            <thead>
+                            <thead className="bg-gray-200 sticky top-0 z-10">
                                 <tr className="border-b-2 text-xl font-semibold">
-                                    <th className="p-2">Product</th>
-                                    <th className="p-2 text-center">Qty</th>
-                                    <th className="p-2 text-right">Price</th>
+                                    <th className="p-2 w-1/2">Product</th>
+                                    <th className="p-2 w-1/7 text-center">Qty</th>
+                                    <th className="p-2 w-1/3 text-right">Price</th>
                                 </tr>
                             </thead>
                             <tbody>

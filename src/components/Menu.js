@@ -4,6 +4,7 @@ import UserManagement from './UserManagement';
 import Logs from './Logs';
 import ChangePassword from './ChangePassword';
 import ClearSalesData from './ClearSalesData'; // Import the new component
+import About from './About'; // Import the About component
 
 const Menu = ({ setIsAuthenticated, handleLogout }) => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -70,6 +71,14 @@ const Menu = ({ setIsAuthenticated, handleLogout }) => {
                                 </button>
                             </li>
                         )}
+                        <li>
+                            <button
+                                onClick={() => handleTabChange('about')}
+                                className={`w-full text-left p-2 rounded-md ${activeTab === 'about' ? 'bg-blue-700' : 'hover:bg-blue-800'}`}
+                            >
+                                About
+                            </button>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -80,7 +89,8 @@ const Menu = ({ setIsAuthenticated, handleLogout }) => {
                     {(activeTab === 'management' && (userRole === 'owner' || userRole === 'admin')) && <UserManagement />}
                     {(activeTab === 'logs' && (userRole === 'owner' || userRole === 'admin')) && <Logs />}
                     {activeTab === 'changePassword' && <ChangePassword />}
-                    {activeTab === 'clearSalesData' && userRole === 'owner' && <ClearSalesData handleLogout={handleLogout} />} {/* Only render if owner */}
+                    {activeTab === 'clearSalesData' && userRole === 'owner' && <ClearSalesData handleLogout={handleLogout} />}
+                    {activeTab === 'about' && <About />} {/* Render About component */}
                 </>
             </div>
         </div>

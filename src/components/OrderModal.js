@@ -1,31 +1,18 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { FaTimes, FaCheck, FaBan } from 'react-icons/fa';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
-const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => { // Accept loggedInUser  as a prop
+const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
     const modalRef = useRef(null);
     const [isSweetAlertOpen, setIsSweetAlertOpen] = useState(false);
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (modalRef.current && !modalRef.current.contains(event.target) && !isSweetAlertOpen) {
-                onClose();
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [onClose, isSweetAlertOpen]);
-
-    if (!isOpen || !order) return null;
-
-    const calculateTotal = () => {
-        return order.order_items.reduce((total, item) => total + item.product_price * item.order_item_quantity, 0);
-    };
+    const calculateTotal = useCallback(() => {
+        return order?.order_items.reduce(
+            (total, item) => total + item.product_price * item.order_item_quantity,
+            0
+        );
+    }, [order]);
 
     const handleVoidOrder = async () => {
         setIsSweetAlertOpen(true);
@@ -68,130 +55,152 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => { // Accept log
         }
     };
 
-    const handlePayOrder = async () => {
+    const handlePayOrder = useCallback(async () => {
         setIsSweetAlertOpen(true);
-        console.log("Opening payment modal...");
-
-        // Replace the SweetAlert prompt inside handlePayOrder with this code:
+        const totalAmount = calculateTotal();
 
         const { value: amountGiven } = await Swal.fire({
             title: '💵 How much money did the customer give?',
             html: `
-            <input id="swal-input1" class="swal2-input border border-gray-300 rounded-lg p-2" type="number" placeholder="Enter amount" />
-            <div id="quick-amount-buttons" class="mt-4 flex flex-wrap justify-center gap-2">
-                <button type="button" data-value="50" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱50</button>
-                <button type="button" data-value="100" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱100</button>
-                <button type="button" data-value="150" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱150</button>
-                <button type="button" data-value="200" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱200</button>
-                <button type="button" data-value="300" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱300</button>
-                <button type="button" data-value="500" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱500</button>
-                <button type="button" data-value="1000" class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱1000</button>
-            </div>
+                <input id="swal-input1" class="swal2-input border border-gray-300 rounded-lg p-2" type="number" placeholder="Enter amount" />
+                <div id="quick-amount-buttons" class="mt-4 flex flex-wrap justify-center gap-2">
+                    <button type="button" data-value="50" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱50</button>
+                    <button type="button" data-value="100" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱100</button>
+                    <button type="button" data-value="150" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱150</button>
+                    <button type="button" data-value="200" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱200</button>
+                    <button type="button" data-value="300" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱300</button>
+                    <button type="button" data-value="500" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱500</button>
+                    <button type="button" data-value="800" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱800</button>
+                    <button type="button" data-value="1000" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱1000</button>
+                    <button type="button" data-value="2000" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱2000</button>
+                    <button type="button" data-value="3000" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱3000</button>
+                    <button type="button" data-value="5000" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱5000</button>
+                </div>
             `,
             focusConfirm: false,
             showCancelButton: true,
             confirmButtonText: 'Confirm',
             cancelButtonText: 'Cancel',
             customClass: {
-                confirmButton: 'bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300', // Tailwind styles for confirm button
-                cancelButton: 'bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 transition-colors duration-300', // Tailwind styles for cancel button
+                confirmButton: 'bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300',
+                cancelButton: 'bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 transition-colors duration-300',
             },
             didOpen: () => {
-                // Add event listeners to quick amount buttons
-                const buttons = Swal.getPopup().querySelectorAll('#quick-amount-buttons button');
-                buttons.forEach(button => {
+                const input = Swal.getPopup().querySelector('#swal-input1');
+                const buttons = Swal.getPopup().querySelectorAll('.quick-amount');
+
+                buttons.forEach((button) => {
                     button.addEventListener('click', () => {
-                        const value = button.getAttribute('data-value');
-                        Swal.getPopup().querySelector('#swal-input1').value = value; // Set the input value
+                        buttons.forEach((btn) => btn.classList.remove('bg-blue-700'));
+                        button.classList.add('bg-blue-700');
+                        input.value = button.getAttribute('data-value');
+                        input.focus();
                     });
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') Swal.clickConfirm();
                 });
             },
             preConfirm: () => {
                 const input = Swal.getPopup().querySelector('#swal-input1').value;
                 if (!input || isNaN(input)) {
                     Swal.showValidationMessage(`Please enter a valid amount`);
+                } else if (parseFloat(input) < totalAmount) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Insufficient Amount',
+                        text: 'The amount given is less than the total amount. Please try again.',
+                        showConfirmButton: false,
+                        timer: 1000,
+                    });
+                    return false; // Prevent closing of the modal
                 }
                 return parseFloat(input);
-            }
+            },
         });
 
-
-        console.log("Amount given by customer:", amountGiven);
-
         if (amountGiven) {
-            const loadingAlert = Swal.fire({
+            Swal.fire({
                 title: 'Processing...',
                 text: 'Please wait while we process your payment.',
                 allowEscapeKey: false,
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
-                }
+                },
             });
 
-            const totalAmount = calculateTotal();
             const change = amountGiven - totalAmount;
 
-            console.log("Total amount due:", totalAmount);
-            console.log("Change to return:", change);
+            try {
+                const response = await axios.patch(`http://192.168.254.101:8000/api/orders/pay/${order.order_id}/`, {
+                    order_paid_amount: amountGiven,
+                    cashier_first_name: loggedInUser.firstName,
+                    cashier_last_name: loggedInUser.lastName,
+                });
 
-            // Removed the artificial delay
-            loadingAlert.close();
-            setIsSweetAlertOpen(false);
+                Swal.close();
+                setIsSweetAlertOpen(false);
 
-            if (change < 0) {
-                console.log("Insufficient amount provided.");
+                if (response.data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Payment Successful',
+                        html: `<p class="text-xl text-gray-700">Change to return: <span class="text-4xl font-bold text-green-600">₱${change.toFixed(2)}</span></p>`,
+                    });
+                    onClose();
+                }
+            } catch (error) {
+                Swal.close();
                 Swal.fire({
                     icon: 'error',
-                    title: 'Insufficient Amount',
-                    html: `<p class="text-xl text-gray-700">The amount given is not enough. You still owe <span class="text-4xl font-bold text-red-600">₱${Math.abs(change).toFixed(2)}</span>.</p>`,
-                    customClass: {
-                        title: 'text-3xl font-bold text-red-600',
-                    }
+                    title: 'Payment Error',
+                    text: error.response?.data.error || 'An error occurred while processing the payment.',
                 });
-            } else {
-                try {
-                    // Include firstName and lastName in the API request
-                    console.log("Sending payment request to the server...");
-                    const response = await axios.patch(`http://192.168.254.101:8000/api/orders/pay/${order.order_id}/`, {
-                        order_paid_amount: amountGiven,
-                        cashier_first_name: loggedInUser.firstName, // Pass first name
-                        cashier_last_name: loggedInUser.lastName  // Pass last name
-                    });
-
-                    console.log("Payment response from server:", response.data);
-
-                    if (response.data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Payment Successful',
-                            html: `<p class="text-xl text-gray-700">Change to return: <span class="text-4xl font-bold text-green-600">₱${change.toFixed(2)}</span></p>`,
-                            customClass: {
-                                title: 'text-3xl font-bold text-green-600',
-                            }
-                        });
-                        onClose(); // Close the modal after successful payment
-                    }
-                } catch (error) {
-                    console.error("Error during payment processing:", error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Payment Error',
-                        text: error.response?.data.error || 'An error occurred while processing the payment.',
-                    });
-                }
             }
         } else {
+            setIsSweetAlertOpen(false);
             console.log("No amount given, payment cancelled.");
         }
-    };
+    }, [calculateTotal, order, loggedInUser, onClose]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (modalRef.current && !modalRef.current.contains(event.target) && !isSweetAlertOpen) {
+                onClose();
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [onClose, isSweetAlertOpen]);
+
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (isOpen && event.key === 'Enter') {
+                handlePayOrder();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen, handlePayOrder]);
+
+    if (!isOpen || !order) return null;
 
     return (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50">
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div ref={modalRef} className="bg-white p-6 rounded-lg shadow-lg w-3/4 h-3/4 flex flex-col text-black">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-5xl font-bold">Order ID: {order.order_id}</h2>
-                    <button onClick={onClose} className="text-white hover:text-gray-200 focus:outline-none transition-colors duration-200 bg-red-500 hover:bg-red-700 p-2 rounded-full">
+                    <button onClick={onClose} className="text-red-500 hover:text-red-700">
                         <FaTimes size={30} />
                     </button>
                 </div>

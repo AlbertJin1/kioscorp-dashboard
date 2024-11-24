@@ -28,6 +28,8 @@ const Inventory = () => {
     const [stockToAdd, setStockToAdd] = useState(0);
     const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
     const [selectedRows, setSelectedRows] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState([]);
 
     const fetchProductsRef = useRef(null);
     const filterDropdownRef = useRef(null);
@@ -388,6 +390,50 @@ const Inventory = () => {
         setIsAddStockModalOpen(true); // Open the modal
     };
 
+    const handleSearchChange = (e) => {
+        const query = e.target.value;
+        setSearchQuery(query);
+        setCurrentPage(1); // Reset to the first page whenever the search query changes
+
+        // Filter suggestions
+        if (query) {
+            const filteredSuggestions = products.filter(product => {
+                return product.product_name.toLowerCase().includes(query.toLowerCase());
+            });
+
+            // Sort suggestions: closest matches first
+            filteredSuggestions.sort((a, b) => {
+                const aIndex = a.product_name.toLowerCase().indexOf(query.toLowerCase());
+                const bIndex = b.product_name.toLowerCase().indexOf(query.toLowerCase());
+                return aIndex - bIndex; // Sort by index of query
+            });
+
+            setSuggestions(filteredSuggestions);
+            setShowSuggestions(true); // Show suggestions
+        } else {
+            setSuggestions([]); // Clear suggestions if the input is empty
+            setShowSuggestions(false); // Hide suggestions
+        }
+    };
+
+    const handleSuggestionClick = (product) => {
+        setSearchQuery(product.product_name); // Set search query to the clicked suggestion
+        setSuggestions([]); // Clear suggestions
+        setShowSuggestions(false); // Hide suggestions
+    };
+
+    const highlightMatch = (text, term) => {
+        if (!term) return text;
+        const parts = text.split(new RegExp(`(${term})`, 'gi')); // Split the text by the term, case insensitive
+        return parts.map((part, index) =>
+            part.toLowerCase() === term.toLowerCase() ? (
+                <span key={index} className="font-bold text-blue-500">{part}</span>
+            ) : (
+                part
+            )
+        );
+    };
+
     return (
         <div className="p-4 h-full flex flex-col">
             {/* Search and Action Buttons */}
@@ -395,6 +441,7 @@ const Inventory = () => {
 
                 {/* Search Box */}
                 <div className="flex justify-between items-center">
+                    {/* Search Box */}
                     <div className="relative">
                         <FontAwesomeIcon
                             icon={faSearch}
@@ -403,11 +450,27 @@ const Inventory = () => {
                         <input
                             type="text"
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={handleSearchChange}
+                            onFocus={() => setShowSuggestions(searchQuery.length > 0)}
+                            onBlur={() => setTimeout(() => setShowSuggestions(false), 100)} // Delay to allow click on suggestion
                             placeholder="Search by product name, sub-category, brand..."
                             className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 shadow"
                             style={{ width: '450px' }}
                         />
+
+                        {showSuggestions && suggestions.length > 0 && (
+                            <div className="absolute z-20 w-full bg-white border border-gray-300 rounded-md mt-2 max-h-72 overflow-auto">
+                                {suggestions.map((product) => (
+                                    <div
+                                        key={product.product_id}
+                                        className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
+                                        onClick={() => handleSuggestionClick(product)}
+                                    >
+                                        {highlightMatch(product.product_name, searchQuery)}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Filter, Edit, and Delete Buttons */}
@@ -844,7 +907,8 @@ const Inventory = () => {
                     <>
                         <button
                             onClick={() => setCurrentPage(1)}
-                            className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === 1 ? 'bg-[#022a5e] text-white' : 'bg-gray-200 text-gray-600 hover:bg-[#022a5e] hover:text-white'}`}
+                            className={`mx-2 rounded transition duration-300 ${currentPage === 1 ? 'bg-[#022a5e] text-white' : 'bg-gray-200 text-gray-600 hover:bg-[#022a5e] hover:text-white'}`}
+                            style={{ width: '60px', height: '40px' }} // Fixed width and height
                         >
                             1
                         </button>
@@ -857,7 +921,8 @@ const Inventory = () => {
                                 <button
                                     key={pageNum}
                                     onClick={() => setCurrentPage(pageNum)}
-                                    className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === pageNum ? 'bg-[#022a5e] text-white' : 'bg-gray-200 text-gray-600 hover:bg-[#022a5e] hover:text-white'}`}
+                                    className={`mx-2 rounded transition duration-300 ${currentPage === pageNum ? 'bg-[#022a5e] text-white' : 'bg-gray-200 text-gray-600 hover:bg-[#022a5e] hover:text-white'}`}
+                                    style={{ width: '60px', height: '40px' }} // Fixed width and height
                                 >
                                     {pageNum}
                                 </button>
@@ -867,7 +932,8 @@ const Inventory = () => {
                         {totalPages > 1 && (
                             <button
                                 onClick={() => setCurrentPage(totalPages)}
-                                className={`mx-2 px-4 py-2 rounded transition duration-300 ${currentPage === totalPages ? 'bg-[#022a5e] text-white' : 'bg-gray-200 text-gray-600 hover:bg-[#022a5e] hover:text-white'}`}
+                                className={`mx-2 rounded transition duration-300 ${currentPage === totalPages ? 'bg-[#022a5e] text-white' : 'bg-gray-200 text-gray-600 hover:bg-[#022a5e] hover:text-white'}`}
+                                style={{ width: '60px', height: '40px' }} // Fixed width and height
                             >
                                 {totalPages}
                             </button>

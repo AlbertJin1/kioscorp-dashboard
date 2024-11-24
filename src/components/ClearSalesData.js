@@ -3,6 +3,8 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 
 const ClearSalesData = ({ handleLogout }) => {
+    const passkey = 's%I52|U0.(hGE^;E0FWg'; // Defined passkey
+
     const clearSalesData = async () => {
         const token = localStorage.getItem('token');
 
@@ -42,32 +44,57 @@ const ClearSalesData = ({ handleLogout }) => {
                 });
 
                 if (confirmed3) {
-                    try {
-                        const response = await axios.delete('http://192.168.254.101:8000/api/customers/clear/', {
-                            headers: { Authorization: `Token ${token}` }
-                        });
+                    // Passkey prompt
+                    const { value: enteredPasskey } = await Swal.fire({
+                        title: '🔑 Enter Passkey',
+                        text: 'Please enter the passkey to confirm the action:',
+                        input: 'text',
+                        inputAttributes: {
+                            autocapitalize: 'off',
+                            autofocus: true
+                        },
+                        showCancelButton: true,
+                        confirmButtonColor: '#0f3a87',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Confirm'
+                    });
 
-                        if (response.status === 204) {
+                    if (enteredPasskey === passkey) {
+                        try {
+                            const response = await axios.delete('http://192.168.254.101:8000/api/customers/clear/', {
+                                headers: { Authorization: `Token ${token}` }
+                            });
+
+                            if (response.status === 204) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '🎉 Customer Data Cleared!',
+                                    text: 'All customer data has been successfully sent to the digital abyss!',
+                                    timer: 2000,
+                                    showConfirmButton: false,
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error clearing customer data:', error);
                             Swal.fire({
-                                icon: 'success',
-                                title: '🎉 Customer Data Cleared!',
-                                text: 'All customer data has been successfully sent to the digital abyss!',
+                                icon: 'error',
+                                title: '😱 Error!',
+                                text: 'Failed to clear customer data. Please try again later, or consult the tech gods!',
                                 timer: 2000,
                                 showConfirmButton: false,
                             });
+                            if (error.response && error.response.status === 401) {
+                                handleLogout(); // Logout if unauthorized
+                            }
                         }
-                    } catch (error) {
-                        console.error('Error clearing customer data:', error);
+                    } else {
                         Swal.fire({
                             icon: 'error',
-                            title: '😱 Error!',
-                            text: 'Failed to clear customer data. Please try again later, or consult the tech gods!',
+                            title: '❌ Incorrect Passkey!',
+                            text: 'The passkey you entered is incorrect. Action aborted.',
                             timer: 2000,
                             showConfirmButton: false,
                         });
-                        if (error.response && error.response.status === 401) {
-                            handleLogout(); // Logout if unauthorized
-                        }
                     }
                 }
             }
@@ -113,32 +140,57 @@ const ClearSalesData = ({ handleLogout }) => {
                 });
 
                 if (confirmed3) {
-                    try {
-                        const response = await axios.delete('http://192.168.254.101:8000/api/customers/clear/', {
-                            headers: { Authorization: `Token ${token}` }
-                        });
+                    // Passkey prompt
+                    const { value: enteredPasskey } = await Swal.fire({
+                        title: '🔑 Enter Passkey',
+                        text: 'Please enter the passkey to confirm the action:',
+                        input: 'text',
+                        inputAttributes: {
+                            autocapitalize: 'off',
+                            autofocus: true
+                        },
+                        showCancelButton: true,
+                        confirmButtonColor: '#0f3a87',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Confirm'
+                    });
 
-                        if (response.status === 204) {
+                    if (enteredPasskey === passkey) {
+                        try {
+                            const response = await axios.delete('http://192.168.254.101:8000/api/customers/clear/', {
+                                headers: { Authorization: `Token ${token}` }
+                            });
+
+                            if (response.status === 204) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '🎉 Customer Data Cleared!',
+                                    text: 'All customer data has been successfully sent to the digital abyss!',
+                                    timer: 2000,
+                                    showConfirmButton: false,
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error clearing customer data:', error);
                             Swal.fire({
-                                icon: 'success',
-                                title: '🎉 Customer Data Cleared!',
-                                text: 'All customer data has been successfully sent to the digital abyss!',
+                                icon: 'error',
+                                title: '😱 Error!',
+                                text: 'Failed to clear customer data. Please try again later, or consult the tech gods!',
                                 timer: 2000,
                                 showConfirmButton: false,
                             });
+                            if (error.response && error.response.status === 401) {
+                                handleLogout(); // Logout if unauthorized
+                            }
                         }
-                    } catch (error) {
-                        console.error('Error clearing customer data:', error);
+                    } else {
                         Swal.fire({
                             icon: 'error',
-                            title: '😱 Error!',
-                            text: 'Failed to clear customer data. Please try again later, or consult the tech gods!',
+                            title: '❌ Incorrect Passkey!',
+                            text: 'The passkey you entered is incorrect. Action aborted.',
                             timer: 2000,
                             showConfirmButton: false,
                         });
-                        if (error.response && error.response.status === 401) {
-                            handleLogout(); // Logout if unauthorized
-                        }
                     }
                 }
             }

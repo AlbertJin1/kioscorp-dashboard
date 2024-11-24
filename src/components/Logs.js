@@ -53,22 +53,48 @@ const Logs = () => {
             confirmButtonText: 'Yes, delete it!',
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete('http://192.168.254.101:8000/logs/')
-                    .then(() => {
-                        setLogs([]);
-                        Swal.fire('Deleted!', 'Logs have been deleted.', 'success');
-                    })
-                    .catch((error) => {
-                        setError(error.message);
+                // Prompt for passkey confirmation
+                Swal.fire({
+                    title: 'Enter Passkey',
+                    input: 'password',
+                    inputPlaceholder: 'Enter passkey to confirm',
+                    inputAttributes: {
+                        autocapitalize: 'off',
+                        autocorrect: 'off',
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: 'Confirm',
+                    cancelButtonText: 'Cancel',
+                }).then((passkeyResult) => {
+                    // Validate passkey
+                    if (passkeyResult.isConfirmed && passkeyResult.value === 'WJnJ,`482g<UL\\1Vc>C%') {
+                        // Passkey is correct, proceed with deletion
+                        axios.delete('http://192.168.254.101:8000/logs/')
+                            .then(() => {
+                                setLogs([]);
+                                Swal.fire('Deleted!', 'Logs have been deleted.', 'success');
+                            })
+                            .catch((error) => {
+                                setError(error.message);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Could not delete logs.',
+                                });
+                            });
+                    } else if (passkeyResult.isConfirmed) {
+                        // Invalid passkey
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error',
-                            text: 'Could not delete logs.',
+                            title: 'Incorrect Passkey',
+                            text: 'The passkey you entered is incorrect.',
                         });
-                    });
+                    }
+                });
             }
         });
     };
+
 
     const handleExportLogs = () => {
         const data = logs.map((log) => ({

@@ -83,7 +83,7 @@ const InventoryLevel = () => {
                 <Loader />
             ) : (
                 <div className="flex flex-col flex-grow">
-                    <div className="overflow-y-auto flex-grow h-56">
+                    <div className="overflow-y-auto overflow-x-hidden flex-grow h-56">
                         <table className="min-w-full bg-white rounded ">
                             <thead className="bg-[#022a5e] text-white text-md leading-normal sticky top-0 z-10">
                                 <tr>
@@ -169,7 +169,8 @@ const InventoryLevel = () => {
                             <>
                                 <button
                                     onClick={() => setCurrentPage(1)}
-                                    className={`mx-1 px-3 py-1 rounded transition duration-300 ${currentPage === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                    className={`mx-1 rounded transition duration-300 ${currentPage === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                    style={{ width: '60px', height: '40px' }} // Fixed width and height
                                 >
                                     1
                                 </button>
@@ -184,7 +185,8 @@ const InventoryLevel = () => {
                                         <button
                                             key={pageNum}
                                             onClick={() => setCurrentPage(pageNum)}
-                                            className={`mx-1 px-3 py-1 rounded transition duration-300 ${currentPage === pageNum ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                            className={`mx-1 rounded transition duration-300 ${currentPage === pageNum ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                            style={{ width: '60px', height: '40px' }} // Fixed width and height
                                         >
                                             {pageNum}
                                         </button>
@@ -196,7 +198,8 @@ const InventoryLevel = () => {
                                 {totalPages > 1 && (
                                     <button
                                         onClick={() => setCurrentPage(totalPages)}
-                                        className={`mx-1 px-3 py-1 rounded transition duration-300 ${currentPage === totalPages ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                        className={`mx-1 rounded transition duration-300 ${currentPage === totalPages ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-blue-500 hover:text-white'}`}
+                                        style={{ width: '60px', height: '40px' }} // Fixed width and height
                                     >
                                         {totalPages}
                                     </button>

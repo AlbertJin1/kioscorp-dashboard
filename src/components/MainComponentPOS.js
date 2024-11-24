@@ -84,7 +84,7 @@ const MainComponentPOS = ({ loggedInUser, handleLogout }) => {
                     handleLogout={handleLogout}
                     setPendingOrderCount={setPendingOrderCount}
                     fetchOrders={fetchOrders} // Pass fetchOrders to SidebarPOS
-                    className="fixed top-0 left-0 w-64 h-screen overflow-y-auto bg-white border-r"
+                    className="fixed top-0 left-0 h-screen overflow-y-auto bg-white border-r"
                     loggedInUser={loggedInUser}
                     handleGoBack={handleGoBack}
                 />

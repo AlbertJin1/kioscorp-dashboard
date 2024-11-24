@@ -46,7 +46,7 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
     const orderRefs = orders.map(() => React.createRef());
 
     return (
-        <div ref={ref} className="min-h-screen flex flex-col bg-[#033372] text-white transition-all duration-300 min-w-80">
+        <div ref={ref} className="w-96 min-h-screen flex flex-col bg-[#033372] text-white transition-all duration-300">
             <div className="flex items-center justify-between p-4">
                 <img src={logo} alt="Kioscorp Logo" className="h-auto w-72" />
             </div>
@@ -113,13 +113,15 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
             )}
 
             <div className="flex flex-col justify-center m-4 space-y-4">
-                <button
-                    onClick={handleGoBack}
-                    className="flex items-center p-2 rounded bg-white text-black hover:bg-blue-200 transition duration-200 font-semibold text-xl"
-                >
-                    <FaArrowLeft className="mr-2" size={30} />
-                    Go Back
-                </button>
+                {(loggedInUser?.role === 'owner' || loggedInUser?.role === 'admin') && (
+                    <button
+                        onClick={handleGoBack}
+                        className="flex items-center p-2 rounded bg-white text-black hover:bg-blue-200 transition duration-200 font-semibold text-xl"
+                    >
+                        <FaArrowLeft className="mr-2" size={30} />
+                        Go Back
+                    </button>
+                )}
 
                 <button
                     onClick={handleLogout}
@@ -129,6 +131,7 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
                     <span>Logout</span>
                 </button>
             </div>
+
 
         </div>
     );

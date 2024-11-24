@@ -350,12 +350,12 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
                 overflow: 'hidden',
             }}
         >
-            <div className="flex bg-gray-100 rounded-lg shadow-2xl w-[950px] h-[500px]">
+            <div className="flex bg-gray-100 rounded-lg shadow-2xl w-[1000px] h-[500px]">
                 <div
                     className="hidden md:block md:w-1/2 bg-cover bg-center rounded-l-lg"
                     style={{
                         backgroundImage: `url(${sideImage})`,
-                        width: '550px',
+                        width: '650px',
                         height: '500px',
                     }}
                 ></div>

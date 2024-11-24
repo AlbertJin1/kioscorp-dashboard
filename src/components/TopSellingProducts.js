@@ -54,7 +54,7 @@ const TopSellingProducts = () => {
                                 <th className="py-2 px-4 text-center">Total Sold (Month)</th>
                             </tr>
                         </thead>
-                        <tbody className="custom-scrollbar text-gray-700 text-sm font-light h-auto overflow-y-auto">
+                        <tbody className="text-gray-700 text-sm font-light h-auto">
                             {topSellingProducts.length === 0 ? (
                                 <tr>
                                     <td colSpan="3" className="py-4 text-center text-gray-700">

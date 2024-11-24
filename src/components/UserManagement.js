@@ -109,6 +109,35 @@ const UserManagement = () => {
     // Pagination controls
     const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
 
+    const getPaginationRange = () => {
+        const pages = [];
+        if (totalPages <= 3) {
+            // If total pages are less than or equal to 3, show all
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            // Always show the first page
+            pages.push(1);
+
+            // Show pages around the current page
+            if (currentPage > 1) pages.push(currentPage - 1);
+            pages.push(currentPage);
+            if (currentPage < totalPages) pages.push(currentPage + 1);
+
+            // Always show the last page if not already included
+            if (!pages.includes(totalPages)) {
+                pages.push(totalPages);
+            }
+
+            // Sort the pages to maintain order
+            pages.sort((a, b) => a - b);
+        }
+        return pages;
+    };
+
+    const paginationPages = getPaginationRange();
+
     // Handle header click to toggle sorting
     const handleSort = (key) => {
         if (sortKey === key) {
@@ -397,11 +426,11 @@ const UserManagement = () => {
 
     return (
         <div className="flex flex-col h-full bg-white p-4 rounded-md">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold">User Management</h2>
                 {(localStorage.getItem('role') === 'admin' || localStorage.getItem('role') === 'owner') && (
                     <div className="flex justify-between">
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-x-4">
                             <button
                                 className="bg-green-500 hover:bg-green-700 text-white font-bold p-2 px-3 rounded flex justify-center items-center transition duration-200 ease-in-out transform"
                                 title="Export Users"
@@ -411,7 +440,7 @@ const UserManagement = () => {
                                 Export Users
                             </button>
                             <button
-                                className="bg-green-500 hover:bg-green-700 text-white font-bold p-2 px-3 rounded flex justify-center items-center ml-2 transition duration-200 ease-in-out transform"
+                                className="bg-green-500 hover:bg-green-700 text-white font-bold p-2 px-3 rounded flex justify-center items-center transition duration-200 ease-in-out transform"
                                 title="Add New User"
                                 onClick={() => setAddModalOpen(true)} // Open add user modal
                             >
@@ -430,27 +459,6 @@ const UserManagement = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="border border-gray-300 p-2 rounded mb-4 w-full text-black"
             />
-
-            {/* Pagination Controls */}
-            <div className="flex justify-between items-center mb-4">
-                <button
-                    className={`py-2 px-4 text-white transition-colors duration-200 focus:outline-none rounded flex items-center ${currentPage === 1 ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-700 hover:bg-blue-800'}`}
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                >
-                    <FaChevronLeft className="mr-2" /> {/* Add left arrow icon */}
-                    Prev
-                </button>
-                <span className="font-semibold text-white flex-1 text-center">Page {currentPage} of {totalPages}</span>
-                <button
-                    className={`py-2 px-4 text-white transition-colors duration-200 focus:outline-none rounded flex items-center ${currentPage === totalPages ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-700 hover:bg-blue-800'}`}
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                >
-                    Next
-                    <FaChevronRight className="ml-2" /> {/* Add right arrow icon */}
-                </button>
-            </div>
 
             <div className="overflow-auto flex-grow custom-scrollbar">
                 <table className="min-w-full text-black">
@@ -533,6 +541,39 @@ const UserManagement = () => {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex justify-between items-center mt-4">
+                <button
+                    className={`py-2 px-4 text-white transition-colors duration-200 focus:outline-none rounded flex items-center ${currentPage === 1 ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-700 hover:bg-blue-800'}`}
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                >
+                    <FaChevronLeft className="mr-2" />
+                    Prev
+                </button>
+
+                <div className="flex items-center space-x-2">
+                    {paginationPages.map((page) => (
+                        <button
+                            key={page}
+                            className={`py-2 px-4 text-white transition-colors duration-200 focus:outline-none rounded ${currentPage === page ? 'bg-blue-800' : 'bg-blue-700 hover:bg-blue-800'}`}
+                            onClick={() => setCurrentPage(page)}
+                        >
+                            {page}
+                        </button>
+                    ))}
+                </div>
+
+                <button
+                    className={`py-2 px-4 text-white transition-colors duration-200 focus:outline-none rounded flex items-center ${currentPage === totalPages ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-700 hover:bg-blue-800'}`}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                >
+                    Next
+                    <FaChevronRight className="ml-2" />
+                </button>
             </div>
 
             {/* Modal for Adding User */}
