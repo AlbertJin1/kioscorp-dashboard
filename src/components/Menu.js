@@ -4,6 +4,7 @@ import UserManagement from './UserManagement';
 import Logs from './Logs';
 import ChangePassword from './ChangePassword';
 import ClearSalesData from './ClearSalesData'; // Import the new component
+import VATSetting from './VATSetting'; // Import the new component
 import About from './About'; // Import the About component
 
 const Menu = ({ setIsAuthenticated, handleLogout }) => {
@@ -71,6 +72,16 @@ const Menu = ({ setIsAuthenticated, handleLogout }) => {
                                 </button>
                             </li>
                         )}
+                        {userRole === 'owner' && (
+                            <li>
+                                <button
+                                    onClick={() => handleTabChange('vatSetting')}
+                                    className={`w-full text-left p-2 rounded-md ${activeTab === 'vatSetting' ? 'bg-blue-700' : 'hover:bg-blue-800'}`}
+                                >
+                                    VAT Setting
+                                </button>
+                            </li>
+                        )}
                         <li>
                             <button
                                 onClick={() => handleTabChange('about')}
@@ -90,6 +101,7 @@ const Menu = ({ setIsAuthenticated, handleLogout }) => {
                     {(activeTab === 'logs' && (userRole === 'owner' || userRole === 'admin')) && <Logs />}
                     {activeTab === 'changePassword' && <ChangePassword />}
                     {activeTab === 'clearSalesData' && userRole === 'owner' && <ClearSalesData handleLogout={handleLogout} />}
+                    {activeTab === 'vatSetting' && userRole === 'owner' && <VATSetting userRole={userRole} />}
                     {activeTab === 'about' && <About />} {/* Render About component */}
                 </>
             </div>

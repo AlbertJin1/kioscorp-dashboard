@@ -3,14 +3,16 @@ import { FaArrowLeft, FaSignOutAlt } from 'react-icons/fa';
 import logo from '../img/logo/KIOSCORP LOGO.png'; // Adjust the path as needed
 import axios from 'axios';
 import OrderModal from './OrderModal';
-import { CSSTransition, TransitionGroup } from 'react-transition-group'; // Import CSSTransition and TransitionGroup
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import './SidebarPOSStyles.css';
 
 const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUser, handleGoBack }, ref) => {
     const [orders, setOrders] = useState([]); // State to hold all pending orders
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [vatPercentage, setVatPercentage] = useState(0); // State for VAT percentage
 
+    // Fetch orders
     const fetchOrders = useCallback(async () => {
         const token = localStorage.getItem('token');
         try {
@@ -22,15 +24,26 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
         } catch (error) {
             console.error('Error fetching orders:', error);
         }
-    }, [setPendingOrderCount]); // Add setPendingOrderCount as a dependency
+    }, [setPendingOrderCount]);
+
+    // Fetch VAT setting
+    const fetchVAT = useCallback(async () => {
+        try {
+            const response = await axios.get('http://192.168.254.101:8000/api/vat-setting/');
+            setVatPercentage(Number(response.data.vat_percentage)); // Set the VAT percentage
+        } catch (error) {
+            console.error('Error fetching VAT setting:', error);
+            setVatPercentage(0); // Default to 0 if there's an error
+        }
+    }, []);
 
     useEffect(() => {
-        fetchOrders(); // Initial fetch
+        fetchOrders();
+        fetchVAT(); // Fetch VAT setting on component mount
 
         const intervalId = setInterval(fetchOrders, 5000); // Fetch orders every 5 seconds
-
         return () => clearInterval(intervalId); // Cleanup interval on component unmount
-    }, [fetchOrders]); // Include fetchOrders in the dependency array
+    }, [fetchOrders, fetchVAT]);
 
     const handleOrderClick = useCallback((order) => {
         setSelectedOrder(order);
@@ -39,10 +52,9 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
 
     const handleCloseModal = useCallback(() => {
         setIsOpenModal(false);
-        setSelectedOrder(null); // Reset selected order when closing modal
+        setSelectedOrder(null);
     }, []);
 
-    // Create refs for each order
     const orderRefs = orders.map(() => React.createRef());
 
     return (
@@ -58,16 +70,15 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
                         [...orders].reverse().map((order, index) => (
                             <CSSTransition
                                 key={order.order_id}
-                                nodeRef={orderRefs[index]} // Use the ref from the array
+                                nodeRef={orderRefs[index]}
                                 timeout={300}
                                 classNames="order-container"
                             >
                                 <div ref={orderRefs[index]} className={`p-4 rounded shadow-md m-4 transition duration-200 cursor-pointer 
-                ${selectedOrder && selectedOrder.order_id === order.order_id ? 'bg-gray-300' : 'bg-white text-black'}`}
+                                    ${selectedOrder && selectedOrder.order_id === order.order_id ? 'bg-gray-300' : 'bg-white text-black'}`}
                                     onClick={() => handleOrderClick(order)}>
 
                                     <h3 className="text-xl font-bold">Order ID: {order.order_id}</h3>
-                                    {/* Display Queue Number */}
                                     <p className="text-md text-gray-600 font-semibold">Queue Number: {orders.length - index}</p>
                                     <div className="mb-2">
                                         {order.order_items.filter(item => item.order_item_quantity > 0).map(item => (
@@ -84,14 +95,17 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
                                     </div>
                                     <div className="flex text-xl justify-between font-bold">
                                         <span>Total:</span>
-                                        <span>₱{Number(order.order_amount).toFixed(2)}</span>
+                                        {/* Adjust the total to include VAT */}
+                                        <span>
+                                            ₱{(Number(order.order_amount) * (1 + vatPercentage / 100)).toFixed(2)}
+                                        </span>
                                     </div>
                                 </div>
                             </CSSTransition>
                         ))
                     ) : (
                         <CSSTransition
-                            nodeRef={React.createRef()} // Create a new ref here
+                            nodeRef={React.createRef()}
                             timeout={300}
                             classNames="order-container"
                         >
@@ -131,10 +145,8 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
                     <span>Logout</span>
                 </button>
             </div>
-
-
         </div>
     );
 });
 
-export default SidebarPOS; // Ensure default export
+export default SidebarPOS;

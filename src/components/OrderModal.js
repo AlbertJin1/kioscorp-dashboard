@@ -6,13 +6,30 @@ import Swal from 'sweetalert2';
 const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
     const modalRef = useRef(null);
     const [isSweetAlertOpen, setIsSweetAlertOpen] = useState(false);
+    const [vatPercentage, setVatPercentage] = useState(0); // State for VAT percentage
 
-    const calculateTotal = useCallback(() => {
-        return order?.order_items.reduce(
+    // Fetch VAT settings when the modal opens
+    useEffect(() => {
+        if (isOpen) {
+            axios.get('http://192.168.254.101:8000/api/vat-setting/')
+                .then(response => {
+                    setVatPercentage(response.data.vat_percentage);
+                })
+                .catch(error => {
+                    console.error('Error fetching VAT setting:', error);
+                });
+        }
+    }, [isOpen]);
+
+    const calculateTotals = useCallback(() => {
+        const subtotal = order?.order_items.reduce(
             (total, item) => total + item.product_price * item.order_item_quantity,
             0
         );
-    }, [order]);
+        const vatAmount = subtotal * (vatPercentage / 100); // Calculate VAT amount
+        const total = subtotal + vatAmount; // Total including VAT
+        return { subtotal, vatAmount, total }; // Return an object with subtotal, VAT, and total
+    }, [order, vatPercentage]);
 
     const handleVoidOrder = async () => {
         setIsSweetAlertOpen(true);
@@ -57,14 +74,14 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
 
     const handlePayOrder = useCallback(async () => {
         setIsSweetAlertOpen(true);
-        const totalAmount = calculateTotal();
+        const { total } = calculateTotals();
 
         const { value: amountGiven } = await Swal.fire({
             title: '💵 How much money did the customer give?',
             html: `
                 <input id="swal-input1" class="swal2-input border border-gray-300 rounded-lg p-2" type="number" placeholder="Enter amount" />
                 <div id="quick-amount-buttons" class="mt-4 flex flex-wrap justify-center gap-2">
-                    <button type="button" data-value="50" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱50</button>
+                    <button type ="button" data-value="50" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱50</button >
                     <button type="button" data-value="100" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱100</button>
                     <button type="button" data-value="150" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱150</button>
                     <button type="button" data-value="200" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱200</button>
@@ -75,8 +92,8 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
                     <button type="button" data-value="2000" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱2000</button>
                     <button type="button" data-value="3000" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱3000</button>
                     <button type="button" data-value="5000" class="quick-amount bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors duration-300">₱5000</button>
-                </div>
-            `,
+                </div >
+    `,
             focusConfirm: false,
             showCancelButton: true,
             confirmButtonText: 'Confirm',
@@ -106,7 +123,7 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
                 const input = Swal.getPopup().querySelector('#swal-input1').value;
                 if (!input || isNaN(input)) {
                     Swal.showValidationMessage(`Please enter a valid amount`);
-                } else if (parseFloat(input) < totalAmount) {
+                } else if (parseFloat(input) < total) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Insufficient Amount',
@@ -131,13 +148,14 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
                 },
             });
 
-            const change = amountGiven - totalAmount;
+            const change = amountGiven - total;
 
             try {
                 const response = await axios.patch(`http://192.168.254.101:8000/api/orders/pay/${order.order_id}/`, {
                     order_paid_amount: amountGiven,
                     cashier_first_name: loggedInUser.firstName,
                     cashier_last_name: loggedInUser.lastName,
+                    vat_percentage: vatPercentage, // Include VAT percentage in the request
                 });
 
                 Swal.close();
@@ -163,7 +181,7 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
             setIsSweetAlertOpen(false);
             console.log("No amount given, payment cancelled.");
         }
-    }, [calculateTotal, order, loggedInUser, onClose]);
+    }, [calculateTotals, order, loggedInUser, vatPercentage, onClose]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -194,6 +212,8 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
     }, [isOpen, handlePayOrder]);
 
     if (!isOpen || !order) return null;
+
+    const { subtotal, vatAmount, total } = calculateTotals();
 
     return (
         <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -245,7 +265,7 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
                                         </div>
                                         <div className="w-1/3">
                                             <span className="text-3xl font-bold">{item.product_name}</span>
-                                            <div className="text-xl text-gray-600 font-semibold"> {/* Optional styling for color and size */}
+                                            <div className="text-xl text-gray-600 font-semibold">
                                                 {item.product_color}, {item.product_size}
                                             </div>
                                         </div>
@@ -258,7 +278,12 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
                         </div>
                         <hr className="border-gray-300 mb-4" />
                         <div className="flex justify-between items-center mt-4">
-                            <div className="flex text-4xl font-bold">
+                            <div className="flex flex-col text-4xl font-bold">
+                                <span>Subtotal: ₱{subtotal.toFixed(2)}</span>
+                                <span>VAT (at {vatPercentage}%): ₱{vatAmount.toFixed(2)}</span>
+                                <span>Total: ₱{total.toFixed(2)}</span>
+                            </div>
+                            <div className="flex">
                                 <button
                                     onClick={handlePayOrder}
                                     className="flex items-center bg-green-500 text-white hover:text-gray-200 hover:bg-green-700 focus:outline-none transition-colors duration-200 py-2 px-4 rounded-full mr-4"
@@ -273,10 +298,6 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
                                     <FaBan size={30} className="mr-2" />
                                     Void
                                 </button>
-                            </div>
-                            <div className="flex justify-end items-center">
-                                <span className="text-4xl font-bold mr-4">Total :</span>
-                                <span className="text-6xl font-bold">₱{calculateTotal().toFixed(2)}</span>
                             </div>
                         </div>
                     </>
