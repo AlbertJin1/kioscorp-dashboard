@@ -25,7 +25,7 @@ const Logs = () => {
         const fetchLogs = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get('http://192.168.254.101:8000/logs/');
+                const response = await axios.get('http://localhost:8000/logs/');
                 const data = response.data;
                 setLogs(data);
             } catch (error) {
@@ -69,7 +69,7 @@ const Logs = () => {
                     // Validate passkey
                     if (passkeyResult.isConfirmed && passkeyResult.value === 'WJnJ,`482g<UL\\1Vc>C%') {
                         // Passkey is correct, proceed with deletion
-                        axios.delete('http://192.168.254.101:8000/logs/')
+                        axios.delete('http://localhost:8000/logs/')
                             .then(() => {
                                 setLogs([]);
                                 Swal.fire('Deleted!', 'Logs have been deleted.', 'success');

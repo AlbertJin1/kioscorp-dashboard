@@ -36,7 +36,7 @@ const CustomerCountChart = () => {
         const fetchCustomerData = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get('http://192.168.254.101:8000/api/customers/counts/month/', {
+                const response = await axios.get('http://localhost:8000/api/customers/counts/month/', {
                     headers: {
                         Authorization: `Token ${token}`
                     }

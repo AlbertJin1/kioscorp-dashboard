@@ -20,7 +20,7 @@ const Overview = () => {
     const fetchOrderCounts = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://192.168.254.101:8000/api/orders/counts/', {
+            const response = await axios.get('http://localhost:8000/api/orders/counts/', {
                 headers: { Authorization: `Token ${token}` }
             });
             setTotalPaidOrders(response.data.totalPaidOrders);
@@ -33,7 +33,7 @@ const Overview = () => {
 
     const fetchSalesData = async () => {
         try {
-            const response = await axios.get('http://192.168.254.101:8000/api/sales/data/', {
+            const response = await axios.get('http://localhost:8000/api/sales/data/', {
                 headers: { Authorization: `Token ${localStorage.getItem('token')}` }
             });
             setAnnualSales(response.data.annual_sales);

@@ -32,7 +32,7 @@ const OrderHistory = () => {
                 order_number: applyOrderNumberFilter ? orderNumberRef.current : undefined,
             };
 
-            const response = await axios.get('http://192.168.254.101:8000/api/orders/history/', {
+            const response = await axios.get('http://localhost:8000/api/orders/history/', {
                 headers: {
                     'Authorization': `Token ${localStorage.getItem('token')}`,
                 },

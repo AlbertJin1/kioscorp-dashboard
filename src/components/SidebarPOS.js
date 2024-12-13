@@ -16,7 +16,7 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
     const fetchOrders = useCallback(async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.get('http://192.168.254.101:8000/api/orders/pending/', {
+            const response = await axios.get('http://localhost:8000/api/orders/pending/', {
                 headers: { 'Authorization': `Token ${token}` }
             });
             setOrders(response.data);
@@ -29,7 +29,7 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
     // Fetch VAT setting
     const fetchVAT = useCallback(async () => {
         try {
-            const response = await axios.get('http://192.168.254.101:8000/api/vat-setting/');
+            const response = await axios.get('http://localhost:8000/api/vat-setting/');
             setVatPercentage(Number(response.data.vat_percentage)); // Set the VAT percentage
         } catch (error) {
             console.error('Error fetching VAT setting:', error);

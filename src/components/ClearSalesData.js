@@ -61,7 +61,7 @@ const ClearSalesData = ({ handleLogout }) => {
 
                     if (enteredPasskey === passkey) {
                         try {
-                            const response = await axios.delete('http://192.168.254.101:8000/api/customers/clear/', {
+                            const response = await axios.delete('http://localhost:8000/api/customers/clear/', {
                                 headers: { Authorization: `Token ${token}` }
                             });
 
@@ -157,7 +157,7 @@ const ClearSalesData = ({ handleLogout }) => {
 
                     if (enteredPasskey === passkey) {
                         try {
-                            const response = await axios.delete('http://192.168.254.101:8000/api/customers/clear/', {
+                            const response = await axios.delete('http://localhost:8000/api/customers/clear/', {
                                 headers: { Authorization: `Token ${token}` }
                             });
 

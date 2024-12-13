@@ -43,7 +43,7 @@ const Inventory = () => {
                     category: selectedFilters.category !== 'All' ? selectedFilters.category : undefined,
                     include_subcategory: true,
                 };
-                const response = await axios.get('http://192.168.254.101:8000/api/products/', { params });
+                const response = await axios.get('http://localhost:8000/api/products/', { params });
                 console.log("Fetched products:", response.data);
                 setProducts(response.data);
             } catch (error) {
@@ -57,7 +57,7 @@ const Inventory = () => {
             const token = localStorage.getItem('token');
             axios.defaults.headers.common['Authorization'] = `Token ${token}`;
             try {
-                const response = await axios.get('http://192.168.254.101:8000/api/main-categories/');
+                const response = await axios.get('http://localhost:8000/api/main-categories/');
                 console.log("Fetched main categories:", response.data);
                 setMainCategories(response.data);
             } catch (error) {
@@ -241,7 +241,7 @@ const Inventory = () => {
                     formDataToSend.append('product_image', productImage); // Add the new image
                 }
 
-                const response = await axios.patch(`http://192.168.254.101:8000/api/products/${updatedProduct.product_id}/`, formDataToSend, config);
+                const response = await axios.patch(`http://localhost:8000/api/products/${updatedProduct.product_id}/`, formDataToSend, config);
 
                 if (response.status === 200) {
                     Swal.fire({
@@ -256,7 +256,7 @@ const Inventory = () => {
                     });
                     setIsEditModalOpen(false); // Close modal on success
                     // Refetch products after update
-                    const res = await axios.get('http://192.168.254.101:8000/api/products/', config);
+                    const res = await axios.get('http://localhost:8000/api/products/', config);
                     setProducts(res.data);
                 } else {
                     Swal.fire('Error', 'Failed to update product.', 'error');
@@ -277,11 +277,11 @@ const Inventory = () => {
                         'Authorization': `Token ${token}`,
                     }
                 };
-                const response = await axios.delete(`http://192.168.254.101:8000/api/products/${productId}/`, config);
+                const response = await axios.delete(`http://localhost:8000/api/products/${productId}/`, config);
 
                 if (response.status === 204) {
                     // Refetch products to remove the deleted one
-                    const res = await axios.get('http://192.168.254.101:8000/api/products/', config);
+                    const res = await axios.get('http://localhost:8000/api/products/', config);
                     setProducts(res.data);
                     setSelectedRow(null); // Unselect the product after deletion
                     Swal.fire({
@@ -362,7 +362,7 @@ const Inventory = () => {
                     },
                 };
 
-                const response = await axios.patch(`http://192.168.254.101:8000/api/products/${selectedRow.product_id}/`, { product_quantity: newQuantity }, config);
+                const response = await axios.patch(`http://localhost:8000/api/products/${selectedRow.product_id}/`, { product_quantity: newQuantity }, config);
 
                 if (response.status === 200) {
                     Swal.fire({
@@ -721,7 +721,7 @@ const Inventory = () => {
                                             'Authorization': `Token ${token}`,
                                         }
                                     };
-                                    const res = await axios.get('http://192.168.254.101:8000/api/products/', config);
+                                    const res = await axios.get('http://localhost:8000/api/products/', config);
                                     const products = res.data;
 
                                     const workbook = new ExcelJS.Workbook();

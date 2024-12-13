@@ -15,7 +15,7 @@ const InventoryOverview = () => {
         const fetchData = async () => {
             try {
                 const token = localStorage.getItem('token'); // Adjust the key as necessary
-                const response = await axios.get('http://192.168.254.101:8000/api/products/overview/', {
+                const response = await axios.get('http://localhost:8000/api/products/overview/', {
                     headers: {
                         Authorization: `Token ${token}`, // Use the appropriate format for your token
                     },

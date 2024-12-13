@@ -11,7 +11,7 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
     // Fetch VAT settings when the modal opens
     useEffect(() => {
         if (isOpen) {
-            axios.get('http://192.168.254.101:8000/api/vat-setting/')
+            axios.get('http://localhost:8000/api/vat-setting/')
                 .then(response => {
                     setVatPercentage(response.data.vat_percentage);
                 })
@@ -47,7 +47,7 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.patch(`http://192.168.254.101:8000/api/orders/void/${order.order_id}/`);
+                const response = await axios.patch(`http://localhost:8000/api/orders/void/${order.order_id}/`);
                 Swal.fire({
                     position: 'top-end',
                     icon: 'success',
@@ -151,7 +151,7 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
             const change = amountGiven - total;
 
             try {
-                const response = await axios.patch(`http://192.168.254.101:8000/api/orders/pay/${order.order_id}/`, {
+                const response = await axios.patch(`http://localhost:8000/api/orders/pay/${order.order_id}/`, {
                     order_paid_amount: amountGiven,
                     cashier_first_name: loggedInUser.firstName,
                     cashier_last_name: loggedInUser.lastName,
@@ -252,7 +252,7 @@ const OrderModal = ({ isOpen, onClose, order, loggedInUser }) => {
                                         <div className="w-1/6 flex justify-center">
                                             <img
                                                 src={item.product_image
-                                                    ? `http://192.168.254.101:8000${item.product_image}`
+                                                    ? `http://localhost:8000${item.product_image}`
                                                     : "https://via.placeholder.com/150"
                                                 }
                                                 alt={item.product_name}

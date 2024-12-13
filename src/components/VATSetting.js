@@ -8,7 +8,7 @@ const VATSetting = ({ userRole }) => {
 
     useEffect(() => {
         // Fetch current VAT setting
-        axios.get('http://192.168.254.101:8000/api/vat-setting/')
+        axios.get('http://localhost:8000/api/vat-setting/')
             .then(response => {
                 setVatPercentage(response.data.vat_percentage);
             })
@@ -18,7 +18,7 @@ const VATSetting = ({ userRole }) => {
     }, []);
 
     const handleSave = () => {
-        axios.put('http://192.168.254.101:8000/api/vat-setting/', { vat_percentage: vatPercentage })
+        axios.put('http://localhost:8000/api/vat-setting/', { vat_percentage: vatPercentage })
             .then(response => {
                 setMessage('VAT setting updated successfully.');
                 setIsEditing(false);

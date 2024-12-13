@@ -14,7 +14,7 @@ const LowDemandProducts = () => {
         const fetchLowDemandProducts = async () => {
             const token = localStorage.getItem('token'); // Retrieve the token from local storage
             try {
-                const response = await axios.get('http://192.168.254.101:8000/api/low-selling-products/', {
+                const response = await axios.get('http://localhost:8000/api/low-selling-products/', {
                     headers: {
                         Authorization: `Token ${token}`, // Include the token in the request headers
                     },

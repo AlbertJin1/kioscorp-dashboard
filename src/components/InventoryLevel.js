@@ -16,7 +16,7 @@ const InventoryLevel = () => {
         const fetchProducts = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get('http://192.168.254.101:8000/api/products', {
+                const response = await axios.get('http://localhost:8000/api/products', {
                     headers: {
                         Authorization: `Token ${token}`
                     }
@@ -134,7 +134,7 @@ const InventoryLevel = () => {
                                             <td className="py-3 px-6 text-center relative">
                                                 <div className="flex justify-center items-center h-full relative">
                                                     <img
-                                                        src={product.product_image ? `http://192.168.254.101:8000${product.product_image}` : "https://via.placeholder.com/150"}
+                                                        src={product.product_image ? `http://localhost:8000${product.product_image}` : "https://via.placeholder.com/150"}
                                                         alt={product.product_name}
                                                         className="w-16 h-16 object-cover rounded mx-auto"
                                                         onError={(e) => {

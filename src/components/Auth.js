@@ -67,7 +67,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
         showLoading();
 
         try {
-            const response = await axios.post('http://192.168.254.101:8000/api/login/', {
+            const response = await axios.post('http://localhost:8000/api/login/', {
                 username: formData.username,
                 password: formData.password,
             });
@@ -116,7 +116,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
         showLoading();
 
         try {
-            const response = await axios.post('http://192.168.254.101:8000/api/register/', {
+            const response = await axios.post('http://localhost:8000/api/register/', {
                 username: formData.username,
                 email: formData.email,
                 password: formData.password,
@@ -168,7 +168,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
         showLoading();
 
         try {
-            const response = await axios.post('http://192.168.254.101:8000/api/register-owner/', {
+            const response = await axios.post('http://localhost:8000/api/register-owner/', {
                 username: formData.username,
                 email: formData.email,
                 password: formData.password,
@@ -274,7 +274,7 @@ const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
         showLoading();
 
         try {
-            const response = await axios.post('http://192.168.254.101:8000/api/reset-password/', {
+            const response = await axios.post('http://localhost:8000/api/reset-password/', {
                 username: resetFormData.username,
                 newPassword: resetFormData.newPassword,
             });

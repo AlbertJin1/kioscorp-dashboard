@@ -38,7 +38,7 @@ const UserManagement = () => {
         const fetchUsers = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get('http://192.168.254.101:8000/api/users/', {
+                const response = await axios.get('http://localhost:8000/api/users/', {
                     headers: {
                         'Authorization': `Token ${token}`,
                     },
@@ -175,7 +175,7 @@ const UserManagement = () => {
         if (confirmDelete.isConfirmed) {
             try {
                 const token = localStorage.getItem('token');
-                await axios.delete(`http://192.168.254.101:8000/api/users/${userId}/delete/`, {
+                await axios.delete(`http://localhost:8000/api/users/${userId}/delete/`, {
                     headers: {
                         'Authorization': `Token ${token}`,
                     },
@@ -221,7 +221,7 @@ const UserManagement = () => {
         try {
             const token = localStorage.getItem('token');
             // Fetch user details
-            const response = await axios.get(`http://192.168.254.101:8000/api/users/${user.id}/`, {
+            const response = await axios.get(`http://localhost:8000/api/users/${user.id}/`, {
                 headers: {
                     'Authorization': `Token ${token}`,
                 },
@@ -231,7 +231,7 @@ const UserManagement = () => {
             let profilePicture = imagePlaceholder; // Default to placeholder
 
             try {
-                const profileResponse = await axios.get(`http://192.168.254.101:8000/api/users/${user.id}/profile-picture/`, {
+                const profileResponse = await axios.get(`http://localhost:8000/api/users/${user.id}/profile-picture/`, {
                     headers: {
                         'Authorization': `Token ${token}`,
                     },
@@ -272,7 +272,7 @@ const UserManagement = () => {
     const handleSaveChanges = async () => {
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`http://192.168.254.101:8000/api/users/${selectedUser.id}/update/`, selectedUser, {
+            await axios.put(`http://localhost:8000/api/users/${selectedUser.id}/update/`, selectedUser, {
                 headers: {
                     'Authorization': `Token ${token}`,
                 },
@@ -312,7 +312,7 @@ const UserManagement = () => {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://192.168.254.101:8000/api/users/add/', newUser, {
+            await axios.post('http://localhost:8000/api/users/add/', newUser, {
                 headers: {
                     'Authorization': `Token ${token}`,
                 },

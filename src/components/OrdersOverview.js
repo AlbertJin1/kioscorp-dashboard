@@ -12,7 +12,7 @@ const OrdersOverview = () => {
     const fetchOrderCounts = async () => {
         try {
             const token = localStorage.getItem('token'); // Retrieve the token from local storage
-            const response = await axios.get('http://192.168.254.101:8000/api/orders/counts/', {
+            const response = await axios.get('http://localhost:8000/api/orders/counts/', {
                 headers: {
                     Authorization: `Token ${token}` // Include the token in the request headers
                 }

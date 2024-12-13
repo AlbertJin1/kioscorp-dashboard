@@ -47,7 +47,7 @@ const ChangePassword = () => {
 
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch('http://192.168.254.101:8000/api/change-password/', {
+            const response = await fetch('http://localhost:8000/api/change-password/', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
