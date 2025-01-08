@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { Tooltip } from 'react-tooltip';
 import { FaTrophy } from 'react-icons/fa';
@@ -7,24 +7,28 @@ import Loader from './Loader'; // Import your Loader component
 const TopSellingProducts = () => {
     const [topSellingProducts, setTopSellingProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()); // Default to current year
+
+    const fetchTopSellingProducts = useCallback(async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get('http://localhost:8000/api/top-selling-products', {
+                headers: {
+                    Authorization: `Token ${token}`
+                },
+                params: {
+                    year: selectedYear // Pass the selected year as a query parameter
+                }
+            });
+            setTopSellingProducts(response.data);
+            setLoading(false); // Set loading to false after fetching data
+        } catch (error) {
+            console.error('Error fetching top-selling products:', error);
+            setLoading(false); // Ensure loading is set to false even if there's an error
+        }
+    }, [selectedYear]);
 
     useEffect(() => {
-        const fetchTopSellingProducts = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await axios.get('http://localhost:8000/api/top-selling-products', {
-                    headers: {
-                        Authorization: `Token ${token}`
-                    }
-                });
-                setTopSellingProducts(response.data);
-                setLoading(false); // Set loading to false after fetching data
-            } catch (error) {
-                console.error('Error fetching top-selling products:', error);
-                setLoading(false); // Ensure loading is set to false even if there's an error
-            }
-        };
-
         fetchTopSellingProducts(); // Fetch products immediately on mount
 
         // Set up interval refetching every 15 seconds
@@ -34,14 +38,30 @@ const TopSellingProducts = () => {
 
         // Clear the interval when component unmounts
         return () => clearInterval(intervalId);
-    }, []);
+    }, [fetchTopSellingProducts]); // Refetch data when fetchTopSellingProducts changes
+
+    const handleYearChange = (event) => {
+        setSelectedYear(event.target.value); // Update selected year
+    };
 
     return (
         <div className="p-4 flex flex-col bg-white rounded-lg shadow-md h-full">
-            <h1 className="text-2xl font-bold mb-4 text-center flex items-center">
-                <FaTrophy className="mr-2 text-3xl text-yellow-500" />
-                Top Selling Products
-            </h1>
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-bold flex items-center">
+                    <FaTrophy className="mr-2 text-3xl text-yellow-500" />
+                    Top Selling Products
+                </h1>
+                <select
+                    value={selectedYear}
+                    onChange={handleYearChange}
+                    className="p-2 border rounded-lg"
+                >
+                    {/* Generate year options for the dropdown */}
+                    {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                        <option key={year} value={year}>{year}</option>
+                    ))}
+                </select>
+            </div>
             {loading ? (
                 <Loader />
             ) : (

@@ -86,10 +86,8 @@ const Inventory = () => {
         };
     }, []);
 
-    const totalPages = Math.ceil(products.length / rowsPerPage);
-
-    const getVisibleData = () => {
-        let filteredData = products.filter((item) => {
+    const getFilteredData = () => {
+        return products.filter((item) => {
             const matchesSearch =
                 item.product_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 item.product_brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -98,6 +96,12 @@ const Inventory = () => {
 
             return matchesSearch;
         });
+    };
+
+    const totalPages = Math.ceil(getFilteredData().length / rowsPerPage);
+
+    const getVisibleData = () => {
+        const filteredData = getFilteredData();
 
         // Sort the data
         if (selectedFilters.sort === 'Alphabetical Asc') {
@@ -460,18 +464,24 @@ const Inventory = () => {
 
                         {showSuggestions && suggestions.length > 0 && (
                             <div className="absolute z-20 w-full bg-white border border-gray-300 rounded-md mt-2 max-h-72 overflow-auto">
-                                {suggestions.map((product) => (
-                                    <div
-                                        key={product.product_id}
-                                        className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
-                                        onClick={() => handleSuggestionClick(product)}
-                                    >
-                                        {highlightMatch(product.product_name, searchQuery)}
-                                    </div>
-                                ))}
+                                {suggestions
+                                    // Filter out duplicate product names
+                                    .filter((value, index, self) =>
+                                        index === self.findIndex((t) => t.product_name === value.product_name)
+                                    )
+                                    .map((product) => (
+                                        <div
+                                            key={product.product_id}
+                                            className="px-4 py-2 hover:bg-blue-100 cursor-pointer transition duration-200 text-xl"
+                                            onClick={() => handleSuggestionClick(product)}
+                                        >
+                                            {highlightMatch(product.product_name, searchQuery)}
+                                        </div>
+                                    ))}
                             </div>
                         )}
                     </div>
+
 
                     {/* Filter, Edit, and Delete Buttons */}
                     <div className="flex items-center space-x-4">

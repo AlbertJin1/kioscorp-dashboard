@@ -52,8 +52,23 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
 
     const handleCloseModal = useCallback(() => {
         setIsOpenModal(false);
+        // Update the orders state with the modified order
+        setOrders(prevOrders =>
+            prevOrders.map(order =>
+                order.order_id === selectedOrder.order_id ? selectedOrder : order
+            )
+        );
         setSelectedOrder(null);
-    }, []);
+    }, [selectedOrder]);
+
+    const handleOrderUpdate = (updatedOrder) => {
+        // Update the orders state with the modified order
+        setOrders(prevOrders =>
+            prevOrders.map(order =>
+                order.order_id === updatedOrder.order_id ? updatedOrder : order
+            )
+        );
+    };
 
     const orderRefs = orders.map(() => React.createRef());
 
@@ -95,7 +110,6 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
                                     </div>
                                     <div className="flex text-xl justify-between font-bold">
                                         <span>Total:</span>
-                                        {/* Adjust the total to include VAT */}
                                         <span>
                                             ₱{(Number(order.order_amount) * (1 + vatPercentage / 100)).toFixed(2)}
                                         </span>
@@ -123,6 +137,7 @@ const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUse
                     onClose={handleCloseModal}
                     order={selectedOrder}
                     loggedInUser={loggedInUser}
+                    onOrderUpdate={handleOrderUpdate} // Pass the update handler
                 />
             )}
 

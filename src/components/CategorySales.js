@@ -13,6 +13,7 @@ const CategorySales = () => {
         }],
     });
     const [loading, setLoading] = useState(true);
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()); // Default to current year
 
     useEffect(() => {
         const fetchCategorySales = async () => {
@@ -21,6 +22,9 @@ const CategorySales = () => {
                 const response = await axios.get('http://localhost:8000/api/sales/category/', {
                     headers: {
                         Authorization: `Token ${token}`,
+                    },
+                    params: {
+                        year: selectedYear, // Pass the selected year as a query parameter
                     },
                 });
 
@@ -51,7 +55,7 @@ const CategorySales = () => {
         };
 
         fetchCategorySales();
-    }, []);
+    }, [selectedYear]);
 
     const chartOptions = {
         responsive: true,
@@ -68,12 +72,30 @@ const CategorySales = () => {
         },
     };
 
+    const handleYearChange = (event) => {
+        setSelectedYear(event.target.value);
+    };
+
+    // Generate an array of years for the dropdown (e.g., last 10 years)
+    const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+
     return (
         <div className="bg-white shadow-md p-4 rounded-lg flex-grow flex flex-col h-full">
-            <h2 className="text-2xl font-bold mb-4 flex items-center">
-                <FaChartPie className="mr-2 text-yellow-500 text-3xl" />
-                Category Sales
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold flex items-center">
+                    <FaChartPie className="mr-2 text-yellow-500 text-3xl" />
+                    Category Sales
+                </h2>
+                <select
+                    value={selectedYear}
+                    onChange={handleYearChange}
+                    className="p-2 border rounded-lg"
+                >
+                    {years.map(year => (
+                        <option key={year} value={year}>{year}</option>
+                    ))}
+                </select>
+            </div>
             {loading ? (
                 <div className="flex justify-center items-center h-full">
                     <Loader /> {/* Use the Loader component here */}

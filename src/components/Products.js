@@ -958,7 +958,10 @@ const Products = () => {
                         products.length > 0 ? (
                             <ul>
                                 {products
-                                    .filter(product => product.product_name.toLowerCase().includes(searchQueryProduct.toLowerCase()))
+                                    .filter(product =>
+                                        product.product_name.toLowerCase().includes(searchQueryProduct.toLowerCase()) ||
+                                        (product.product_size && product.product_size.toLowerCase().includes(searchQueryProduct.toLowerCase())) // Check for product_size
+                                    )
                                     .sort((a, b) => a.product_name.localeCompare(b.product_name)) // Sort alphabetically
                                     .map((product) => (
                                         <li

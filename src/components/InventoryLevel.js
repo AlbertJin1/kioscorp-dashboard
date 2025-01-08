@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Tooltip } from 'react-tooltip';
-import { FaArrowUp, FaBoxes } from 'react-icons/fa';
+import { FaBoxes } from 'react-icons/fa';
 import Loader from './Loader';
 
 const InventoryLevel = () => {
     const [products, setProducts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [sortKey, setSortKey] = useState('product_name');
-    const [sortOrder, setSortOrder] = useState('asc');
+    const [sortOption, setSortOption] = useState('alphabeticalAsc');
     const [loading, setLoading] = useState(true);
     const productsPerPage = 5;
 
@@ -44,17 +43,25 @@ const InventoryLevel = () => {
         return 'Low';
     };
 
+    // Sorting logic
     const sortedProducts = [...products].sort((a, b) => {
-        if (sortKey === 'product_name') {
-            return sortOrder === 'asc'
-                ? a.product_name.localeCompare(b.product_name)
-                : b.product_name.localeCompare(a.product_name);
-        } else if (sortKey === 'product_quantity') {
-            return sortOrder === 'asc'
-                ? a.product_quantity - b.product_quantity
-                : b.product_quantity - a.product_quantity;
+        // Always show out-of-stock items first
+        if (a.product_quantity === 0 && b.product_quantity !== 0) return -1;
+        if (b.product_quantity === 0 && a.product_quantity !== 0) return 1;
+
+        // Apply the selected sorting option to the remaining items
+        switch (sortOption) {
+            case 'alphabeticalAsc':
+                return a.product_name.localeCompare(b.product_name);
+            case 'alphabeticalDesc':
+                return b.product_name.localeCompare(a.product_name);
+            case 'quantityHighToLow':
+                return b.product_quantity - a.product_quantity;
+            case 'quantityLowToHigh':
+                return a.product_quantity - b.product_quantity;
+            default:
+                return 0;
         }
-        return 0;
     });
 
     const indexOfLastProduct = currentPage * productsPerPage;
@@ -63,22 +70,29 @@ const InventoryLevel = () => {
 
     const totalPages = Math.ceil(products.length / productsPerPage);
 
-    const handleSort = (key) => {
-        if (sortKey === key) {
-            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortKey(key);
-            setSortOrder(key === 'product_quantity' ? 'desc' : 'asc');
-        }
+    const handleSortChange = (e) => {
+        setSortOption(e.target.value);
         setCurrentPage(1); // Reset to page 1 on sort change
     };
 
     return (
         <div className="container mx-auto p-4 bg-white shadow-md rounded-lg h-full flex flex-col">
-            <h1 className="text-2xl font-bold mb-4 flex items-center">
-                <FaBoxes className="mr-2 text-3xl text-red-500" />
-                Inventory Levels
-            </h1>
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-bold flex items-center">
+                    <FaBoxes className="mr-2 text-3xl text-red-500" />
+                    Inventory Levels
+                </h1>
+                <select
+                    value={sortOption}
+                    onChange={handleSortChange}
+                    className="border rounded-md p-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="alphabeticalAsc">Alphabetical Asc</option>
+                    <option value="alphabeticalDesc">Alphabetical Desc</option>
+                    <option value="quantityHighToLow">Quantity High to Low</option>
+                    <option value="quantityLowToHigh">Quantity Low to High</option>
+                </select>
+            </div>
             {loading ? (
                 <Loader />
             ) : (
@@ -87,36 +101,8 @@ const InventoryLevel = () => {
                         <table className="min-w-full bg-white rounded ">
                             <thead className="bg-[#022a5e] text-white text-md leading-normal sticky top-0 z-10">
                                 <tr>
-                                    <th
-                                        className="py-2 px-4 text-center w-1/4 cursor-pointer"
-                                        onClick={() => handleSort('product_name')}
-                                    >
-                                        <div className="flex items-center justify-center">
-                                            Product
-                                            {sortKey === 'product_name' && (
-                                                <span
-                                                    className={`ml-2 transition-transform duration-300 ${sortOrder === 'asc' ? 'rotate-0' : 'rotate-180'}`}
-                                                >
-                                                    <FaArrowUp />
-                                                </span>
-                                            )}
-                                        </div>
-                                    </th>
-                                    <th
-                                        className="py-2 px-4 text-center w-1/3 cursor-pointer"
-                                        onClick={() => handleSort('product_quantity')}
-                                    >
-                                        <div className="flex items-center justify-center">
-                                            Quantity
-                                            {sortKey === 'product_quantity' && (
-                                                <span
-                                                    className={`ml-2 transition-transform duration-300 ${sortOrder === 'asc' ? 'rotate-0' : 'rotate-180'}`}
-                                                >
-                                                    <FaArrowUp />
-                                                </span>
-                                            )}
-                                        </div>
-                                    </th>
+                                    <th className="py-2 px-4 text-center w-1/4">Product</th>
+                                    <th className="py-2 px-4 text-center w-1/3">Quantity</th>
                                     <th className="py-2 px-4 text-center w-1/3">Stock Level</th>
                                 </tr>
                             </thead>
@@ -207,7 +193,6 @@ const InventoryLevel = () => {
                             </>
                         )}
                     </div>
-
                 </div>
             )}
         </div>

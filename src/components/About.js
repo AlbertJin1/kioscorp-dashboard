@@ -2,7 +2,7 @@ import React from 'react';
 
 const About = () => {
     return (
-        <div className="flex flex-col h-full p-4 bg-white rounded-lg">
+        <div className="flex flex-col h-screen flex-grow p-4 bg-white rounded-lg">
 
             <h2 className="text-3xl font-bold mb-4 text-blue-900">About This Application</h2>
             <hr className="border-t-2 border-blue-900 mb-6" />
@@ -31,6 +31,15 @@ const About = () => {
                 <p className="text-lg text-gray-700 mt-4">
                     The app also supports seamless product management, including adding new products, updating existing ones, managing categories, and tracking inventory levels.
                 </p>
+                <h3 className="text-2xl font-bold mt-6 text-blue-900">KiosCorp Members</h3>
+                <hr className="border-t-2 border-blue-900 mb-4" />
+                <ul className="list-disc pl-5 text-lg text-gray-700">
+                    <li>Brieanne Joyce M. Alsonado</li>
+                    <li>Mohamad B. Dida-agun</li>
+                    <li>John Henley S. Llamos</li>
+                    <li>Jessie Albert J. Regualos</li>
+                    <li>Eric John R. Tan</li>
+                </ul>
             </div>
         </div>
     );

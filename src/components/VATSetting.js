@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
 const VATSetting = ({ userRole }) => {
     const [vatPercentage, setVatPercentage] = useState('');
     const [isEditing, setIsEditing] = useState(false);
-    const [message, setMessage] = useState('');
+    const inputRef = useRef(null); // Reference for the input field
 
     useEffect(() => {
         // Fetch current VAT setting
@@ -14,18 +15,48 @@ const VATSetting = ({ userRole }) => {
             })
             .catch(error => {
                 console.error('Error fetching VAT setting:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to fetch VAT setting.',
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
             });
     }, []);
 
-    const handleSave = () => {
+    const handleEdit = () => {
+        setIsEditing(true);
+        setTimeout(() => {
+            inputRef.current?.focus(); // Automatically focus on the input field
+        }, 0);
+    };
+
+    const handleSave = (e) => {
+        e.preventDefault(); // Prevent default form submission behavior
         axios.put('http://localhost:8000/api/vat-setting/', { vat_percentage: vatPercentage })
             .then(response => {
-                setMessage('VAT setting updated successfully.');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'VAT setting updated successfully.',
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
                 setIsEditing(false);
             })
             .catch(error => {
                 console.error('Error updating VAT setting:', error);
-                setMessage('Failed to update VAT setting.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to update VAT setting.',
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
             });
     };
 
@@ -35,8 +66,12 @@ const VATSetting = ({ userRole }) => {
             {userRole === 'owner' ? (
                 <>
                     {isEditing ? (
-                        <div className="flex items-center space-x-4">
+                        <form
+                            className="flex items-center space-x-4"
+                            onSubmit={handleSave}
+                        >
                             <input
+                                ref={inputRef} // Attach the ref to the input field
                                 type="number"
                                 value={vatPercentage}
                                 onChange={(e) => setVatPercentage(e.target.value)}
@@ -47,23 +82,24 @@ const VATSetting = ({ userRole }) => {
                                 placeholder="Enter VAT percentage"
                             />
                             <button
-                                onClick={handleSave}
+                                type="submit"
                                 className="bg-blue-500 text-white p-2 rounded"
                             >
                                 Save
                             </button>
                             <button
+                                type="button"
                                 onClick={() => setIsEditing(false)}
                                 className="bg-gray-500 text-white p-2 rounded"
                             >
                                 Cancel
                             </button>
-                        </div>
+                        </form>
                     ) : (
                         <div className="flex items-center">
                             <p className="mr-2">Current VAT: {vatPercentage}%</p>
                             <button
-                                onClick={() => setIsEditing(true)}
+                                onClick={handleEdit} // Trigger the edit functionality
                                 className="bg-blue-500 text-white p-2 rounded"
                             >
                                 Edit
@@ -74,7 +110,6 @@ const VATSetting = ({ userRole }) => {
             ) : (
                 <p>You do not have permission to edit the VAT setting.</p>
             )}
-            {message && <p className="mt-4 text-sm text-green-600">{message}</p>}
         </div>
     );
 };

@@ -3,9 +3,10 @@ import MyProfile from './MyProfile';
 import UserManagement from './UserManagement';
 import Logs from './Logs';
 import ChangePassword from './ChangePassword';
-import ClearSalesData from './ClearSalesData'; // Import the new component
-import VATSetting from './VATSetting'; // Import the new component
-import About from './About'; // Import the About component
+import ClearSalesData from './ClearSalesData';
+import VATSetting from './VATSetting';
+import About from './About';
+import CashierTransactions from './CashierTransactions'; // Import the new component
 
 const Menu = ({ setIsAuthenticated, handleLogout }) => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -25,11 +26,11 @@ const Menu = ({ setIsAuthenticated, handleLogout }) => {
             <div className="w-1/3 mr-4 bg-blue-900 text-white h-full flex flex-col rounded shadow-lg">
                 <div className="p-6">
                     <h2 className="text-2xl font-bold mb-6">Menu</h2>
-                    <ul className="space-y-4">
+                    <ul className="space-y-4 transition">
                         <li>
                             <button
                                 onClick={() => handleTabChange('profile')}
-                                className={`w-full text-left p-2 rounded-md ${activeTab === 'profile' ? 'bg-blue-700' : 'hover:bg-blue-800'}`}
+                                className={`w-full text-left p-2 rounded-md ${activeTab === 'profile' ? 'bg-blue-700 transition duration-200' : 'hover:bg-blue-800 transition duration-200'}`}
                             >
                                 My Profile
                             </button>
@@ -38,7 +39,7 @@ const Menu = ({ setIsAuthenticated, handleLogout }) => {
                             <li>
                                 <button
                                     onClick={() => handleTabChange('management')}
-                                    className={`w-full text-left p-2 rounded-md ${activeTab === 'management' ? 'bg-blue-700' : 'hover:bg-blue-800'}`}
+                                    className={`w-full text-left p-2 rounded-md ${activeTab === 'management' ? 'bg-blue-700 transition duration-200' : 'hover:bg-blue-800 transition duration-200'}`}
                                 >
                                     User Management
                                 </button>
@@ -48,7 +49,7 @@ const Menu = ({ setIsAuthenticated, handleLogout }) => {
                             <li>
                                 <button
                                     onClick={() => handleTabChange('logs')}
-                                    className={`w-full text-left p-2 rounded-md ${activeTab === 'logs' ? 'bg-blue-700' : 'hover:bg-blue-800'}`}
+                                    className={`w-full text-left p-2 rounded-md ${activeTab === 'logs' ? 'bg-blue-700 transition duration-200' : 'hover:bg-blue-800 transition duration-200'}`}
                                 >
                                     Logs
                                 </button>
@@ -57,26 +58,36 @@ const Menu = ({ setIsAuthenticated, handleLogout }) => {
                         <li>
                             <button
                                 onClick={() => handleTabChange('changePassword')}
-                                className={`w-full text-left p-2 rounded-md ${activeTab === 'changePassword' ? 'bg-blue-700' : 'hover:bg-blue-800'}`}
+                                className={`w-full text-left p-2 rounded-md ${activeTab === 'changePassword' ? 'bg-blue-700 transition duration-200' : 'hover:bg-blue-800 transition duration-200'}`}
                             >
                                 Change Password
                             </button>
                         </li>
-                        {userRole === 'owner' && ( // Only show for owner role
+                        {(userRole === 'owner' || userRole === 'admin') && (
                             <li>
                                 <button
-                                    onClick={() => handleTabChange('clearSalesData')}
-                                    className={`w-full text-left p-2 rounded-md ${activeTab === 'clearSalesData' ? 'bg-blue-700' : 'hover:bg-blue-800'}`}
+                                    onClick={() => handleTabChange('cashierTransactions')}
+                                    className={`w-full text-left p-2 rounded-md ${activeTab === 'cashierTransactions' ? 'bg-blue-700 transition duration-200' : 'hover:bg-blue-800 transition duration-200'}`}
                                 >
-                                    Clear Sales Data
+                                    Cashier Transactions
                                 </button>
                             </li>
                         )}
                         {userRole === 'owner' && (
                             <li>
                                 <button
+                                    onClick={() => handleTabChange('clearSalesData')}
+                                    className={`w-full text-left p-2 rounded-md ${activeTab === 'clearSalesData' ? 'bg-blue-700 transition duration-200' : 'hover:bg-blue-800 transition duration-200'}`}
+                                >
+                                    Clear Sales Data
+                                </button>
+                            </li>
+                        )}
+                        {(userRole === 'owner' || userRole === 'admin') && (
+                            <li>
+                                <button
                                     onClick={() => handleTabChange('vatSetting')}
-                                    className={`w-full text-left p-2 rounded-md ${activeTab === 'vatSetting' ? 'bg-blue-700' : 'hover:bg-blue-800'}`}
+                                    className={`w-full text-left p-2 rounded-md ${activeTab === 'vatSetting' ? 'bg-blue-700 transition duration-200' : 'hover:bg-blue-800 transition duration-200'}`}
                                 >
                                     VAT Setting
                                 </button>
@@ -85,7 +96,7 @@ const Menu = ({ setIsAuthenticated, handleLogout }) => {
                         <li>
                             <button
                                 onClick={() => handleTabChange('about')}
-                                className={`w-full text-left p-2 rounded-md ${activeTab === 'about' ? 'bg-blue-700' : 'hover:bg-blue-800'}`}
+                                className={`w-full text-left p-2 rounded-md ${activeTab === 'about' ? 'bg-blue-700 transition duration-200' : 'hover:bg-blue-800 transition duration-200'}`}
                             >
                                 About
                             </button>
@@ -100,9 +111,10 @@ const Menu = ({ setIsAuthenticated, handleLogout }) => {
                     {(activeTab === 'management' && (userRole === 'owner' || userRole === 'admin')) && <UserManagement />}
                     {(activeTab === 'logs' && (userRole === 'owner' || userRole === 'admin')) && <Logs />}
                     {activeTab === 'changePassword' && <ChangePassword />}
+                    {activeTab === 'cashierTransactions' && <CashierTransactions />} {/* Render Cashier Transactions component */}
                     {activeTab === 'clearSalesData' && userRole === 'owner' && <ClearSalesData handleLogout={handleLogout} />}
                     {activeTab === 'vatSetting' && userRole === 'owner' && <VATSetting userRole={userRole} />}
-                    {activeTab === 'about' && <About />} {/* Render About component */}
+                    {activeTab === 'about' && <About />}
                 </>
             </div>
         </div>

@@ -199,14 +199,14 @@ const Logs = () => {
     return (
         <div className="p-4 flex flex-col h-full bg-white rounded">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-3xl font-bold text-gray-800">Audit Logs</h2>
+                <h2 className="text-2xl font-bold">Audit Logs</h2>
                 <div className="flex justify-between">
                     <button
                         className="bg-green-500 hover:bg-green-700 transition-colors duration-300 text-white font-bold p-2 rounded flex justify-center items-center"
                         title="Export Logs"
                         onClick={handleExportLogs}
                     >
-                        <FaDownload className="mr-2" size={30} />
+                        <FaDownload className="mr-2" size={25} />
                         Export
                     </button>
                     {userRole !== 'admin' && (
@@ -215,7 +215,7 @@ const Logs = () => {
                             title="Clear Logs"
                             onClick={handleClearLogs}
                         >
-                            <FaTrash className="mr-2" size={30} />
+                            <FaTrash className="mr-2" size={25} />
                             Delete
                         </button>
                     )}

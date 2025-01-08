@@ -13,6 +13,10 @@ const MainComponentPOS = ({ loggedInUser, handleLogout }) => {
     const [loading, setLoading] = useState(true); // State to handle loading
     const navigate = useNavigate(); // Initialize useNavigate
 
+    useEffect(() => {
+        document.title = 'KiosCorp | POS'; // Set the browser title
+    }, []);
+
     const sidebarRef = useRef(null);
 
     const checkSessionValidity = useCallback(async () => {

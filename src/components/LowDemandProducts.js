@@ -93,7 +93,7 @@ const LowDemandProducts = () => {
             <div className={`flex flex-row items-center justify-center w-full space-x-6 h-full ${loading ? 'hidden' : 'flex'}`}>
                 {currentProduct ? (
                     <>
-                        <div className="flex flex-col items-center w-1/2">
+                        <div className="flex flex-col items-center w-1/2"> {/* Fixed width */}
                             <img
                                 src={currentProduct.product_image}
                                 alt={currentProduct.product_name}
@@ -101,11 +101,12 @@ const LowDemandProducts = () => {
                             />
                         </div>
 
-                        <div className={`flex flex-col w-1/2 transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}>
+                        <div className={`flex flex-col w-96 transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0' : 'opacity-100'}`}> {/* Fixed width */}
                             <h2 className="text-2xl font-bold">{currentProduct.product_name}</h2>
+                            <p className="text-lg text-gray-700">Color: {currentProduct.product_color}</p>
                             <p className="text-lg text-gray-700">Size: {currentProduct.product_size}</p>
                             <p className="text-lg text-gray-700">Type: {currentProduct.product_type}</p>
-                            <p className="text-lg text-gray-700 font-bold">Total Sold: {currentProduct.total_sold}</p>
+                            <p className="text-lg text-gray-700 font-bold">Total Sold: <span className="text-green-500 text-3xl">{currentProduct.total_sold}</span></p>
                         </div>
                     </>
                 ) : (

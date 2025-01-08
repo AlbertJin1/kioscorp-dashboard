@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 import Loader from './Loader';
 import { FaSearch } from 'react-icons/fa';
+import Swal from 'sweetalert2';
 
 const OrderHistory = () => {
     const [orders, setOrders] = useState([]);
@@ -71,6 +72,19 @@ const OrderHistory = () => {
 
 
     const handleDateFilterClick = () => {
+        if (new Date(startDate) > new Date(endDate)) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: 'Start date must be earlier than end date!',
+                showConfirmButton: false,
+                timer: 1500,
+                backdrop: false, // Disable background dimming
+            });
+            return;
+        }
+
         setFilter('all');  // Reset to 'All Orders' when applying date filter
         filterRef.current = 'all'; // Update ref to 'all'
         startDateRef.current = startDate;
@@ -207,6 +221,7 @@ const OrderHistory = () => {
                                 </td>
                             </tr>
                         ) : (
+
                             orders.map((order) => (
                                 <React.Fragment key={order.order_id}>
                                     <tr className="border-b">
@@ -217,18 +232,45 @@ const OrderHistory = () => {
                                             ) : (
                                                 <span>No Image</span>
                                             )}
-                                            {order.items[0] ? `${order.items[0].product_name} (${order.items[0].product_color}, ${order.items[0].product_size})` : 'No Product'}
+                                            {order.items[0] ? (
+                                                <div className="flex flex-col">
+                                                    <span className="text-xl font-bold">{order.items[0].product_name}</span>
+                                                    <span className="text-lg text-gray-500 font-semibold">{order.items[0].product_color}, {order.items[0].product_size}</span>
+                                                </div>
+                                            ) : 'No Product'}
                                         </td>
-
                                         <td className="py-2 px-4 text-center">{order.items[0] ? new Date(order.items[0].date_created).toLocaleString() : '-'}</td>
                                         <td className={`py-2 px-4 text-center ${getStatusColor(order.items[0] ? order.items[0].status : '-')}`}>
                                             {order.items[0] ? order.items[0].status : '-'}
+                                            {order.items[0] && (order.items[0].status === 'Paid' || order.items[0].status === 'Void') ? (
+                                                <div className="text-sm text-gray-500 mt-1">
+                                                    Cashier: {order.order_cashier ? order.order_cashier : 'N/A'}
+                                                </div>
+                                            ) : null}
                                         </td>
                                         <td className="py-2 px-4 text-center">
-                                            ₱{order.items[0] ? order.items[0].unit_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                                            {order.items[0] ?
+                                                typeof order.items[0].unit_price === 'string' ?
+                                                    order.items[0].unit_price
+                                                    :
+                                                    order.items[0].unit_price.discounted ?
+                                                        <>
+                                                            <span className="line-through text-gray-500">
+                                                                ₱{order.items[0].unit_price.original.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </span>
+                                                            {' '} {' '}
+                                                            <span>
+                                                                ₱{order.items[0].unit_price.discounted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </span>
+                                                        </>
+                                                        :
+                                                        `₱${order.items[0].unit_price.original.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                :
+                                                '0.00'}
                                         </td>
                                         <td className="py-2 px-4 text-center">{order.items[0] ? order.items[0].quantity : '-'}</td>
                                     </tr>
+
                                     {order.items.slice(1).map((item, index) => (
                                         <tr key={`${order.order_id}-${index}`} className="border-b">
                                             <td className="py-2 px-4 flex items-center">
@@ -237,17 +279,41 @@ const OrderHistory = () => {
                                                 ) : (
                                                     <img src="https://via.placeholder.com/150" alt="Placeholder" className="w-20 h-20 mr-4 object-cover rounded" />
                                                 )}
-                                                {`${item.product_name} (${item.product_color}, ${item.product_size})`}
+                                                <div className="flex flex-col">
+                                                    <span className="text-xl font-bold">{item.product_name}</span>
+                                                    <span className="text-lg text-gray-500 font-semibold">{item.product_color}, {item.product_size}</span>
+                                                </div>
                                             </td>
-
                                             <td className="py-2 px-4 text-center">{new Date(item.date_created).toLocaleString()}</td>
                                             <td className={`py-2 px-4 text-center ${getStatusColor(item.status)}`}>
                                                 {item.status}
+                                                {item.status === 'Paid' || item.status === 'Void' ? (
+                                                    <div className="text-sm text-gray-500 mt-1">
+                                                        Cashier: {order.order_cashier ? order.order_cashier : 'N/A'}
+                                                    </div>
+                                                ) : null}
                                             </td>
-                                            <td className="py-2 px-4 text-center">₱{item.unit_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            <td className="py-2 px-4 text-center">
+                                                {typeof item.unit_price === 'string' ?
+                                                    item.unit_price
+                                                    :
+                                                    item.unit_price.discounted ?
+                                                        <>
+                                                            <span className="line-through text-gray-500">
+                                                                ₱{item.unit_price.original.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </span>
+                                                            {' '} {' '}
+                                                            <span>
+                                                                ₱{item.unit_price.discounted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </span>
+                                                        </>
+                                                        :
+                                                        `₱${item.unit_price.original.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                            </td>
                                             <td className="py-2 px-4 text-center">{item.quantity}</td>
                                         </tr>
                                     ))}
+
                                 </React.Fragment>
                             ))
                         )}

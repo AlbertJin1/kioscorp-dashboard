@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Pie } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -20,13 +20,17 @@ const FeedbackChart = () => {
         datasets: []
     });
     const [loading, setLoading] = useState(true);
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()); // Default to current year
 
-    const fetchSatisfactionData = async () => {
+    const fetchSatisfactionData = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.get('http://localhost:8000/api/feedback/satisfaction/', {
                 headers: {
                     Authorization: `Token ${token}`
+                },
+                params: {
+                    year: selectedYear // Pass the selected year as a query parameter
                 }
             });
             const satisfactionCounts = response.data;
@@ -48,7 +52,7 @@ const FeedbackChart = () => {
             console.error("Error fetching satisfaction data:", error);
             setLoading(false); // Ensure loading is set to false even if there's an error
         }
-    };
+    }, [selectedYear]);
 
     useEffect(() => {
         fetchSatisfactionData(); // Fetch data immediately on mount
@@ -57,7 +61,11 @@ const FeedbackChart = () => {
         const intervalId = setInterval(fetchSatisfactionData, 15000);
 
         return () => clearInterval(intervalId);
-    }, []);
+    }, [fetchSatisfactionData]); // Refetch data when fetchSatisfactionData changes
+
+    const handleYearChange = (event) => {
+        setSelectedYear(event.target.value);
+    };
 
     const chartOptions = {
         responsive: true,
@@ -74,12 +82,26 @@ const FeedbackChart = () => {
         },
     };
 
+    // Generate an array of years for the dropdown (e.g., last 10 years)
+    const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+
     return (
         <div className="bg-white shadow-md p-4 rounded-lg flex-grow flex flex-col h-full">
-            <h2 className="text-2xl font-bold mb-4 flex items-center">
-                <FaStar className="mr-2 text-yellow-500 text-3xl" />
-                Satisfaction Ratings (Kiosk)
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold flex items-center">
+                    <FaStar className="mr-2 text-yellow-500 text-3xl" />
+                    Satisfaction Ratings (Kiosk)
+                </h2>
+                <select
+                    value={selectedYear}
+                    onChange={handleYearChange}
+                    className="p-2 border rounded-lg"
+                >
+                    {years.map(year => (
+                        <option key={year} value={year}>{year}</option>
+                    ))}
+                </select>
+            </div>
             {loading ? (
                 <div className="flex justify-center items-center h-full">
                     <Loader />

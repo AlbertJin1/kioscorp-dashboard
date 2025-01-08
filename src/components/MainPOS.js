@@ -408,22 +408,26 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                             )}
                             {showSuggestions && suggestions.length > 0 && (
                                 <ul className="absolute left-0 top-14 z-10 w-full bg-white border border-gray-300 rounded shadow-lg max-h-96 overflow-y-auto">
-                                    {suggestions.map((suggestion) => (
-                                        <li
-                                            key={suggestion.product_id}
-                                            onClick={() => handleSuggestionClick(suggestion)}
-                                            className="p-2 hover:bg-gray-200 cursor-pointer text-2xl"
-                                        >
-                                            {highlightMatch(suggestion.product_name, searchTerm)}
-                                            {/* Display color and size */}
-                                            <span className="text-gray-600"> ({suggestion.product_color}, {suggestion.product_size})</span>
-                                        </li>
-                                    ))}
+                                    {suggestions
+                                        .filter((suggestion, index, self) =>
+                                            // Filter to ensure unique product names
+                                            index === self.findIndex((s) => s.product_name === suggestion.product_name)
+                                        )
+                                        .map((suggestion) => (
+                                            <li
+                                                key={suggestion.product_id}
+                                                onClick={() => handleSuggestionClick(suggestion)}
+                                                className="p-2 hover:bg-gray-200 cursor-pointer text-2xl"
+                                            >
+                                                {highlightMatch(suggestion.product_name, searchTerm)}
+                                            </li>
+                                        ))}
                                 </ul>
                             )}
                         </div>
                     </div>
 
+                    {/* Sort and Filter buttons */}
                     <div className="flex items-center">
                         <div className="relative">
                             <button
@@ -433,7 +437,7 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                                 <FaFilter className="mr-2" size={20} />
                                 Sort
                             </button>
-
+                            {/* Sort options dropdown */}
                             {isSortDropdownOpen && (
                                 <div ref={dropdownRef} className="absolute z-10 bg-white border border-gray-300 rounded shadow-lg right-0 top-12 p-4 w-64 max-h-96 overflow-y-auto">
                                     <h3 className="font-bold mb-2 text-lg text-gray-800">Sort By:</h3>
@@ -488,7 +492,7 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                                 <FaFilter className="mr-2" size={20} />
                                 Filter Categories
                             </button>
-
+                            {/* Filter categories dropdown */}
                             {isFilterDropdownOpen && (
                                 <div ref={dropdownRef} className="absolute z-10 bg-white border border-gray-300 rounded-tl rounded-bl shadow-lg right-0 top-12 p-4 w-64 min-h-96 overflow-y-auto custom-scrollbar">
                                     <h3 className="font-bold mb-2 text-lg text-gray-800">Show All:</h3>
@@ -540,9 +544,9 @@ const MainPOS = ({ setPendingOrderCount, fetchOrders }) => {
                                 </div>
                             )}
                         </div>
-
                     </div>
                 </div>
+
 
                 {/* Product Grid Container */}
                 <div className="overflow-y-auto custom-scrollbar bg-gray-200 p-4 rounded-md w-full"> {/* Adjust maxHeight as needed */}

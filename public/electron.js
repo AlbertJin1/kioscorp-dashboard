@@ -22,7 +22,7 @@ function createWindow() {
     mainWindow.maximize();
 
     // Load the server URL for both development and production
-    const indexPath = 'http://192.168.254.101:3010'; // Always load from the server
+    const indexPath = 'http://localhost:3010'; // Always load from the server
     mainWindow.loadURL(indexPath);
 
     // Add a menu with an About option but without DevTools toggle and View menu
