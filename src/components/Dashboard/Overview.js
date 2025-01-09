@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaChartLine, FaCalendarAlt, FaMoneyBillWave, FaClipboardCheck, FaClipboardList, FaBan } from 'react-icons/fa';
-import Loader from './Loader';
+import Loader from '../Loader/Loader';
 import axios from 'axios';
 
 const Overview = () => {

@@ -8,7 +8,7 @@ import {
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import axios from 'axios';
-import Loader from './Loader'; // Adjust the import path as necessary
+import Loader from '../Loader/Loader'; // Adjust the import path as necessary
 import { FaStar } from 'react-icons/fa';
 
 // Register necessary elements and components with Chart.js

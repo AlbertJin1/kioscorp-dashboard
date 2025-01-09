@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Pie } from 'react-chartjs-2';
 import axios from 'axios';
 import { FaChartPie } from 'react-icons/fa';
-import Loader from './Loader'; // Import the Loader component
+import Loader from '../Loader/Loader'; // Import the Loader component
 
 const CategorySales = () => {
     const [chartData, setChartData] = useState({

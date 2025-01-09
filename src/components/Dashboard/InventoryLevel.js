@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Tooltip } from 'react-tooltip';
 import { FaBoxes } from 'react-icons/fa';
-import Loader from './Loader';
+import Loader from '../Loader/Loader';
 
 const InventoryLevel = () => {
     const [products, setProducts] = useState([]);

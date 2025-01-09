@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, forwardRef } from 'react';
 import { FaArrowLeft, FaSignOutAlt } from 'react-icons/fa';
-import logo from '../img/logo/KIOSCORP LOGO.png'; // Adjust the path as needed
+import logo from '../../img/logo/KIOSCORP LOGO.png'; // Adjust the path as needed
 import axios from 'axios';
 import OrderModal from './OrderModal';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import './SidebarPOSStyles.css';
+import '../Styles/SidebarPOSStyles.css';
 
 const SidebarPOS = forwardRef(({ handleLogout, setPendingOrderCount, loggedInUser, handleGoBack }, ref) => {
     const [orders, setOrders] = useState([]); // State to hold all pending orders

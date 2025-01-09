@@ -4,7 +4,7 @@ import SidebarPOS from './SidebarPOS';
 import TopBarPOS from './TopBarPOS';
 import MainPOS from './MainPOS'; // Import the MainPOS component
 import Swal from 'sweetalert2';
-import Loader from './Loader'; // Import the Loader component
+import Loader from '../Loader/Loader'; // Import the Loader component
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const MainComponentPOS = ({ loggedInUser, handleLogout }) => {

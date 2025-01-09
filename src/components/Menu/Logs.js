@@ -5,7 +5,7 @@ import moment from 'moment';
 import { FaDownload, FaTrash } from 'react-icons/fa';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import Loader from './Loader'; // Import the Loader component
+import Loader from '../Loader/Loader'; // Import the Loader component
 
 const Logs = () => {
     const [logs, setLogs] = useState([]);

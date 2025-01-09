@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { FaPlusCircle, FaTimes, FaSearch, FaTrash, FaEdit } from 'react-icons/fa';
 import axios from 'axios';
 import Swal from 'sweetalert2'; // Import SweetAlert2
-import imagePlaceholder from '../img/logo/placeholder-image.png'
-import './styles.css'; // Import your CSS file for custom scrollbar styles
+import imagePlaceholder from '../../img/logo/placeholder-image.png'
+import '../Styles/styles.css'; // Import your CSS file for custom scrollbar styles
 
 const Products = () => {
     const [mainCategory, setMainCategory] = useState(null);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Loader from './Loader';
+import Loader from '../Loader/Loader';
 
 const CashierTransactions = () => {
     const [transactions, setTransactions] = useState([]);
@@ -33,7 +33,7 @@ const CashierTransactions = () => {
     }
 
     return (
-        <div className="p-4 bg-white rounded-lg shadow-md">
+        <div className="p-4 bg-white rounded h-full">
             <h2 className="text-2xl font-bold mb-4">Cashier Transactions</h2>
 
             {/* Dropdown to select a cashier */}
@@ -71,7 +71,11 @@ const CashierTransactions = () => {
                                 <p className="text-lg font-medium">
                                     Order ID: {order.order_id} - {new Date(order.order_date_created).toLocaleString()}
                                 </p>
-                                <p className="text-gray-600">Status: {order.order_status}</p>
+                                <p className="text-gray-600">
+                                    Status: <span className={`${order.order_status === 'Void' ? 'text-red-500' : order.order_status === 'Paid' ? 'text-green-500' : ''}`}>
+                                        <span className="font-bold text-lg">{order.order_status}</span>
+                                    </span>
+                                </p>
                             </button>
 
                             {/* Show products if the order is selected */}
@@ -103,22 +107,20 @@ const CashierTransactions = () => {
                                                             ({item.product_color}, {item.product_size})
                                                         </span>
                                                     </div>
-                                                    <div className="flex items-center">
+                                                    <div className="flex flex-col items-start">
                                                         {item.has_discount ? (
-                                                            <>
-                                                                <span className="line-through text-red-500 text-lg">
-                                                                    ₱{item.original_price}
-                                                                </span>
-                                                                <span className="ml-2 text-lg font-semibold">
-                                                                    ₱{item.discounted_price} x {item.quantity}
-                                                                </span>
-                                                            </>
+                                                            <div className="text-lg">
+                                                                <span className="line-through text-red-500 mr-2">₱{item.original_price}</span>
+                                                                <span className="font-semibold">₱{item.discounted_price}</span>
+                                                            </div>
                                                         ) : (
-                                                            <span className="text-xl font-semibold">
-                                                                ₱{item.original_price} x {item.quantity}
-                                                            </span>
+                                                            <span className="text-xl font-semibold">₱{item.original_price}</span>
                                                         )}
+                                                        <span className="text-md">
+                                                            <span className="font-semibold">Quantity: </span>{item.quantity}
+                                                        </span>
                                                     </div>
+
                                                 </div>
                                             </li>
                                         ))}

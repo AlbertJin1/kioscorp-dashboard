@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { FaChevronLeft, FaWarehouse, FaChartBar, FaHome, FaHistory, FaCashRegister, FaSignOutAlt, FaBoxes, FaCubes } from 'react-icons/fa';
-import logo from '../img/logo/KIOSCORP LOGO.png';
+import logo from '../../img/logo/KIOSCORP LOGO.png';
 import { useNavigate } from 'react-router-dom';
-import './SidebarMain.css';
+import '../Styles/SidebarMain.css';
 
 const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -39,9 +39,9 @@ const Sidebar = ({ setCurrentPage, currentPage, handleLogout }) => {
     }, [currentPage]);
 
     return (
-        <div className={`min-h-screen flex flex-col bg-[#033372] text-white transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
+        <div className={`min-h-screen flex flex-col bg-[#033372] text-white transition-all duration-300 select-none ${isCollapsed ? 'w-20' : 'w-64'}`}>
             <div className="flex items-center justify-between p-4">
-                {!isCollapsed && <img src={logo} alt="Kioscorp Logo" className="h-14" />}
+                {!isCollapsed && <img src={logo} alt="Kioscorp Logo" className="h-14" draggable="false" />}
                 <button onClick={toggleCollapse} className={`focus:outline-none flex items-center justify-center ${isCollapsed ? 'w-full' : ''}`}>
                     <FaChevronLeft className={`text-white text-2xl transition-transform duration-300 ${isCollapsed ? 'transform rotate-180' : ''}`} />
                 </button>

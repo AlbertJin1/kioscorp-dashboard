@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
-import Loader from './Loader';
+import Loader from '../Loader/Loader';
 import { FaSearch } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 

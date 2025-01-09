@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import logo from '../img/logo/point-of-sale.png'; // Adjust the path as needed
+import logo from '../../img/logo/point-of-sale.png'; // Adjust the path as needed
 
 const TopBarPOS = ({ loggedInUser, pendingOrderCount, handleLogout }) => {
     const [currentTime, setCurrentTime] = useState('');

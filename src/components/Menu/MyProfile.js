@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import Loader from './Loader'; // Import the Loader component
-import imagePlaceholder from '../img/logo/placeholder-image.png';
+import Loader from '../Loader/Loader'; // Import the Loader component
+import imagePlaceholder from '../../img/logo/placeholder-image.png';
 
 const MyProfile = ({ setIsAuthenticated, handleLogout }) => {
     const [profileData, setProfileData] = useState({

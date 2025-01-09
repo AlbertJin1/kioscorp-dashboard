@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import { FaEye, FaEdit, FaTrash, FaTimes, FaChevronUp, FaChevronDown, FaChevronLeft, FaChevronRight, FaPlus, FaDownload } from 'react-icons/fa'; // Imported icons
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import imagePlaceholder from '../img/logo/placeholder-image.png'; // Path to your placeholder image
+import imagePlaceholder from '../../img/logo/placeholder-image.png'; // Path to your placeholder image
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);

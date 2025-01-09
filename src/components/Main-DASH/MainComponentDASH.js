@@ -3,12 +3,12 @@ import axios from 'axios';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import Swal from 'sweetalert2';
-import Dashboard from './Dashboard';
-import SalesManagement from './SalesManagement';
-import Menu from './Menu';
-import Inventory from './Inventory';
-import OrderHistory from './OrderHistory';
-import Products from './Products';
+import Dashboard from '../Dashboard/Dashboard';
+import SalesManagement from '../Sales/SalesManagement';
+import Menu from '../Menu/Menu';
+import Inventory from '../Inventory/Inventory';
+import OrderHistory from '../OrderHistory/OrderHistory';
+import Products from '../Products/Products';
 
 const MainComponentWITHauth = ({ loggedInUser, handleLogout }) => {
     const [currentPage, setCurrentPage] = useState('dashboard');

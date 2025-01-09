@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { FaUsers } from 'react-icons/fa';
-import Loader from './Loader';
+import Loader from '../Loader/Loader';
 import axios from 'axios';
 import {
     Chart as ChartJS,

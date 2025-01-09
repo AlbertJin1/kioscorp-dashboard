@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import logo from '../img/logo/dashboard.png'; // Adjust the path as needed
+import logo from '../../img/logo/dashboard.png'; // Adjust the path as needed
 import { FaFileExport } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import ExcelJS from 'exceljs';

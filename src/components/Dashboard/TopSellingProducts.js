@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { Tooltip } from 'react-tooltip';
 import { FaTrophy } from 'react-icons/fa';
-import Loader from './Loader'; // Import your Loader component
+import Loader from '../Loader/Loader'; // Import your Loader component
 
 const TopSellingProducts = () => {
     const [topSellingProducts, setTopSellingProducts] = useState([]);

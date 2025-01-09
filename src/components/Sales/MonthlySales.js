@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import axios from 'axios';
 import { FaChartBar } from 'react-icons/fa';
-import Loader from './Loader';
+import Loader from '../Loader/Loader';
 import Swal from 'sweetalert2'; // Import SweetAlert2
 import ProductModal from './ProductModal'; // Import the modal component
 import {

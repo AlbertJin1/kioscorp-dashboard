@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { FaArrowDown } from 'react-icons/fa';
-import Loader from './Loader'; // Import the Loader component
+import Loader from '../Loader/Loader'; // Import the Loader component
 
 const LowDemandProducts = () => {
     const [products, setProducts] = useState([]);

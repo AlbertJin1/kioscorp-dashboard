@@ -3,8 +3,8 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import formBackgroundImage from '../img/Background/background.png';
-import sideImage from '../img/Background/company.png';
+import formBackgroundImage from '../../img/Background/background.png';
+import sideImage from '../../img/Background/company.png';
 
 const Auth = ({ setIsAuthenticated, setLoggedInUser }) => {
     const [isLogin, setIsLogin] = useState(true);

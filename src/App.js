@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import MainComponentWITHauth from './components/MainComponentWITHauth';
-import MainComponentPOS from './components/MainComponentPOS';
-import Auth from './components/Auth';
+import MainComponentDASH from './components/Main-DASH/MainComponentDASH';
+import MainComponentPOS from './components/Main-POS/MainComponentPOS';
+import Auth from './components/Auth/Auth';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
@@ -97,11 +97,11 @@ const App = () => {
       if (loggedInUser.role === 'cashier') {
         return <MainComponentPOS loggedInUser={loggedInUser} handleLogout={handleLogout} />;
       } else if (loggedInUser.role === 'admin' || loggedInUser.role === 'owner') {
-        return <MainComponentWITHauth loggedInUser={loggedInUser} handleLogout={handleLogout} />;
+        return <MainComponentDASH loggedInUser={loggedInUser} handleLogout={handleLogout} />;
       }
     }
 
-    return <MainComponentWITHauth loggedInUser={loggedInUser} handleLogout={handleLogout} />;
+    return <MainComponentDASH loggedInUser={loggedInUser} handleLogout={handleLogout} />;
   };
 
   return (
