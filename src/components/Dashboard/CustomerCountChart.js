@@ -50,7 +50,7 @@ const CustomerCountChart = () => {
                     labels,
                     datasets: [
                         {
-                            label: viewType === 'month' ? 'Customer Count (Monthly)' : 'Customer Count (Daily)',
+                            label: viewType === 'month' ? 'Paid Order Count (Monthly)' : 'Paid Order Count (Daily)',
                             data: customerCounts,
                             backgroundColor: 'rgba(75, 192, 192, 0.6)',
                         },
@@ -74,7 +74,7 @@ const CustomerCountChart = () => {
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold flex items-center">
                     <FaUsers className="mr-2 text-blue-500 text-3xl" />
-                    Customer Count
+                    Paid Orders
                 </h2>
                 <div className="flex items-center space-x-4">
 
